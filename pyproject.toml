@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cost-optimizer"
+version = "0.0.1"
+description = "Production cost-reduction toolkit for LLM workloads: prompt caching wrapper, semantic cache, uncertainty-routed model fallback, and a savings dashboard."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "JT McHorse", email = "jmchorse.tech@gmail.com" }]
+keywords = ["llm", "anthropic", "prompt-caching", "cost-optimization", "ml-ops"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries",
+]
+
+# The cache-wrapper layer is intentionally dependency-free: the Anthropic
+# client is duck-typed, so this package can be imported without an
+# `anthropic` install or an API key (mirrors llm-eval-harness D-002).
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=4.1",
+  "ruff>=0.5",
+]
+# Bring your own SDK at the call site; not required to import this package.
+anthropic = ["anthropic>=0.39"]
+
+[project.urls]
+Repository = "https://github.com/jt-mchorse/llm-cost-optimizer"
+Issues    = "https://github.com/jt-mchorse/llm-cost-optimizer/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cost_optimizer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-ra -q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "PT"]
+ignore = ["E501"]
