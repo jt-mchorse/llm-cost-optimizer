@@ -11,15 +11,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Add language-specific lint setup per repo (ruff for Python, eslint for TS)
-      - run: echo "Configure lint for this repo's stack"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e '.[dev]'
+      - run: ruff check .
+      - run: ruff format --check .
 
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      # Add test runner per repo (pytest, vitest, jest)
-      - run: echo "Configure tests for this repo's stack"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install -e '.[dev]'
+      - run: pytest --cov=cost_optimizer --cov-report=term-missing
 
   memory-check:
     runs-on: ubuntu-latest
