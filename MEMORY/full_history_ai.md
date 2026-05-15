@@ -20,3 +20,25 @@ context_for_next_session:
 decisions_made: [D-002, D-003]
 followups: []
 ---
+
+---
+session: 2026-05-15T15:47Z
+duration_min: 70
+issue: 2
+focus: semantic_response_cache_with_pluggable_embedder_and_storage
+delta:
+  files_added: 1
+  files_changed: 4
+  tests_added: 35
+  test_pass_rate: "53/53"
+context_for_next_session:
+  - semantic_cache_layer_shipped_embedder_protocol_storage_protocol
+  - inmemory_storage_default_redisstorage_behind_redis_extra_lazy_imported
+  - hashembedder_dep_free_fallback_for_hermetic_ci_real_embedders_byo_via_protocol
+  - threshold_default_0_95_d_006_conservative_fp_better_than_fn
+  - false_positive_measurement_offline_helper_d_007_not_online_sampling
+  - 1000_row_hit_rate_benchmark_intentionally_deferred_to_issue_5_savings_dashboard
+  - fakeredis_in_dev_extra_so_redisstorage_tests_run_without_a_redis_container
+decisions_made: [D-004, D-005, D-006, D-007]
+followups: []
+---

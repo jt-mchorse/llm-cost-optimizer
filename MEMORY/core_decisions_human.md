@@ -38,3 +38,56 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. The table is one file; swapping the lookup with an external source later is mechanical.
 
 **Related issues:** #1
+
+## D-004 — Semantic cache uses pluggable `Embedder` and `Storage` Protocols with dep-free defaults (2026-05-15)
+**Decision:** `SemanticCache` takes an `Embedder` (single-method `embed(text) -> list[float]`) and a `Storage` (single-method-each `put`/`find_nearest`/`invalidate_by_tag`/`purge_expired`/`__len__`). Two implementations of each ship: `HashEmbedder` + `InMemoryStorage` are dep-free, ship in the base install, and let CI exercise the cache flow hermetically; `RedisStorage` is behind the new `[redis]` extra; production embedders are BYO via the Protocol.
+
+**Why:** Same single-method Protocol seam adopted in `rag-production-kit` (Reranker, Embedder), `llm-eval-harness` (Backend), and `agent-orchestration-platform`'s use-case. The pattern is now portfolio-standard for test-substitution seams. The dep-free defaults are load-bearing: without them, every test that touches the cache would need a Redis container and a real embedder, which is exactly the friction the test substitution pattern is supposed to eliminate.
+
+**Alternatives considered:**
+- Hard-coded OpenAI embedder — rejected; locks consumers into one vendor and forces an SDK dep on tests.
+- Hard-coded Redis storage — rejected; same lock-in plus tests need a container.
+- `HashEmbedder` only, no Protocol — rejected; not real-quality and consumers can't swap in their production embedder.
+
+**Reversibility:** Cheap. Both Protocols are single-method; adding optional methods is backwards-compatible.
+
+**Related issues:** #2, #3, #5
+
+## D-005 — Cache keys include the model id; separate cache entries per model (2026-05-15)
+**Decision:** The cache's synthetic key is computed from `sha256(f"{model} {prompt}")` (and the embedding input is prefixed with `[model=...]` so similarity itself respects the model). The same prompt to two different models produces two cache entries.
+
+**Why:** Different models give different responses. Serving a Haiku response to an Opus caller is a quality regression that the client never asked for. Model-scoped keys also mean a model upgrade automatically invalidates the cache for the entries it touches — no full flush, no stale-for-the-new-model entries.
+
+**Alternatives considered:**
+- Model-agnostic global pool — rejected; serves wrong-model responses.
+- Separate `SemanticCache` instance per model — rejected; pushes the bookkeeping onto every consumer and breaks the offline false-positive measurement helper, which is single-cache by design.
+
+**Reversibility:** Cheap. The key derivation is one method.
+
+**Related issues:** #2
+
+## D-006 — Default similarity threshold 0.95 (high on purpose) (2026-05-15)
+**Decision:** `SemanticCache` defaults `similarity_threshold` to 0.95. Operators can lower it, but the default is conservative.
+
+**Why:** False positives are user-visible bugs (cached answer served to a different question, agent acts on wrong data, etc.). False negatives are just cache misses — additional cost, but no quality regression. Tuning the default toward the safer failure mode means out-of-the-box behavior is "occasionally pay for a model call I didn't strictly need" rather than "occasionally serve wrong data." Operators who measure their false-positive rate and want more hits can lower the threshold; default users get the safer setting.
+
+**Alternatives considered:**
+- Default 0.85 for higher hit rate — rejected; trades quality for cost-savings in the default config, which is the wrong direction for a "production cost optimizer."
+- No threshold (always serve the nearest) — rejected; pathological at low similarity (serving "what's the capital of Spain?" responses to "what's the weather?" queries).
+
+**Reversibility:** Cheap. One constructor arg.
+
+**Related issues:** #2
+
+## D-007 — False-positive rate measured offline via helper, not online sampling (2026-05-15)
+**Decision:** `measure_false_positive_rate(cache, held_out, model, call_model)` is run by the operator on a held-out set; the cache itself never samples cache hits and re-calls the model "just to check." False-positive rate is measured deliberately, not continuously.
+
+**Why:** Online sampling (e.g., 5% of cache hits also call the model and compare) silently bleeds the cost savings the cache exists to deliver — and the savings rate compounds over time as cache hit-rate goes up. The honest design is to run the false-positive measurement explicitly as an operator-initiated step on a held-out evaluation set. The output is a number the operator commits to the dashboard repo (#5) alongside the savings number, both computed deliberately.
+
+**Alternatives considered:**
+- Online random sampling at X% — rejected; bleeds savings, hides cost in a place operators don't see.
+- No false-positive metric — rejected; without measurement the cache is a black box and operators can't tune the threshold.
+
+**Reversibility:** Cheap. The helper is small; online sampling can be added later as an opt-in mode.
+
+**Related issues:** #2, #5
