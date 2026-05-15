@@ -29,9 +29,13 @@ dev = [
   "pytest>=8.0",
   "pytest-cov>=4.1",
   "ruff>=0.5",
+  "fakeredis>=2.20",   # exercises RedisStorage hermetically in unit tests
 ]
 # Bring your own SDK at the call site; not required to import this package.
 anthropic = ["anthropic>=0.39"]
+# Redis backend for SemanticCache.RedisStorage. The dep-free InMemoryStorage
+# is the default and ships in the base install (D-004).
+redis = ["redis>=5.0"]
 
 [project.urls]
 Repository = "https://github.com/jt-mchorse/llm-cost-optimizer"

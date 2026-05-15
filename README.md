@@ -59,6 +59,62 @@ wrapped = PromptCacheWrapper(
 
 If you're testing locally without an API key, the wrapper works against any object exposing `client.messages.create(...)` — see `tests/test_cache_wrapper.py` for the fake client used by the test suite.
 
+## Semantic cache (#2 · this PR)
+
+The second layer is a **semantic response cache** — keyed by embedding
+similarity, not exact-match on the prompt string. Two paraphrased
+prompts hit the same entry; a new model call only happens when the
+incoming request really is novel.
+
+Two pluggable Protocols (D-004), parallel to the patterns in
+`rag-production-kit` and `llm-eval-harness`:
+
+- **`Embedder`** — `embed(text) -> list[float]`. Ships with `HashEmbedder`
+  (dep-free, deterministic, hermetic for tests). Production callers BYO
+  via the Protocol — Cohere, Voyage, OpenAI, sentence-transformers all
+  conform with a one-line wrapper.
+- **`Storage`** — `put`/`find_nearest`/`invalidate_by_tag`/`purge_expired`.
+  Ships with `InMemoryStorage` (dep-free) and `RedisStorage` (lazy-imports
+  the `redis` SDK behind the new `[redis]` extra). RedisStorage uses
+  Redis SETs for tag-membership and native Redis TTL for expiry.
+
+```python
+from cost_optimizer import HashEmbedder, InMemoryStorage, SemanticCache
+
+cache = SemanticCache(
+    embedder=HashEmbedder(),
+    storage=InMemoryStorage(),
+    similarity_threshold=0.95,    # high on purpose (D-006)
+    default_ttl_s=3600,           # 1h default; per-call override available
+)
+
+result = cache.lookup("how do I refund a charge", model="claude-haiku-4-5")
+if result.hit:
+    print("cache hit, sim =", result.similarity)
+else:
+    response = client.messages.create(...)  # call the model
+    cache.put("how do I refund a charge", response, model="claude-haiku-4-5",
+              tags=("policy",))
+```
+
+Tag-based invalidation: `cache.invalidate(tag="policy")` drops every
+entry tagged `policy` (e.g., when the underlying policy doc changes).
+
+**False-positive measurement** is offline by design (D-007):
+`measure_false_positive_rate(cache, held_out, model=..., call_model=...)`
+samples cache hits on a held-out set, calls the real model on each, and
+reports the rate at which the cached response disagreed with the model's
+actual response. Online sampling would slowly bleed the cost savings the
+cache exists to deliver, so the helper is run by the operator, not on
+every request.
+
+The 1000-row hit-rate benchmark + measured false-positive rate are
+**deferred to issue #5** (savings dashboard) since they need a real
+embedder + a real workload to be honest measurements; running them with
+the `HashEmbedder` would produce numbers that don't generalize to
+production. The cache infrastructure is shipped here; the dashboard
+plots the numbers when #5 lands.
+
 ## Benchmarks / Results
 *Real-API savings benchmark pending — to be filed as a follow-up issue. The wrapper's `dollars_saved` math is unit-tested against the published Anthropic multipliers (`tests/test_cache_wrapper.py`).*
 
