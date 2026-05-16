@@ -46,3 +46,19 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** None. The router's `quality at 80/20 ≥ 100% strong` verification is intentionally deferred to operator-run real-API mode — the script + the schema are committed; the curve is not, per the no-fabricated-benchmarks rule.
 
 **Next session:** Either #5 (savings dashboard) once the operator is ready, or move to a different repo. With #1/#2/#3 shipped, `llm-cost-optimizer` is at v0.1-minus-dashboard.
+
+## 2026-05-16 — Issue #4: Anthropic Batch API integration
+**Duration:** ~55 min · **Branch:** `session/2026-05-16-1951-issue-4`
+
+- Shipped `cost_optimizer/batch.py` — `BatchBackend` Protocol with `submit/poll/results`, an `InMemoryBatchBackend` (dep-free, deterministic, hermetic-CI), and an `AnthropicBatchBackend` (duck-typed per D-002 — takes a pre-constructed SDK client; package imports without `anthropic` installed). Status enum mirrors the Anthropic Messages-Batch API: `pending` / `in_progress` / `ended_succeeded` / `ended_failed` / `ended_canceled`.
+- Recorded D-010: idempotency is **caller-supplied key + payload content hash**. Same payload + same key → existing `job_id` (flaky-retry path); different payload + same key → `IdempotencyConflict` (accidental key-reuse path). Caller key alone is insufficient (silent overwrite risk); content hash alone is insufficient (caller may not have serialized the payload yet at the call site). Both together cover both failure modes.
+- Cost comparison: `compare_realtime_vs_batch(rows, prices)` applies `BATCH_DISCOUNT_FACTOR = 0.5` (Anthropic public list, cite docs in commits since rates move) to both input and output tokens. Prices are caller-supplied (`BatchCostQuote`), no list defaults shipped — same posture as D-003. Skips failed rows (neither path bills them). Multi-model batches supported via `model_of={custom_id → model}`.
+- 28 new hermetic tests covering: pending-in_progress-ended lifecycle on InMemory; results-before-terminal raises; idempotency dedup; conflict on key-collision with different payload; order-sensitive payload hashing; submit validation (empty list, blank idempotency key, duplicate custom_ids); cost-comparison math against fixture prices; discount-constant default; failed-row skipping; multi-model `model_of` required when `len(prices) != 1`; unknown-model and missing-model_of-entry both raise; out-of-range discount rejection; AnthropicBatchBackend protocol conformance with a fake `_FakeClient` (forwards `Idempotency-Key` header in `extra_headers`; maps SDK status strings to canonical values; surfaces per-row errors via `BatchResultRow.error`); bad-client-shape (`TypeError`) and `None` client (`ValueError`) rejected at construction.
+- Public surface added to `cost_optimizer/__init__.py`. README grows a "Batch API integration (#4)" subsection with the lifecycle example + cost-comparison example + D-010 / D-003 explanations.
+- Full suite 105/105 pass (was 77/77); ruff clean.
+
+**Why this work, this session:** #4 was the lower-numbered open `priority:med` (the other being #5 savings dashboard, which is a visualization layer on top of telemetry). The portfolio handoff §2 lists "Batch API integration where applicable" as a core deliverable for this repo; with the wrapper shipped, the savings dashboard (#5) can pull batch-vs-realtime savings as one of its strategy columns.
+
+**Open questions / blockers:** Real-API smoke testing against Anthropic's Batch API is operator-triggered with `ANTHROPIC_API_KEY` + budget; CI uses `InMemoryBatchBackend`.
+
+**Next session:** Only #5 (savings dashboard) remains open in this repo. Loop to a different portfolio repo per the multi-issue prompt.

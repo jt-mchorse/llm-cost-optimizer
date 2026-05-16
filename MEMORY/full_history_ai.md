@@ -67,3 +67,28 @@ context_for_next_session:
 decisions_made: [D-008, D-009]
 followups: []
 ---
+
+---
+session: 2026-05-16T20:30Z
+duration_min: 55
+issue: 4
+focus: anthropic_batch_api_wrapper_with_idempotency_and_cost_comparison
+delta:
+  files_added: 2  # cost_optimizer/batch.py, tests/test_batch.py
+  files_changed: 2  # __init__.py, README.md
+  tests_added: 28
+  test_pass_rate: "105/105"
+context_for_next_session:
+  - batch_module_at_cost_optimizer_batch_inmemory_backend_plus_anthropic_backend_duck_typed_per_d_002
+  - lifecycle_submit_poll_results_status_pending_in_progress_ended_succeeded_failed_canceled
+  - idempotency_caller_key_plus_content_hash_d_010_same_payload_same_key_returns_existing_job_different_payload_same_key_raises
+  - content_hash_is_request_count_custom_ids_prompts_model_max_tokens_system_order_sensitive
+  - cost_compare_uses_documented_batch_discount_factor_0_5_caller_supplies_prices_no_defaults_shipped_per_d_003
+  - cost_compare_skips_failed_rows_supports_multi_model_via_model_of_kwarg
+  - anthropic_backend_takes_pre_constructed_client_d_002_duck_typed_messages_batches_surface
+  - 28_new_tests_lifecycle_idempotency_validation_cost_math_anthropic_via_fake_client
+  - issue_4_acceptance_submit_poll_result_lifecycle_done_idempotency_keys_done_cost_report_done
+  - real_api_smoke_against_anthropic_batch_intentionally_out_of_ci_scope_no_api_key_budget
+decisions_made: [D-010]
+followups: []
+---
