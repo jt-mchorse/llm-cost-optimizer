@@ -42,3 +42,28 @@ context_for_next_session:
 decisions_made: [D-004, D-005, D-006, D-007]
 followups: []
 ---
+
+---
+session: 2026-05-16T04:11Z
+duration_min: 35
+issue: 3
+focus: uncertainty_routed_cheap_to_strong_model_fallback
+delta:
+  files_added: 3
+  files_changed: 2
+  tests_added: 24
+  test_pass_rate: "77/77"
+context_for_next_session:
+  - router_module_lives_at_cost_optimizer_router_ts_with_protocol_escalationsignal_d_008
+  - two_signals_ship_entropysignal_shannon_over_first_token_logprobs_judgeconfidencesignal_calls_eval_harness_judge
+  - routerdecision_dataclass_with_model_id_triggered_signal_signal_values_cheap_response_d_009
+  - first_trip_wins_but_all_signals_still_measured_for_telemetry
+  - scripts_tune_threshold_py_sweeps_entropy_thresholds_writes_json_and_optional_matplotlib_plot
+  - dry_mode_default_uses_stub_adapter_and_5_row_canned_dataset_real_api_mode_explicitly_documented_as_not_implemented_in_this_pr
+  - no_fabricated_benchmarks_quality_at_80_20_verification_requires_operator_run
+  - 18_router_tests_plus_6_tune_threshold_tests_24_total_new_77_77_overall
+  - cross_repo_seam_judgeconfidencesignal_takes_eval_harness_judge_object_duck_typed
+  - readme_model_routing_3_section_added_under_quickstart_architecture_md_pending_followup
+decisions_made: [D-008, D-009]
+followups: []
+---

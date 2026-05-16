@@ -6,6 +6,15 @@ from cost_optimizer.cache_wrapper import (
     PromptCacheWrapper,
 )
 from cost_optimizer.pricing import ModelPricing, get_pricing
+from cost_optimizer.router import (
+    CheapAdapter,
+    EntropySignal,
+    EscalationSignal,
+    JudgeConfidenceSignal,
+    RouterDecision,
+    SignalReading,
+    UncertaintyRouter,
+)
 from cost_optimizer.semantic_cache import (
     CacheLookupResult,
     CacheRecord,
@@ -41,6 +50,14 @@ __all__ = [
     "Storage",
     "cosine",
     "measure_false_positive_rate",
+    # Model routing layer (#3)
+    "CheapAdapter",
+    "EntropySignal",
+    "EscalationSignal",
+    "JudgeConfidenceSignal",
+    "RouterDecision",
+    "SignalReading",
+    "UncertaintyRouter",
 ]
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"

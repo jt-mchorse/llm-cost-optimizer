@@ -91,3 +91,31 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. The helper is small; online sampling can be added later as an opt-in mode.
 
 **Related issues:** #2, #5
+
+## D-008 — `EscalationSignal` is a one-method Protocol (2026-05-16)
+**Decision:** Signals plug into the router via a `name` attribute and a `measure(response) -> SignalReading` method. Matches the same single-method-Protocol pattern used everywhere else in the portfolio (`Tool`, `Reranker`, `Embedder`, `Backend`, `AnswerSource`, `Storage`).
+
+**Why:** Consumers should be able to bring their own signal without inheriting from an ABC or registering via a decorator. One method per Protocol is the smallest interface that still carries the signal's name (needed for `RouterDecision.triggered_signal` telemetry).
+
+**Alternatives considered:**
+- ABC with inheritance — rejected: heavier than needed; the portfolio standardized on Protocols precisely to avoid this.
+- Callable function alias — rejected: loses the `name` metadata that `RouterDecision` needs.
+- Plugin registration via decorator — rejected: too much overhead for what's effectively a two-line class.
+
+**Reversibility:** Cheap. The Protocol has one method; adding fields is backwards-compatible.
+
+**Related issues:** #3
+
+## D-009 — Router returns a `RouterDecision` dataclass, not just a `model_id` string (2026-05-16)
+**Decision:** `UncertaintyRouter.route()` returns a `RouterDecision` carrying `model_id`, `triggered_signal` (name of the signal that won, or `None`), `signal_values` (every signal's measurement, even after first-trip), and `cheap_response` (the cheap model's output, for inspection).
+
+**Why:** The signal values are *telemetry*. The future savings dashboard (#5) attributes cost to specific signals — "75% of escalations were entropy-driven, 25% judge-driven, here's the cost breakdown" — and that's impossible if the router only returns the chosen model id. The first-trip-wins decision happens at runtime; the remaining signals are still measured because not measuring them would mean discarding free observability data.
+
+**Alternatives considered:**
+- Return just a `model_id` string — rejected: collapses the telemetry surface for no callsite simplification.
+- Return a tuple — rejected: brittle, ambiguous, doesn't extend cleanly.
+- Return only the tripped signal (None if none) — rejected: loses the non-tripping signals' values, which the dashboard needs.
+
+**Reversibility:** Cheap. The dataclass can grow fields without breaking callers.
+
+**Related issues:** #3, #5

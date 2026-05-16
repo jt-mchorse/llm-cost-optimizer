@@ -115,8 +115,65 @@ the `HashEmbedder` would produce numbers that don't generalize to
 production. The cache infrastructure is shipped here; the dashboard
 plots the numbers when #5 lands.
 
+## Model routing (#3 · this PR)
+
+The third layer is **uncertainty-routed model fallback**: the cheap
+model handles every request; the router escalates to the strong model
+when an `EscalationSignal` trips on the cheap response.
+
+Two signals ship today. **`EntropySignal`** computes Shannon entropy
+over the cheap model's first-token logprobs and escalates when entropy
+crosses a threshold (high entropy ≈ "cheap model isn't confident
+between several token continuations"). **`JudgeConfidenceSignal`**
+runs an `eval_harness.Judge`-shaped object on the cheap output and
+escalates when the score is below threshold — directly reusing the
+judge layer from `llm-eval-harness` rather than re-implementing a
+quality signal.
+
+```python
+from cost_optimizer import EntropySignal, JudgeConfidenceSignal, UncertaintyRouter
+from eval_harness import Judge, AnthropicBackend  # cross-repo import
+
+router = UncertaintyRouter(
+    cheap_model="claude-haiku-4-5-20251001",
+    strong_model="claude-opus-4-7",
+    cheap_adapter=YourCheapAdapter(),   # .call_cheap(request) → response
+    signals=[
+        EntropySignal(threshold=1.5),
+        JudgeConfidenceSignal(
+            judge=Judge(backend=AnthropicBackend()),
+            rubric="faithfulness",
+            threshold=0.7,
+        ),
+    ],
+)
+decision = router.route({"prompt": "..."})
+print(decision.model_id, decision.triggered_signal, decision.signal_values)
+```
+
+Signals are evaluated in the order configured; the first signal that
+trips wins, but **every** signal is measured so the resulting
+`RouterDecision.signal_values` is a complete telemetry record for the
+savings-dashboard work in #5 (D-009).
+
+Tune the entropy threshold against your workload:
+
+```bash
+# Dry run: against committed sample fixtures, no API needed.
+python scripts/tune_threshold.py --out docs/threshold_demo
+# → docs/threshold_demo.json with one row per threshold (escalation_rate,
+#   mean_quality_overall, dollars_per_request, …)
+# → docs/threshold_demo.png if matplotlib is installed
+```
+
+**Per the no-fabricated-benchmarks rule**, this README *does not*
+claim that "quality at 80/20 ≥ quality at 100% strong" — the
+*script* that proves that claim ships here, but the verified curve
+lands in `docs/threshold_report.md` only when the operator runs the
+script against a real API and a real dataset.
+
 ## Benchmarks / Results
-*Real-API savings benchmark pending — to be filed as a follow-up issue. The wrapper's `dollars_saved` math is unit-tested against the published Anthropic multipliers (`tests/test_cache_wrapper.py`).*
+*Real-API savings benchmark pending — to be filed as a follow-up issue. The wrapper's `dollars_saved` math is unit-tested against the published Anthropic multipliers (`tests/test_cache_wrapper.py`). The router's tuning curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset and API key.*
 
 ## Demo
 *60-second demo pending.*
