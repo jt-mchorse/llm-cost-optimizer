@@ -81,3 +81,12 @@
   reversibility: cheap
   related_issues: [3, 5]
   superseded_by: null
+
+- id: D-010
+  date: 2026-05-16
+  decision: batch_idempotency_is_caller_key_plus_content_hash_conflict_raises_not_overwrites
+  rationale: same_payload_same_key_returns_existing_job_id_for_retries_different_payload_same_key_must_raise_so_a_caller_accidentally_reusing_a_key_for_a_different_workload_fails_loud_instead_of_silently_double_charging_content_hash_is_request_count_custom_ids_prompts_model_max_tokens_system
+  alternatives_rejected: [server_generated_idempotency_keys_couples_to_anthropic_specific_endpoint, key_only_no_content_hash_silent_overwrite_risk, content_hash_only_no_caller_key_cant_be_supplied_before_payload_is_known]
+  reversibility: cheap
+  related_issues: [4]
+  superseded_by: null

@@ -1,5 +1,20 @@
 """Production cost-reduction toolkit for LLM workloads."""
 
+from cost_optimizer.batch import (
+    BATCH_DISCOUNT_FACTOR,
+    AnthropicBatchBackend,
+    BatchBackend,
+    BatchCostQuote,
+    BatchJobMeta,
+    BatchRequest,
+    BatchResultRow,
+    CostComparison,
+    IdempotencyConflict,
+    InMemoryBatchBackend,
+    JobNotComplete,
+    JobNotFound,
+    compare_realtime_vs_batch,
+)
 from cost_optimizer.cache_wrapper import (
     CacheTelemetry,
     CallResult,
@@ -58,6 +73,20 @@ __all__ = [
     "RouterDecision",
     "SignalReading",
     "UncertaintyRouter",
+    # Batch API layer (#4)
+    "AnthropicBatchBackend",
+    "BATCH_DISCOUNT_FACTOR",
+    "BatchBackend",
+    "BatchCostQuote",
+    "BatchJobMeta",
+    "BatchRequest",
+    "BatchResultRow",
+    "CostComparison",
+    "IdempotencyConflict",
+    "InMemoryBatchBackend",
+    "JobNotComplete",
+    "JobNotFound",
+    "compare_realtime_vs_batch",
 ]
 
 __version__ = "0.0.3"

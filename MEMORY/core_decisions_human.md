@@ -119,3 +119,17 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. The dataclass can grow fields without breaking callers.
 
 **Related issues:** #3, #5
+
+## D-010 — Batch idempotency is caller-supplied key + payload content hash; conflict raises (2026-05-16)
+**Decision:** `cost_optimizer.batch` deduplicates batch submissions on two coordinates: an `idempotency_key` the caller supplies and a content hash the backend computes over the canonical request payload (request count, custom_ids, prompts, model, max_tokens, system). Resubmitting *the same payload* with *the same key* returns the existing `job_id`. Resubmitting *a different payload* with *the same key* raises `IdempotencyConflict` rather than overwriting.
+
+**Why:** Two failure modes have to be handled at once. The first is **the flaky-retry path**: a caller submits a batch, the network blips, they retry — they should get back the same `job_id`, not double-charge. The second is **the accidental-key-reuse path**: a caller writes `idempotency_key=f"daily-batch-{date}"` and runs a different workload through the same code path tomorrow — they should fail loud (the key is being asked to dedupe something it can't see), not silently overwrite the prior submission's mapping or run two different jobs that share an id. The content hash catches the second case by detecting that the payload changed while the key stayed the same. Together: caller-supplied key dedupes retries (the caller knows the operation is idempotent because they're saying so); content hash defends against the caller being wrong about that.
+
+**Alternatives considered:**
+- Server-generated idempotency keys — rejected; couples the local in-memory backend to an Anthropic-specific endpoint surface and removes the caller's ability to express "this is the same logical submission" from the call site.
+- Key-only, no content hash — rejected; silently overwrites the prior submission when a key is reused for a different payload, which is exactly the failure mode this contract is meant to prevent.
+- Content-hash only, no caller key — rejected; the caller must be able to express idempotency *before* they've serialized the payload (e.g., when computing requests lazily). A caller key is also necessary to dedupe submissions that semantically should be the same workload but happen to produce slightly different payloads.
+
+**Reversibility:** Cheap. The hash is one function (`_canonical_payload_hash`) and the lookup table is one dict on `InMemoryBatchBackend`; changing the canonicalization rule is a localized edit. The Anthropic-backed backend forwards the key via the SDK's standard `Idempotency-Key` header.
+
+**Related issues:** #4
