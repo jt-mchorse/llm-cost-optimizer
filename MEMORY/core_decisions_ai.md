@@ -63,3 +63,21 @@
   reversibility: cheap
   related_issues: [2, 5]
   superseded_by: null
+
+- id: D-008
+  date: 2026-05-16
+  decision: escalation_signal_is_one_method_protocol_same_shape_as_tool_reranker_embedder_backend
+  rationale: consistent_with_portfolio_seams_lets_consumers_byo_signal_without_inheritance_or_complex_registration
+  alternatives_rejected: [abstract_base_class_with_inheritance, callable_function_alias_loses_name_metadata, plugin_registration_via_decorator_too_much_overhead]
+  reversibility: cheap
+  related_issues: [3]
+  superseded_by: null
+
+- id: D-009
+  date: 2026-05-16
+  decision: router_returns_routerdecision_dataclass_with_signal_values_and_triggered_signal_not_just_model_id_string
+  rationale: signal_values_are_telemetry_savings_dashboard_5_needs_them_for_cost_attribution_first_trip_wins_but_all_signals_still_measured
+  alternatives_rejected: [return_just_model_id_string, return_tuple_brittle, return_optional_signal_only_if_tripped]
+  reversibility: cheap
+  related_issues: [3, 5]
+  superseded_by: null
