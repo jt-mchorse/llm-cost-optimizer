@@ -60,8 +60,12 @@ def test_results_returns_per_row_results_after_completion():
     backend = InMemoryBatchBackend()
     job = backend.submit(_make_requests(2), idempotency_key="k-3")
     rows = [
-        BatchResultRow(custom_id="r-0", response_text="hello", prompt_tokens=10, completion_tokens=5),
-        BatchResultRow(custom_id="r-1", response_text="world", prompt_tokens=12, completion_tokens=8),
+        BatchResultRow(
+            custom_id="r-0", response_text="hello", prompt_tokens=10, completion_tokens=5
+        ),
+        BatchResultRow(
+            custom_id="r-1", response_text="world", prompt_tokens=12, completion_tokens=8
+        ),
     ]
     backend.complete(job.job_id, results=rows)
     out = backend.results(job.job_id)
@@ -181,7 +185,9 @@ def _quote() -> BatchCostQuote:
 
 def test_compare_realtime_vs_batch_known_math():
     rows = [
-        BatchResultRow(custom_id="r-0", response_text="x", prompt_tokens=1_000_000, completion_tokens=500_000),
+        BatchResultRow(
+            custom_id="r-0", response_text="x", prompt_tokens=1_000_000, completion_tokens=500_000
+        ),
     ]
     cmp_ = compare_realtime_vs_batch(rows, prices={"fake-big": _quote()})
     # Realtime: 1M tok * $10/MTok + 0.5M * $40/MTok = $10 + $20 = $30.
@@ -195,15 +201,23 @@ def test_compare_realtime_vs_batch_known_math():
 
 def test_compare_realtime_vs_batch_uses_documented_discount_constant():
     """The default discount must match the documented BATCH_DISCOUNT_FACTOR."""
-    rows = [BatchResultRow(custom_id="r-0", response_text="x", prompt_tokens=1_000_000, completion_tokens=0)]
+    rows = [
+        BatchResultRow(
+            custom_id="r-0", response_text="x", prompt_tokens=1_000_000, completion_tokens=0
+        )
+    ]
     cmp_ = compare_realtime_vs_batch(rows, prices={"fake-big": _quote()})
     assert cmp_.batch_usd == pytest.approx(10.0 * BATCH_DISCOUNT_FACTOR)
 
 
 def test_compare_realtime_vs_batch_skips_failed_rows():
     rows = [
-        BatchResultRow(custom_id="ok", response_text="x", prompt_tokens=1_000_000, completion_tokens=0),
-        BatchResultRow(custom_id="err", response_text=None, prompt_tokens=0, completion_tokens=0, error="boom"),
+        BatchResultRow(
+            custom_id="ok", response_text="x", prompt_tokens=1_000_000, completion_tokens=0
+        ),
+        BatchResultRow(
+            custom_id="err", response_text=None, prompt_tokens=0, completion_tokens=0, error="boom"
+        ),
     ]
     cmp_ = compare_realtime_vs_batch(rows, prices={"fake-big": _quote()})
     assert cmp_.n_rows == 1
@@ -212,7 +226,9 @@ def test_compare_realtime_vs_batch_skips_failed_rows():
 
 def test_compare_realtime_vs_batch_multi_model_requires_model_of():
     rows = [
-        BatchResultRow(custom_id="a", response_text="x", prompt_tokens=1_000_000, completion_tokens=0),
+        BatchResultRow(
+            custom_id="a", response_text="x", prompt_tokens=1_000_000, completion_tokens=0
+        ),
     ]
     prices = {
         "fake-big": _quote(),
@@ -290,7 +306,9 @@ class _FakeMessage:
 
 
 class _FakeResult:
-    def __init__(self, *, succeeded: bool, message: _FakeMessage | None = None, error: str | None = None) -> None:
+    def __init__(
+        self, *, succeeded: bool, message: _FakeMessage | None = None, error: str | None = None
+    ) -> None:
         self.type = "succeeded" if succeeded else "errored"
         self.message = message
         self.error = error

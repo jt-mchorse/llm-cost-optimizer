@@ -205,9 +205,7 @@ class InMemoryBatchBackend:
 
     # ---- Backend protocol ---------------------------------------------------
 
-    def submit(
-        self, requests: Sequence[BatchRequest], *, idempotency_key: str
-    ) -> BatchJobMeta:
+    def submit(self, requests: Sequence[BatchRequest], *, idempotency_key: str) -> BatchJobMeta:
         if not requests:
             raise ValueError("submit requires at least one request")
         if not idempotency_key or not idempotency_key.strip():
@@ -334,7 +332,9 @@ class AnthropicBatchBackend:
 
     def __init__(self, client: Any) -> None:
         if client is None:
-            raise ValueError("AnthropicBatchBackend requires a client (duck-typed; pass your SDK client)")
+            raise ValueError(
+                "AnthropicBatchBackend requires a client (duck-typed; pass your SDK client)"
+            )
         # Stash the surface we need rather than the whole client so test fakes can
         # implement just `messages.batches.create / retrieve / results`.
         try:
@@ -345,9 +345,7 @@ class AnthropicBatchBackend:
                 f"{type(client).__name__}"
             ) from e
 
-    def submit(
-        self, requests: Sequence[BatchRequest], *, idempotency_key: str
-    ) -> BatchJobMeta:
+    def submit(self, requests: Sequence[BatchRequest], *, idempotency_key: str) -> BatchJobMeta:
         if not requests:
             raise ValueError("submit requires at least one request")
         if not idempotency_key or not idempotency_key.strip():
@@ -366,9 +364,7 @@ class AnthropicBatchBackend:
     def results(self, job_id: str) -> list[BatchResultRow]:
         meta = self.poll(job_id)
         if meta.status not in TERMINAL_STATUSES:
-            raise JobNotComplete(
-                f"job_id={job_id!r} status={meta.status!r}; results not available"
-            )
+            raise JobNotComplete(f"job_id={job_id!r} status={meta.status!r}; results not available")
         rows: list[BatchResultRow] = []
         for entry in self._batches.results(job_id):
             rows.append(_from_sdk_result_row(entry))
@@ -389,7 +385,9 @@ def _to_sdk_request(r: BatchRequest) -> dict[str, Any]:
 
 def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:
     """Project an SDK Batch object to ``BatchJobMeta``."""
-    status_raw = getattr(resp, "processing_status", None) or getattr(resp, "status", None) or "pending"
+    status_raw = (
+        getattr(resp, "processing_status", None) or getattr(resp, "status", None) or "pending"
+    )
     status = {
         "pending": PENDING,
         "in_progress": IN_PROGRESS,
@@ -401,7 +399,9 @@ def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:
     n_requests = getattr(resp, "request_counts", None)
     if n_requests is not None:
         # SDK exposes processing/succeeded/errored/canceled counts; total is the sum.
-        n = sum(getattr(n_requests, k, 0) for k in ("processing", "succeeded", "errored", "canceled"))
+        n = sum(
+            getattr(n_requests, k, 0) for k in ("processing", "succeeded", "errored", "canceled")
+        )
     else:
         n = getattr(resp, "n_requests", 0)
     return BatchJobMeta(
