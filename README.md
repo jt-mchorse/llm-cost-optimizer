@@ -172,8 +172,59 @@ claim that "quality at 80/20 ≥ quality at 100% strong" — the
 lands in `docs/threshold_report.md` only when the operator runs the
 script against a real API and a real dataset.
 
+## Batch API integration (#4 · this PR)
+
+Anthropic's Messages Batch API charges 50% of standard input/output
+rates and runs eligible non-realtime workloads asynchronously. The
+`cost_optimizer.batch` layer wraps the submit / poll / results
+lifecycle behind a `BatchBackend` Protocol — same seam shape as the
+rest of the toolkit (D-002) — so callers can swap a deterministic
+in-memory backend for hermetic CI in for the production
+Anthropic-backed binding without touching call sites.
+
+```python
+from cost_optimizer import (
+    AnthropicBatchBackend, BatchRequest,
+    BatchCostQuote, compare_realtime_vs_batch,
+)
+
+backend = AnthropicBatchBackend(client)   # duck-typed; any `.messages.batches`
+requests = [
+    BatchRequest(custom_id=f"row-{i}", user=prompt, model="claude-opus-4-7")
+    for i, prompt in enumerate(prompts)
+]
+job = backend.submit(requests, idempotency_key=f"shard-{shard_id}-{date}")
+
+import time
+while job.status not in {"ended_succeeded", "ended_failed", "ended_canceled"}:
+    time.sleep(30)
+    job = backend.poll(job.job_id)
+
+rows = backend.results(job.job_id)
+quote = BatchCostQuote("claude-opus-4-7", input_per_mtok=15.0, output_per_mtok=75.0)
+cmp_ = compare_realtime_vs_batch(rows, prices={"claude-opus-4-7": quote})
+print(f"realtime ${cmp_.realtime_usd:.2f} → batch ${cmp_.batch_usd:.2f} "
+      f"({cmp_.savings_pct:.0%} savings on {cmp_.n_rows} rows)")
+```
+
+**Idempotency (D-010).** Same payload + same key → returns the existing
+`job_id`. Different payload + same key → `IdempotencyConflict` — the
+failure mode that would otherwise silently double-charge. The payload
+hash is content-only (request count, custom_ids, prompts, model,
+max_tokens, system).
+
+**Cost comparison.** Prices are caller-supplied — no list-price defaults
+ship, matching D-003. `BATCH_DISCOUNT_FACTOR = 0.5` is the documented
+Anthropic batch discount; override per call if your contract differs.
+The comparison skips failed rows (they aren't billed on either path)
+and supports multi-model batches via `model_of={custom_id → model}`.
+
+For local development and tests, use `InMemoryBatchBackend` — same
+protocol, dedupes on idempotency key, exposes `advance(job_id)` and
+`complete(job_id, results=…)` test helpers, zero dependencies.
+
 ## Benchmarks / Results
-*Real-API savings benchmark pending — to be filed as a follow-up issue. The wrapper's `dollars_saved` math is unit-tested against the published Anthropic multipliers (`tests/test_cache_wrapper.py`). The router's tuning curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset and API key.*
+*Real-API savings benchmark pending — to be filed as a follow-up issue. The wrapper's `dollars_saved` math is unit-tested against the published Anthropic multipliers (`tests/test_cache_wrapper.py`). The router's tuning curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset and API key. The batch layer's cost math is unit-tested against fixture prices in `tests/test_batch.py`.*
 
 ## Demo
 *60-second demo pending.*
