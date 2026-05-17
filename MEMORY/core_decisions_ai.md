@@ -90,3 +90,21 @@
   reversibility: cheap
   related_issues: [4]
   superseded_by: null
+
+- id: D-011
+  date: 2026-05-17
+  decision: savings_dashboard_is_streamlit_behind_dashboard_optional_extra_reads_bench_json
+  rationale: portfolio_pattern_optional_extras_mirrors_redis_d_004_core_package_stays_dep_free_dashboard_does_no_recomputation_so_table_and_dashboard_never_drift_file_on_disk_is_source_of_truth
+  alternatives_rejected: [next_js_dashboard_doubles_build_matrix_for_python_lib, static_html_report_loses_interactivity_per_acceptance_criteria, dashboard_recomputes_savings_from_workload_inline_would_drift_from_committed_bench_artifacts]
+  reversibility: cheap
+  related_issues: [5]
+  superseded_by: null
+
+- id: D-012
+  date: 2026-05-17
+  decision: bench_workload_is_hermetic_synthetic_with_documented_60_30_10_split_not_hf_dataset_slice
+  rationale: ci_proves_plumbing_and_math_d_007_posture_extended_real_api_path_unimplemented_same_as_tune_threshold_operator_runs_against_real_data_and_commits_docs_savings_real_md_workload_committed_at_docs_savings_workload_json_so_numbers_re_derivable
+  alternatives_rejected: [hf_dataset_slice_at_bench_time_breaks_hermetic_ci_and_introduces_network_dep, fabricated_savings_numbers_in_readme_violates_handoff_section_10_no_fabricated_benchmarks, real_api_mode_in_this_pr_requires_anthropic_key_and_budget_not_appropriate_for_ci]
+  reversibility: cheap
+  related_issues: [5]
+  superseded_by: null
