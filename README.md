@@ -223,8 +223,77 @@ For local development and tests, use `InMemoryBatchBackend` — same
 protocol, dedupes on idempotency key, exposes `advance(job_id)` and
 `complete(job_id, results=…)` test helpers, zero dependencies.
 
+## Savings dashboard (#5 · this PR)
+
+The dashboard ties the four cost layers together: every shipped
+strategy runs against the *same* synthetic workload, and the resulting
+savings table + cumulative-savings series is what the operator opens
+to compare options.
+
+The workload is **hermetic synthetic** (D-012): 500 rows, deterministic,
+60% redundant template paraphrases / 30% easy factual / 10% hard
+open-ended. All token counts and first-token logprobs are canned in
+the committed `docs/savings_workload.json` so the run is bit-for-bit
+reproducible; the pricing math is the real `cost_optimizer.pricing`
+table (`claude-haiku-4-5` @ $1/MTok input, `claude-opus-4-7` @ $15/MTok
+input) and the real `BATCH_DISCOUNT_FACTOR`. No fabricated numbers.
+
+```bash
+# Refresh the savings artifacts (writes docs/savings.{json,md} +
+# docs/savings_workload.json). Hermetic; no API key needed.
+python scripts/bench_savings.py --dry --out docs/savings
+
+# Open the dashboard (Streamlit; install the optional extra first).
+pip install -e '.[dashboard]'
+streamlit run dashboard/app.py -- --json docs/savings.json
+```
+
+Measured on the host that produced this file (500-row workload,
+input-token economics only — output is held constant across
+strategies so each row of the table is like-for-like):
+
+| Strategy | Rows | $ spent | $ saved | % saved | Mean quality | Extra |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| baseline (no optimization, cheap model) | 500 | $0.0577 | $0.0000 | 0.0% | 0.886 | — |
+| prompt caching (system prefix) | 500 | $0.0092 | $0.0485 | 84.0% | 0.886 | 1 write + 499 reads |
+| semantic cache (threshold 0.95) | 500 | $0.0253 | $0.0324 | 56.2% | 0.886 | 280 hits / 220 misses |
+| uncertainty router (entropy 1.5) | 500 | $0.1469 | $-0.0892 | -154.8% | 0.921 | 50 escalated (10%) |
+| batch API (discount 0.50×) | 500 | $0.0288 | $0.0288 | 50.0% | 0.886 | — |
+
+A few honest notes the README leads with rather than buries:
+
+- **Prompt caching is the cheapest line item by far** because the workload
+  shares a stable system prompt across every row. Real apps that fan out
+  to many distinct system prefixes will see smaller wins on this layer.
+- **The uncertainty router shows a *negative* dollar saving** against the
+  cheap-on-everything baseline — that's the design. The router *spends
+  more* to buy higher quality on hard rows (mean quality 0.886 → 0.921).
+  The right way to read the row is "+3.5pp quality at +154% spend on
+  this workload's 10% hard slice"; the right pairing is router + a
+  cache layer so the cache offsets the strong-model spend.
+- The Streamlit dashboard renders the bar chart of per-strategy
+  savings, the cumulative-savings line, a quality-maintained flag,
+  and an expandable JSON view of the raw artifact.
+
+Real-API savings against a real workload follows the same posture as
+`scripts/tune_threshold.py` (D-007): the script supports a `--dry` mode
+and an explicit "real-API mode is not implemented" branch; the operator
+wires real adapters and commits `docs/savings_real.md` once vetted.
+
 ## Benchmarks / Results
-*Real-API savings benchmark pending — to be filed as a follow-up issue. The wrapper's `dollars_saved` math is unit-tested against the published Anthropic multipliers (`tests/test_cache_wrapper.py`). The router's tuning curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset and API key. The batch layer's cost math is unit-tested against fixture prices in `tests/test_batch.py`.*
+
+See [docs/savings.md](docs/savings.md) for the table above, refreshed
+by re-running `scripts/bench_savings.py`. Cumulative per-row savings
+live in `docs/savings.json` and are rendered by the Streamlit
+dashboard.
+
+The pricing math is unit-tested against the published Anthropic
+multipliers (`tests/test_cache_wrapper.py`); the router's tuning
+curve is produced by `scripts/tune_threshold.py` against an
+operator-supplied dataset and API key; the batch layer's cost math is
+unit-tested against fixture prices in `tests/test_batch.py`; the
+five-strategy savings bench is reconciled against both the strategy
+summaries and the cumulative series in `tests/test_bench_savings.py`.
 
 ## Demo
 *60-second demo pending.*

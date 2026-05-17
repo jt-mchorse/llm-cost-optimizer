@@ -1,0 +1,7105 @@
+{
+  "rows": [
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#123)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0123",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#53)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0053",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0199",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0284",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#122)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0122",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0067",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#98)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0098",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 7)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0007",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#52)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0052",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0153",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0180",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 34)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0034",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0078",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0040",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0115",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0046",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0295",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#74)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0074",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0081",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#142)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0142",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0212",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 33)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0033",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0159",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 47)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0047",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#82)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0082",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#46)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0046",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0206",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0190",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0246",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0279",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0256",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 27)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0027",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0098",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#85)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0085",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0093",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#134)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0134",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0018",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#138)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0138",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#66)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0066",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 30)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0030",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 25)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0025",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#112)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0112",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0118",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0216",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0079",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#97)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0097",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0095",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 11)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0011",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0231",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0029",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0086",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0036",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0137",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#13)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0013",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#22)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0022",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0101",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#67)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0067",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0072",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0196",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 19)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0019",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0007",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#49)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0049",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0160",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0139",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0236",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0161",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0058",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#92)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0092",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0214",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0113",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 5)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0005",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0240",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#64)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0064",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0182",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 48)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0048",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#93)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0093",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 29)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0029",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0122",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0142",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0124",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0107",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#143)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0143",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0201",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0069",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0049",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 28)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0028",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#131)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0131",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#12)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0012",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0189",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#58)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0058",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0092",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#118)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0118",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0169",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#86)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0086",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0082",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 12)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0012",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0242",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0264",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0043",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 46)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0046",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0131",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0013",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#61)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0061",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0299",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0039",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0070",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0241",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#96)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0096",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#114)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0114",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0109",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#149)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0149",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0253",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#75)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0075",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0197",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#137)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0137",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0227",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#41)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0041",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0076",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#38)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0038",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#89)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0089",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#50)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0050",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0255",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0080",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#133)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0133",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 15)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0015",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0273",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0276",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0281",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0289",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0283",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0268",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#14)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0014",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0022",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0017",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 49)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0049",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 6)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0006",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#127)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0127",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 36)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0036",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0237",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#144)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0144",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 21)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0021",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0257",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#43)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0043",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0023",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#79)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0079",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0238",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 37)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0037",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#99)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0099",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0183",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 3)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0003",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0270",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0157",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 4)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0004",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0004",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#102)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0102",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0146",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 10)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0010",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#128)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0128",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0220",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0218",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0265",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#104)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0104",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0094",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#108)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0108",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#70)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0070",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0010",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0037",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0277",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0001",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#32)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0032",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0140",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0181",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0195",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0096",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 43)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0043",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0083",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0009",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0215",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 38)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0038",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0021",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0003",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0014",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#42)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0042",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#125)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0125",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0260",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0162",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#19)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0019",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#106)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0106",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#72)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0072",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0286",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0044",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0015",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#103)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0103",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0233",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#71)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0071",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#107)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0107",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#136)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0136",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#11)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0011",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#60)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0060",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0048",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 2)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0002",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 45)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0045",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0287",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0000",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#146)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0146",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0250",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#59)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0059",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0166",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#77)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0077",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 39)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0039",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0071",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0033",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0200",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 23)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0023",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0272",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0090",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#69)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0069",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#115)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0115",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0170",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0186",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0134",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0217",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0228",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0291",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0176",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0141",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0038",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0117",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0063",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0116",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#44)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0044",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0171",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#40)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0040",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0192",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0184",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#117)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0117",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0239",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0225",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0163",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0100",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0075",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#124)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0124",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0091",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#33)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0033",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#65)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0065",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0174",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#54)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0054",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 0)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0000",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#17)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0017",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0271",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#121)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0121",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0274",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#147)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0147",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0073",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#87)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0087",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0294",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#55)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0055",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#23)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0023",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#95)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0095",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0245",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0191",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0226",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#139)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0139",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0187",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0077",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0062",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0285",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0054",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#8)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0008",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 20)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0020",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#45)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0045",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#10)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0010",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0179",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0008",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0120",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#31)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0031",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#91)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0091",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0165",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#110)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0110",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0223",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#148)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0148",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0128",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#120)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0120",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#27)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0027",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0057",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0121",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0213",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0133",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#21)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0021",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0205",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0156",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 8)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0008",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0019",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 44)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0044",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0110",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0251",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0247",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0005",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0106",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#101)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0101",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0232",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 18)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0018",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0027",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#76)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0076",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0035",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0085",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 35)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0035",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0123",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0188",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0175",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#51)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0051",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 26)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0026",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0050",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0282",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0198",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0130",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0222",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0074",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#25)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0025",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0224",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0097",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0045",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0193",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0258",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#36)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0036",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0042",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0254",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#4)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0004",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How are recurring invoices generated?",
+      "prompt_tokens": 117,
+      "row_id": "red-0143",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0150",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0132",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#29)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0029",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0244",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#15)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0015",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0144",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0052",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0103",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0030",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0066",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0252",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0047",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#140)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0140",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0125",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 9)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0009",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#132)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0132",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0135",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0148",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#84)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0084",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0219",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0065",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0084",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0112",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What are the steps to reset a customer password?",
+      "prompt_tokens": 118,
+      "row_id": "red-0229",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 22)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0022",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#145)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0145",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0059",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0032",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#116)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0116",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What are the steps to reset a customer password?",
+      "prompt_tokens": 117,
+      "row_id": "red-0145",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0011",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0261",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#20)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0020",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 14)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0014",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 1)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0001",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0203",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0259",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0248",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#5)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0005",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0167",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#129)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0129",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0262",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0025",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#119)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0119",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0102",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0147",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#48)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0048",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0288",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0221",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What's the policy on partial refunds?",
+      "prompt_tokens": 115,
+      "row_id": "red-0202",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0249",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#88)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0088",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0298",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#105)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0105",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0028",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#94)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0094",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#0)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0000",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#39)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0039",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0177",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#6)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0006",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 41)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0041",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0126",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0041",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0087",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#30)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0030",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How are recurring invoices generated?",
+      "prompt_tokens": 114,
+      "row_id": "red-0275",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0138",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What's the policy on partial refunds?",
+      "prompt_tokens": 114,
+      "row_id": "red-0154",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0031",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#7)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0007",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#37)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0037",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#126)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0126",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0034",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0204",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0164",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#2)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0002",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0235",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0020",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#3)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0003",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0209",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0060",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0104",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#109)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0109",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the workflow for fraud review.",
+      "prompt_tokens": 114,
+      "row_id": "red-0297",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Summarize our refund policy in two sentences.",
+      "prompt_tokens": 115,
+      "row_id": "red-0108",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 24)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0024",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#1)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0001",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0158",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#26)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0026",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#62)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0062",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#47)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0047",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the workflow for fraud review.",
+      "prompt_tokens": 118,
+      "row_id": "red-0105",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0024",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0089",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#111)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0111",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0280",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#90)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0090",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0267",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0296",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What is the SLA for billing inquiries?",
+      "prompt_tokens": 119,
+      "row_id": "red-0068",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0266",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0263",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0088",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#130)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0130",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#18)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0018",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Year of the moon landing? (q#78)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0078",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 17)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0017",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Square root of 81? (q#141)",
+      "prompt_tokens": 113,
+      "row_id": "easy-0141",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0194",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0149",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 119,
+      "row_id": "red-0168",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0269",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#100)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0100",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#16)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0016",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the data-retention policy.",
+      "prompt_tokens": 113,
+      "row_id": "red-0053",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#83)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0083",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0290",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#24)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0024",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 16)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0016",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What counts as a chargeback dispute?",
+      "prompt_tokens": 118,
+      "row_id": "red-0210",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Explain how to cancel a subscription.",
+      "prompt_tokens": 114,
+      "row_id": "red-0111",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0172",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#63)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0063",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "List the supported payment methods.",
+      "prompt_tokens": 113,
+      "row_id": "red-0002",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Author of '1984'? (q#135)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0135",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 40)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0040",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What are the steps to reset a customer password?",
+      "prompt_tokens": 121,
+      "row_id": "red-0061",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "When does a free trial expire?",
+      "prompt_tokens": 114,
+      "row_id": "red-0292",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0119",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is the SLA for billing inquiries?",
+      "prompt_tokens": 115,
+      "row_id": "red-0152",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What counts as a chargeback dispute?",
+      "prompt_tokens": 115,
+      "row_id": "red-0234",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#73)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0073",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: List the supported payment methods.",
+      "prompt_tokens": 114,
+      "row_id": "red-0230",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How do we handle GDPR data export requests?",
+      "prompt_tokens": 116,
+      "row_id": "red-0151",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0114",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#113)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0113",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0099",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#80)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0080",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Describe the data-retention policy.",
+      "prompt_tokens": 116,
+      "row_id": "red-0173",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Day after Friday? (q#34)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0034",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: How do we handle GDPR data export requests?",
+      "prompt_tokens": 120,
+      "row_id": "red-0211",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#9)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0009",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What counts as a chargeback dispute?",
+      "prompt_tokens": 114,
+      "row_id": "red-0006",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Outline a research plan for studying LLM hallucinations. (variant 13)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0013",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "How are recurring invoices generated?",
+      "prompt_tokens": 113,
+      "row_id": "red-0155",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0278",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#68)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0068",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Compare three competing theories of consciousness with citations. (variant 42)",
+      "prompt_tokens": 118,
+      "row_id": "hard-0042",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0243",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#57)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0057",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Capital of Japan? (q#81)",
+      "prompt_tokens": 112,
+      "row_id": "easy-0081",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: What's the policy on partial refunds?",
+      "prompt_tokens": 118,
+      "row_id": "red-0178",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0055",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Largest planet? (q#35)",
+      "prompt_tokens": 111,
+      "row_id": "easy-0035",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Summarize our refund policy in two sentences.",
+      "prompt_tokens": 116,
+      "row_id": "red-0012",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0136",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0293",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0208",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: When does a free trial expire?",
+      "prompt_tokens": 115,
+      "row_id": "red-0016",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: When does a free trial expire?",
+      "prompt_tokens": 118,
+      "row_id": "red-0064",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Describe the workflow for fraud review.",
+      "prompt_tokens": 115,
+      "row_id": "red-0129",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Argue both sides: should companies adopt a four-day work week? (variant 32)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0032",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: List the supported payment methods.",
+      "prompt_tokens": 117,
+      "row_id": "red-0026",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.55,
+      "class": "hard",
+      "completion_tokens": 160,
+      "first_token_logprobs": [
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003,
+        -1.6094379124341003
+      ],
+      "prompt": "Draft a strategy for entering the Southeast Asian e-commerce market. (variant 31)",
+      "prompt_tokens": 120,
+      "row_id": "hard-0031",
+      "strong_quality": 0.9
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Hey \u2014 quick one: Explain how to cancel a subscription.",
+      "prompt_tokens": 118,
+      "row_id": "red-0207",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Color of the sky on a clear day? (q#28)",
+      "prompt_tokens": 117,
+      "row_id": "easy-0028",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.93,
+      "class": "easy",
+      "completion_tokens": 8,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "What is 12 + 7? (q#56)",
+      "prompt_tokens": 114,
+      "row_id": "easy-0056",
+      "strong_quality": 0.94
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: What is the SLA for billing inquiries?",
+      "prompt_tokens": 116,
+      "row_id": "red-0056",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Describe the data-retention policy.",
+      "prompt_tokens": 112,
+      "row_id": "red-0185",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: How do we handle GDPR data export requests?",
+      "prompt_tokens": 117,
+      "row_id": "red-0127",
+      "strong_quality": 0.95
+    },
+    {
+      "cheap_quality": 0.92,
+      "class": "redundant",
+      "completion_tokens": 18,
+      "first_token_logprobs": [
+        -0.05129329438755058,
+        -3.6888794541139363,
+        -3.6888794541139363
+      ],
+      "prompt": "Briefly: Explain how to cancel a subscription.",
+      "prompt_tokens": 115,
+      "row_id": "red-0051",
+      "strong_quality": 0.95
+    }
+  ],
+  "schema_version": 1
+}

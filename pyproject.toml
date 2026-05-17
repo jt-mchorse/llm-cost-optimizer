@@ -36,13 +36,16 @@ anthropic = ["anthropic>=0.39"]
 # Redis backend for SemanticCache.RedisStorage. The dep-free InMemoryStorage
 # is the default and ships in the base install (D-004).
 redis = ["redis>=5.0"]
+# Streamlit savings dashboard. Reads the JSON `scripts/bench_savings.py`
+# produces; nothing in the core package imports streamlit (D-011).
+dashboard = ["streamlit>=1.36", "pandas>=2.2"]
 
 [project.urls]
 Repository = "https://github.com/jt-mchorse/llm-cost-optimizer"
 Issues    = "https://github.com/jt-mchorse/llm-cost-optimizer/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cost_optimizer"]
+packages = ["cost_optimizer", "dashboard"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
