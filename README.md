@@ -28,7 +28,7 @@ pip install -e '.[dev]'
 pytest
 ```
 
-The default `pytest` invocation runs the hermetic unit suite (122 tests, ~21 s) and intentionally excludes the **live-API integration** suite under `tests/integration/`. That suite exercises `PromptCacheWrapper` against real Anthropic prompt caching — cold call writes tokens, warm call reads them — and is gated on `ANTHROPIC_API_KEY` plus a `LIVE_CACHE_BUDGET_USD` guardrail (default `$0.10`). It runs in CI only on a manual `workflow_dispatch` against the `integration` workflow, never on push or PR. To run locally:
+The default `pytest` invocation runs the full hermetic unit suite (a few seconds to a few tens of seconds, no API key) and intentionally excludes the **live-API integration** suite under `tests/integration/`. That suite exercises `PromptCacheWrapper` against real Anthropic prompt caching — cold call writes tokens, warm call reads them — and is gated on `ANTHROPIC_API_KEY` plus a `LIVE_CACHE_BUDGET_USD` guardrail (default `$0.10`). It runs in CI only on a manual `workflow_dispatch` against the `integration` workflow, never on push or PR. To run locally:
 
 ```bash
 ANTHROPIC_API_KEY=sk-... pytest tests/integration -v
