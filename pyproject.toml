@@ -50,6 +50,11 @@ packages = ["cost_optimizer", "dashboard"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts   = "-ra -q"
+# The live-API integration suite under tests/integration/ is *not* run
+# by `pytest` with no args — its tests need ANTHROPIC_API_KEY and burn
+# real budget. The integration workflow targets the directory directly
+# via `pytest tests/integration`.
+norecursedirs = ["tests/integration"]
 
 [tool.ruff]
 line-length = 100
