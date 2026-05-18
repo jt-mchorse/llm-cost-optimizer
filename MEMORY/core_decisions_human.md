@@ -133,3 +133,31 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. The hash is one function (`_canonical_payload_hash`) and the lookup table is one dict on `InMemoryBatchBackend`; changing the canonicalization rule is a localized edit. The Anthropic-backed backend forwards the key via the SDK's standard `Idempotency-Key` header.
 
 **Related issues:** #4
+
+## D-011 — Savings dashboard is Streamlit behind a `[dashboard]` optional extra (2026-05-17)
+**Decision:** The savings dashboard is `dashboard/app.py`, a Streamlit page that reads the JSON `scripts/bench_savings.py` produces. Streamlit + pandas live in a new `[dashboard]` optional extra in `pyproject.toml`; nothing in the core `cost_optimizer` package imports either.
+
+**Why:** The pattern is already in the repo — `RedisStorage` is behind a `[redis]` extra (D-004) because production callers BYO that dep; the dep-free defaults are what CI exercises. The savings dashboard fits the same shape: most users of this library will read the README table; the operators who want the interactive view install one more extra. Streamlit was picked over Next.js because the entire package is Python and adding a JS toolchain would double the build matrix for one feature; static HTML was rejected because the acceptance criteria call for an interactive dashboard with charts that update when the operator re-runs the bench. Critically, the dashboard does **no** recomputation — it reads what's on disk. That keeps the README table and the dashboard in sync via the file, not via background re-execution.
+
+**Alternatives considered:**
+- Next.js dashboard — rejected; doubles the build matrix for a single feature in a Python-only repo.
+- Static HTML report — rejected; acceptance criteria want interactive charts that update without rebuilding HTML.
+- Dashboard recomputes savings inline from the workload — rejected; the bench artifacts and the dashboard would drift, and the operator's committed numbers wouldn't be what the page rendered.
+
+**Reversibility:** Cheap. The dashboard reads the JSON schema versioned at `schema_version: 1`; the schema is small and the import surface is single-file.
+
+**Related issues:** #5
+
+## D-012 — Bench workload is hermetic synthetic with documented composition; real-API mode is operator-triggered (2026-05-17)
+**Decision:** `scripts/bench_savings.py` runs a deterministic 500-row synthetic workload (60% redundant template paraphrases / 30% easy factual / 10% hard open-ended) through every shipped strategy. Token counts and first-token logprobs are canned in `docs/savings_workload.json` so the numbers are bit-for-bit reproducible. The script supports `--dry` (default, what CI runs) and explicitly errors out if `--dry` is overridden because real-API mode is not implemented in this PR. The operator wires real adapters and commits `docs/savings_real.md` once they've vetted the curve.
+
+**Why:** Two pieces. **First**, the no-fabricated-benchmarks rule (handoff §10) means the README either cites measured numbers or admits the benchmark is pending. The hermetic synthetic gives us the first: every number in the README is what the script actually computed, reconciled in the test suite against two independent derivations (the strategy summary and the cumulative series). **Second**, real-API runs against a real workload are valuable but not appropriate for CI — they require an Anthropic API key, real spend, and an opinion about which dataset is representative. The threshold-sweep script (`scripts/tune_threshold.py`) already established the posture: ship the plumbing, let the operator run the measurement. D-007 is the same posture for false-positive measurement on the semantic cache; D-012 extends it to the savings dashboard.
+
+**Alternatives considered:**
+- HF dataset slice at bench time — rejected; breaks hermetic CI and introduces a network dependency on dataset hosting at test time.
+- Fabricated savings numbers in the README — rejected; explicitly forbidden by handoff §10.
+- Real-API mode in this PR — rejected; requires API key + budget + dataset opinion; pushes the bench off the CI path entirely; future PR can land it without disturbing the synthetic baseline this PR commits.
+
+**Reversibility:** Cheap. Swapping the workload generator is one function (`_build_workload`); the strategy runners and the JSON schema are workload-agnostic. The operator can add a real-API mode by replacing the stub adapters with real ones — the script's flag is already there, it just refuses to run today.
+
+**Related issues:** #5

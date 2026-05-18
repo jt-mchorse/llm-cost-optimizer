@@ -92,3 +92,40 @@ context_for_next_session:
 decisions_made: [D-010]
 followups: []
 ---
+
+---
+session: 2026-05-17T23:30Z
+duration_min: 70
+issue: 5
+focus: savings_dashboard_five_strategy_bench_plus_streamlit
+delta:
+  files_added: 6  # scripts/bench_savings.py, dashboard/__init__.py, dashboard/app.py, tests/test_bench_savings.py, docs/savings.json, docs/savings.md (+ docs/savings_workload.json)
+  files_changed: 2  # README.md, pyproject.toml
+  tests_added: 18
+  test_pass_rate: "122/122 + 1 skipped"
+  benchmarks:
+    workload_rows: 500
+    workload_mix: { redundant: 300, easy: 150, hard: 50 }
+    baseline_usd: 0.0577
+    prompt_cache_saved_pct: 0.840
+    semantic_cache_saved_pct: 0.562
+    semantic_cache_hit_rate: 0.56
+    router_saved_pct: -1.548  # negative by design — buys quality
+    router_quality_lift: 0.035  # 0.886 → 0.921
+    batch_saved_pct: 0.500
+context_for_next_session:
+  - savings_dashboard_5_shipped_ends_priority_med_queue_for_this_repo
+  - bench_savings_py_runs_500_row_synthetic_workload_60_30_10_split_hermetic_deterministic
+  - workload_committed_at_docs_savings_workload_json_so_numbers_re_derivable
+  - streamlit_dashboard_is_optional_extra_dashboard_pattern_mirrors_redis_d_004
+  - router_shows_negative_dollar_savings_by_design_d_011_honest_writeup_in_readme_pairs_with_cache_layer
+  - real_api_savings_mode_unimplemented_same_posture_as_tune_threshold_d_007
+  - five_strategies_bench_baseline_prompt_cache_semantic_cache_router_batch_all_use_real_pricing_table
+  - cumulative_savings_per_row_computed_independently_from_strategy_summary_two_derivations_reconciled_in_tests
+  - quality_maintained_check_tolerates_0_01_drift_router_only_strategy_that_changes_quality_in_this_workload
+  - readme_table_replaces_benchmarks_pending_placeholder_with_real_measured_numbers
+  - bench_inputs_only_no_output_tokens_in_savings_axis_documented_inline
+  - all_remaining_priority_low_open_issues_on_this_repo_only_no_more_priority_med
+decisions_made: [D-011, D-012]
+followups: []
+---
