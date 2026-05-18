@@ -93,3 +93,16 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** PR explicitly flags that the actual live run is operator-triggered post-merge — the secret-gate + budget-gate are testable locally, the cold-then-warm against the real API is not.
 
 **Next session:** Loop continues — likely embedding-model-shootout #5 (notebook reproducing numbers) or wrap.
+
+## 2026-05-18 — Issue #13: Architecture doc covers all shipped layers
+**Duration:** ~30 min · **Branch:** `session/2026-05-18-1537-issue-13` · **PR:** [#14](https://github.com/jt-mchorse/llm-cost-optimizer/pull/14) (ready)
+
+- Rewrote `docs/architecture.md` from one-layer stub to six-section doc: one top-of-page integrated mermaid showing the runtime request lifecycle (semantic cache → router → prompt-cache wrapper → API → telemetry → bench/dashboard), plus per-layer sections for #1/#2/#3/#4/#5 and a #7 live-API integration posture section.
+- Each layer section has a prose statement of what it does and what it costs, a mermaid diagram of its own flow, the relevant D-NNN references back to MEMORY, and a "composes with" line. Mermaid labels containing parens are quoted to prevent parser issues.
+- README Architecture section dropped its "Diagram pending follow-up issue" stub for a one-line summary that points at the now-real doc.
+
+**Why this work, this session:** Every original `priority:high` issue is closed and the savings dashboard (#5) shipped. The repo failed the §1 quality-bar "architecture diagram" item — there was a diagram, but it only described 1 of 5 shipped layers. Filling that gap is the cleanest move toward v0.1.
+
+**Open questions / blockers:** None — PR is ready for review.
+
+**Next session:** Move to next zero-open-issue repo in build sequence (prompt-regression-suite per §8).

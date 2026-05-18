@@ -147,3 +147,23 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-18T15:37Z
+duration_min: 30
+issue: 13
+focus: architecture_doc_covers_all_five_shipped_layers
+delta:
+  files_changed: 2  # README.md, docs/architecture.md
+  files_added: 0
+  tests_added: 0   # pure docs
+  test_pass_rate: "124/124 + 1 skipped"
+context_for_next_session:
+  - docs_architecture_md_rewritten_six_sections_one_per_shipped_layer_plus_integrated_top_diagram_mermaid_labels_with_parens_are_quoted_double_quotes_to_avoid_parser_choke
+  - readme_architecture_section_no_longer_stub_one_line_summary_points_at_doc
+  - quality_bar_section_1_architecture_diagram_requirement_now_met_was_previously_partial
+  - no_new_d_entry_pure_docs_references_d_002_through_d_012
+  - live_api_section_6_documents_workflow_dispatch_gating_pattern_for_reuse_across_portfolio
+decisions_made: []
+followups: []
+---
