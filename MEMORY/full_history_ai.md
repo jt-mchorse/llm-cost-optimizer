@@ -129,3 +129,21 @@ context_for_next_session:
 decisions_made: [D-011, D-012]
 followups: []
 ---
+
+---
+session: 2026-05-18T05:00Z
+duration_min: 25
+issue: 7
+focus: live_api_integration_test_for_prompt_cache_wrapper
+delta:
+  files_changed: 4
+  tests_added: 3
+context_for_next_session:
+  - tests_integration_test_live_cache_py_gated_on_anthropic_api_key_module_level_skip
+  - budget_guardrail_live_cache_budget_usd_default_010
+  - integration_workflow_dispatch_only_never_push_pr
+  - main_pytest_invocation_still_cost_free_122_passed_1_skipped
+  - no_new_d_entry_gating_pattern_not_a_tradeoff
+decisions_made: []
+followups: []
+---

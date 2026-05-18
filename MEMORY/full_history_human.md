@@ -77,3 +77,19 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** Real-API mode for the bench is intentionally not implemented in this PR. Same honest stub the threshold-sweep script has: the operator wires real adapters and commits `docs/savings_real.md` once vetted. Headless screenshot of the live Streamlit page is deferred — the markdown table is the README's screenshot. No blockers.
 
 **Next session:** Loop to another repo per the multi-issue prompt — `llm-cost-optimizer` has no more `priority:med` open. Likely candidates are the other repos with `priority:med` open: rag-production-kit, embedding-model-shootout, vector-search-at-scale, python-async-llm-pipelines (just merged), mcp-server-cookbook, nextjs-streaming-ai-patterns (just merged), ai-app-integration-tests.
+
+## 2026-05-18 — Issue #7: Live-API integration test
+**Duration:** ~25 min · **Branch:** `session/2026-05-18-issue-07` · **PR:** #12
+
+- Added `tests/integration/test_live_cache.py`: cold→warm round trip against the real Anthropic API. Asserts `tokens_written > 0` on cold, `tokens_cached > 0` + `dollars_saved > 0` on warm, plus aggregate-counter consistency.
+- Budget guardrail: `LIVE_CACHE_BUDGET_USD` (default $0.10) refuses to run if the synthetic prompt's worst-case spend exceeds the cap. Worst-case is computed at 1 char per token (an extreme over-estimate, real ~0.25/char) so the guardrail is conservative.
+- `.github/workflows/integration.yml`: `workflow_dispatch`-only with `python-version` and `model` inputs. Verifies the secret is non-empty before any install.
+- `pyproject.toml` gains `norecursedirs = ["tests/integration"]` so the default `pytest` invocation (the one CI runs on every push/PR) doesn't pick up the live tests. Unit suite stays at 122 passed + 1 skipped (streamlit-extra), ~21 s.
+- README's quickstart gets a paragraph distinguishing the hermetic unit suite from the manually-dispatched integration suite.
+- No new D-NNN: gating live tests on a secret + budget is a pattern (well-established in the portfolio: see e.g. ai-app-integration-tests' record/replay gating), not a tradeoff with alternatives worth recording.
+
+**Why this work, this session:** Low-priority backlog item with a contained 30-minute scope; the gating pattern is reusable across the portfolio.
+
+**Open questions / blockers:** PR explicitly flags that the actual live run is operator-triggered post-merge — the secret-gate + budget-gate are testable locally, the cold-then-warm against the real API is not.
+
+**Next session:** Loop continues — likely embedding-model-shootout #5 (notebook reproducing numbers) or wrap.
