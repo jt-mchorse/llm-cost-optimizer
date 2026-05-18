@@ -167,3 +167,25 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-18T19:50Z
+duration_min: 30
+issue: 15
+focus: snapshot_test_locks_docs_savings_json_md_and_readme_table_to_bench_output
+delta:
+  files_added: 1   # tests/test_savings_snapshot.py
+  files_changed: 1  # README.md (drop stale 122-test number, replace with non-specific)
+  tests_added: 8   # 3 fixed + 5 parametrized strategy rows + 1 row-count guard
+  test_pass_rate: "130/130 + 1 skipped"
+context_for_next_session:
+  - snapshot_test_three_planes_run_bench_payload_eq_savings_json_format_markdown_eq_savings_md_readme_table_cell_eq_savings_json
+  - readme_strategy_name_match_is_substring_keyword_so_cosmetic_renames_allowed_numeric_cells_locked
+  - readme_percent_tolerance_5e_3_one_decimal_place_rounding_dollars_5e_5_four_decimals_quality_5e_4_three_decimals
+  - failure_messages_on_every_assertion_print_regen_command_python_scripts_bench_savings_dry_out_docs_savings
+  - readme_122_test_count_replaced_with_non_specific_to_avoid_future_bitrot_same_treatment_as_llm_eval_harness_session_2026_05_18T19_30
+  - tampered_savings_json_total_usd_999_verified_fires_first_test_with_regen_hint_visible
+  - no_new_d_entry_snapshot_pattern_directly_enforces_d_012_synthetic_workload_no_fabricated_numbers
+decisions_made: []
+followups: []
+---
