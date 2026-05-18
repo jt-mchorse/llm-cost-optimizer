@@ -13,7 +13,8 @@ LLM bills compound. A serious production app spends most of its tokens re-sendin
 The wrapper layer is intentionally dependency-free: the Anthropic SDK is never imported, only duck-typed against `client.messages.create(...)`. That keeps the package importable without an API key, hermetically testable in CI, and embeddable inside other portfolio repos (notably `rag-production-kit` and `agent-orchestration-platform`) without forcing them to take an SDK dep. Future layers — semantic embedding cache (#2), uncertainty-routed model fallback (#3), and a savings dashboard — will land in their own modules so each can be adopted independently.
 
 ## Architecture
-*See [docs/architecture.md](docs/architecture.md). Diagram pending follow-up issue.*
+
+Five layers ship today plus a live-API integration posture. Each layer is adoptable on its own — semantic cache → uncertainty router → prompt-cache wrapper at runtime, batch-API as the offline sibling, and the savings dashboard reading bench artifacts that are produced from the same pricing table the runtime layers use. The full integrated diagram, per-layer flows, and the design decisions behind each one live in **[docs/architecture.md](docs/architecture.md)**.
 
 ## Quickstart
 
