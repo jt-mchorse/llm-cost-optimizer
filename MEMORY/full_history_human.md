@@ -106,3 +106,17 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** None — PR is ready for review.
 
 **Next session:** Move to next zero-open-issue repo in build sequence (prompt-regression-suite per §8).
+
+## 2026-05-18 — Issue #15: snapshot test for `docs/savings.{json,md}` + README table
+**Duration:** ~30 min · **Branch:** `session/2026-05-18-1921-issue-15`
+
+- Added `tests/test_savings_snapshot.py` (8 tests) that locks the bench output to the three committed artifacts: `docs/savings.json` (full payload), `docs/savings.md` (markdown table), and the README's "Savings dashboard" table. The previous `test_bench_savings.py` covered relative invariants (deterministic order, mix proportions, math identities) but not absolute numbers — a future tweak to a price constant or seed could silently desync the docs from the bench.
+- README rows are matched by substring on the strategy keyword (`baseline`, `prompt caching`, `semantic cache`, `uncertainty router`, `batch API`) so cosmetic renames are allowed; numeric cells (`$ spent`, `$ saved`, `% saved`, `Mean quality`) are locked to the JSON with rounding-aware tolerances. Failure messages on every assertion print the one-line regen command.
+- README also drops the stale "(122 tests, ~21 s)" count next to the default-pytest line — same hygiene as the `llm-eval-harness` PR from earlier today.
+- Verified the failure path by temporarily tampering `docs/savings.json`'s `total_usd`; the assertion fired with the regen hint visible.
+
+**Why this work, this session:** D-012 commits the repo to a "no fabricated numbers" posture; the snapshot test is the enforcement mechanism. The repo has shipped five layers + a savings dashboard with a public table; that table is now structurally guarded against silent desync.
+
+**Open questions / blockers:** None — PR ready for review.
+
+**Next session:** Move to the next build-sequence repo (`prompt-regression-suite` or `rag-production-kit`) and find the equivalent enforcement gap.
