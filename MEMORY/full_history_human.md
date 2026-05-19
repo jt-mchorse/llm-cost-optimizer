@@ -146,3 +146,16 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** None — PR ready for review.
 
 **Next session:** Move to the next build-sequence repo (`prompt-regression-suite` or `rag-production-kit`) and find the equivalent enforcement gap.
+
+## 2026-05-19 — Issue #22: Public-surface snapshot test
+**Duration:** ~25 min · **Branch:** `session/2026-05-19-2324-issue-22` · **PR:** [#23](https://github.com/jt-mchorse/llm-cost-optimizer/pull/23) (ready, CI green, merging)
+
+- Issue filed in-session (sister to `llm-eval-harness` #24 from earlier in this session). The README quotes four `from cost_optimizer import …` library-use snippets pulling 14+ names, but no test locked the SHAPE — coverage was already 100% because existing tests incidentally touch the re-exports, masking the surface-rename risk.
+- New `tests/test_public_surface.py` adds four orthogonal axes: `__all__` round-trip vs AST-parsed imports; every `__all__` entry bound non-None; **every README `from cost_optimizer import …` snippet auto-discovered by regex and compiled against the live package** (so a fifth library example becomes a fifth test case for free); one anchor per submodule (batch / cache_wrapper / pricing / router / semantic_cache). A guard test asserts the regex still matches > 0 snippets so the regression mode is loud, not silent.
+- Tamper-verified 3-of-4: dropping `SemanticCache` from `__all__` fires the round-trip test naming the entry; alias-renaming `PromptCacheWrapper as PCW` fires the snippet-0 test naming the missing symbol; nuking every `from cost_optimizer` in README fires the guard test.
+
+**Why this work, this session:** Same posture as the sister `llm-eval-harness` snapshot landed earlier today. Library-style repos in this portfolio need their public surface locked at both levels — Python `__init__.py` and README text — because each catches a different class of silent break. The README-regex extraction is the load-bearing improvement over the eval-harness version: future library examples self-onboard.
+
+**Open questions / blockers:** None.
+
+**Next session:** Repo's open queue is now {#18 (demo capture)}, gated on human action. Same self-filed-actionable pattern available across the other Python repos in this portfolio (prompt-regression-suite, embedding-model-shootout, chunking-strategies-lab, vector-search-at-scale, python-async-llm-pipelines, rag-production-kit).

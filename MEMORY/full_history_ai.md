@@ -230,3 +230,24 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-19T20:55Z
+duration_min: 25
+issue: 22
+focus: public_surface_snapshot_locks_cost_optimizer_top_level_init_exports
+delta:
+  files_added: 1   # tests/test_public_surface.py
+  tests_added: 12
+  test_pass_rate: "150/150 (+1 skipped streamlit)"
+context_for_next_session:
+  - public_surface_snapshot_four_axes_all_non_empty_and_bound_all_matches_imports_readme_snippets_compile_submodule_anchors
+  - readme_snippet_test_parametrized_via_regex_extraction_at_module_import_so_future_snippets_auto_covered
+  - guard_test_asserts_regex_still_matches_at_least_one_snippet_loud_regression_mode_not_silent
+  - parametrized_over_five_submodules_batch_cache_wrapper_pricing_router_semantic_cache_one_anchor_each
+  - tamper_verified_three_of_four_drop_semantic_cache_alias_rename_prompt_cache_wrapper_nuke_all_readme_imports
+  - cost_optimizer_init_py_already_at_100pct_coverage_but_no_test_locked_shape_until_now
+  - sister_to_llm_eval_harness_pr_25_landed_same_session_orthogonal_axis_python_surface_vs_readme_text
+decisions_made: []
+followups: []
+---
