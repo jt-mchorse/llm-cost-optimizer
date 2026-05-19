@@ -4,6 +4,19 @@ Chronological log of work sessions. Most recent first below the divider.
 
 ---
 
+## 2026-05-19 — Issue #17: drop 'Future layers' framing + extend drift lock
+**Duration:** ~30 min · **Branch:** `session/2026-05-19-issue-17`
+
+- Rewrote the fourth paragraph of "What this is" from "Future layers — semantic embedding cache (#2), uncertainty-routed model fallback (#3), and a savings dashboard — will land in their own modules" (true on 2026-05-12 when only #1 had shipped) to a six-bullet present-tense list of every shipped layer (#1 prompt cache, #2 semantic cache, #3 router, #4 batch API, #5 dashboard, #7 live-API integration).
+- Replaced the bare "*60-second demo pending.*" Demo section with today's two-command hermetic demo (`scripts/bench_savings.py --dry` + `streamlit run cost_optimizer/dashboard/app.py`) and named the captured-asset follow-up as #18 (filed during this session).
+- Extended `tests/test_savings_snapshot.py` with three drift-lock tests (11 total now): every closed-issue ref appears in "What this is"; the string `Future layers` does not appear anywhere in the README; the Demo section names a follow-up and describes the runnable surface.
+
+**Why this work, this session:** PR #16 locked the numeric table against `docs/savings.json` but didn't touch the surrounding prose; the autonomous loop noticed two sister-PR-style fixups still missing here.
+
+**Open questions / blockers:** None.
+
+**Next session:** Continues with Phase A selection; #18 is priority:low demo capture.
+
 ## 2026-05-14 — Issue #1: Anthropic prompt-caching wrapper
 **Duration:** ~65 min · **Branch:** `session/2026-05-14-0952-issue-01`
 
