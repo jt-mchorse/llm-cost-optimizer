@@ -4,6 +4,19 @@ Chronological log of work sessions. Most recent first below the divider.
 
 ---
 
+## 2026-05-19 — Issue #20: snapshot lock README numeric/identifier defaults to source constants
+**Duration:** ~40 min · **Branch:** `session/2026-05-19-1915-issue-20` · **PR:** [#21](https://github.com/jt-mchorse/llm-cost-optimizer/pull/21) (ready)
+
+- Added `tests/test_readme_defaults_snapshot.py` (5 tests) closing the orthogonal axis the existing `test_savings_snapshot.py` doesn't cover: README claims that quote **source constants** in prose — opus & haiku `input_per_mtok` from `cost_optimizer.pricing`, `BATCH_DISCOUNT_FACTOR` from `cost_optimizer.batch`, `pip install -e '.[<extra>]'` against `[project.optional-dependencies]` keys, and the `LIVE_CACHE_BUDGET_USD` $0.10 default from the integration test's `_DEFAULT_BUDGET_USD` fallback.
+- Source is the truth — every failure message tells the operator to update the README quote to match the new live value. The opus price regex uses `/MTok\s+input` because that quote wraps a line in the savings-dashboard section; the live-budget test parses both README mentions (Quickstart + What-this-is) and asserts they agree before comparing against source so a one-side update doesn't silently desync the README with itself.
+- Pricing assertions go through the public `get_pricing(...)` API, not the private `_PRICING` dict, so a future internal restructure can't break the snapshot for the wrong reason. Tamper-verified 3 of 5 (`BATCH_DISCOUNT_FACTOR` 0.5→0.4, opus price 15.00→12.00, `LIVE_CACHE_BUDGET_USD` 0.10→0.25) — all fire with the source symbol referenced in the failure message; revert restores green. Full suite 138/138 + 1 skipped (streamlit unavailable locally); ruff check + format clean.
+
+**Why this work, this session:** Phase A repo selection ran with `priority:high` empty across the portfolio, `priority:med` issues already had open PRs against them in the two repos that had any, and `priority:low` was all 60-second demo captures (need screen recording — not autonomous-doable). Filing #20 + working it kept the portfolio's snapshot wave honest by closing the orthogonal source-constant gap in the cost-optimizer repo — sister to the same pattern landed in llm-eval-harness an hour earlier.
+
+**Open questions / blockers:** None.
+
+**Next session:** Continues with whichever repo Phase A selection picks; the same source-constants snapshot template likely applies to `prompt-regression-suite` (default thresholds, embedding similarity tolerance) and `agent-orchestration-platform` (model identifiers, eval extras).
+
 ## 2026-05-19 — Issue #17: drop 'Future layers' framing + extend drift lock
 **Duration:** ~30 min · **Branch:** `session/2026-05-19-issue-17`
 

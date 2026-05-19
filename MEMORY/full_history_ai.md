@@ -210,3 +210,23 @@ context_for_next_session:
 decisions_made: []
 followups: ["#18"]
 ---
+
+---
+session: 2026-05-19T19:50Z
+duration_min: 40
+issue: 20
+focus: snapshot_lock_readme_numeric_identifier_defaults_to_source_constants
+delta:
+  files_added: 1   # tests/test_readme_defaults_snapshot.py
+  tests_added: 5
+  test_pass_rate: "138/138"
+context_for_next_session:
+  - readme_defaults_now_locked_five_surfaces_opus_price_haiku_price_batch_discount_factor_pip_extras_live_cache_budget
+  - opus_price_quote_wraps_line_so_regex_uses_mtok_slash_s_plus_input
+  - live_cache_budget_quoted_twice_test_asserts_agreement_before_comparing_to_source
+  - pricing_test_uses_public_get_pricing_not_private_underscore_pricing_dict
+  - tamper_verified_three_of_five_batch_discount_opus_price_live_budget
+  - sister_to_existing_test_savings_snapshot_py_orthogonal_axis_source_constants_vs_measured_bench
+decisions_made: []
+followups: []
+---
