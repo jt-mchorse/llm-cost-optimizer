@@ -208,3 +208,70 @@ def test_readme_savings_table_row_count_matches_savings_json() -> None:
         f"README savings table has {len(rows)} rows but savings.json has "
         f"{len(committed['strategies'])} strategies.\n{REGEN_HINT}"
     )
+
+
+# ---------------------------------------------------------------------
+# Drift-lock invariants on the README's prose surface around the table.
+# These guard against regressing the "all shipped" framing back to the
+# pre-2026-05-19 phrasing where four of the six layers were described as
+# "future layers — will land in their own modules."
+
+
+def test_readme_what_this_is_section_names_every_shipped_layer() -> None:
+    """Every closed-issue ref (#1, #2, #3, #4, #5, #7) must appear in
+    `## What this is`. Adding a tenth feature later requires updating
+    this list; demoting one requires explaining the supersession.
+    """
+    body = README.read_text(encoding="utf-8")
+    start = body.index("## What this is")
+    end = body.index("##", start + 1)
+    section = body[start:end]
+    expected = ["(#1)", "(#2)", "(#3)", "(#4)", "(#5)", "(#7)"]
+    missing = [ref for ref in expected if ref not in section]
+    assert not missing, (
+        f"`## What this is` is missing issue references: {missing}. "
+        f"All six issues are closed and have shipped surface; the section must name each one."
+    )
+
+
+def test_readme_does_not_carry_future_layers_framing() -> None:
+    """The pre-2026-05-19 phrasing `Future layers — semantic embedding
+    cache (#2)...` was correct only when #2/#3/#5 were still open. It's
+    a regression if it comes back."""
+    body = README.read_text(encoding="utf-8")
+    assert "Future layers" not in body, (
+        "README contains the stale 'Future layers' framing; the layers shipped. "
+        "Rewrite the paragraph in past tense and name each layer with its closed issue ref."
+    )
+
+
+def test_readme_demo_section_names_followup_and_describes_today() -> None:
+    """The Demo section must name at least one follow-up issue (the
+    captured-asset owner) AND describe today's runnable surface. The
+    bare 'pending' phrasing without context is the regression."""
+    body = README.read_text(encoding="utf-8")
+    start = body.index("## Demo")
+    end = body.index("##", start + 1)
+    demo = body[start:end]
+    # Must mention an issue.
+    assert re.search(r"#\d+", demo), (
+        "Demo section must name at least one follow-up issue (the captured-asset owner) so a reader "
+        "can find out where the captured demo lives. Use `**#NN**` referencing the follow-up."
+    )
+    # Must describe today's runnable surface — at minimum the bench
+    # script invocation and the streamlit dashboard.
+    must_describe = ["scripts/bench_savings.py", "streamlit"]
+    missing = [token for token in must_describe if token not in demo]
+    assert not missing, (
+        f"Demo section is missing references to today's runnable surface: {missing}. "
+        f"The section should describe the two-command hermetic demo (bench + dashboard)."
+    )
+    # Anti-pattern: bare 'pending' line without any prose around it.
+    stripped = demo.strip().splitlines()
+    body_only = [line for line in stripped if line and not line.startswith("#")]
+    assert not (
+        len(body_only) == 1 and body_only[0].lower().startswith("*60-second demo pending")
+    ), (
+        "Demo section is just '*60-second demo pending.*' with no context. "
+        "Replace with a description of today's two-command demo path plus the captured-asset follow-up."
+    )

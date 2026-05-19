@@ -8,9 +8,20 @@
 
 LLM bills compound. A serious production app spends most of its tokens re-sending the same context — system prompts, tool definitions, long policy documents — to a stateless API on every call. Anthropic's prompt caching feature lets you mark a prefix as cacheable and pay a 90%-discounted read rate for subsequent calls that share that prefix. The savings are real, but using the feature correctly means juggling `cache_control` placement, reading the `cache_creation_input_tokens` / `cache_read_input_tokens` fields off every response, and converting those into something you can put in a cost dashboard.
 
-`llm-cost-optimizer` is a small toolkit that does that work for you. The first shipped layer is `PromptCacheWrapper`: a duck-typed wrapper around the Anthropic SDK's `messages.create` that injects `cache_control: {"type": "ephemeral"}` on caller-chosen segments (system, tools, message prefix), reads the cache-usage fields off the response, and rolls them into a `CacheTelemetry` struct (`hits`, `misses`, `tokens_cached`, `tokens_written`, `dollars_saved`) — per call and aggregated across the wrapper's lifetime. Pricing is a small in-repo table per model so the `dollars_saved` number is always traceable to a documented rate rather than fabricated.
+`llm-cost-optimizer` is a small toolkit that does that work for you. The runtime entry point is `PromptCacheWrapper` (#1): a duck-typed wrapper around the Anthropic SDK's `messages.create` that injects `cache_control: {"type": "ephemeral"}` on caller-chosen segments (system, tools, message prefix), reads the cache-usage fields off the response, and rolls them into a `CacheTelemetry` struct (`hits`, `misses`, `tokens_cached`, `tokens_written`, `dollars_saved`) — per call and aggregated across the wrapper's lifetime. Pricing is a small in-repo table per model so the `dollars_saved` number is always traceable to a documented rate rather than fabricated.
 
-The wrapper layer is intentionally dependency-free: the Anthropic SDK is never imported, only duck-typed against `client.messages.create(...)`. That keeps the package importable without an API key, hermetically testable in CI, and embeddable inside other portfolio repos (notably `rag-production-kit` and `agent-orchestration-platform`) without forcing them to take an SDK dep. Future layers — semantic embedding cache (#2), uncertainty-routed model fallback (#3), and a savings dashboard — will land in their own modules so each can be adopted independently.
+The wrapper is intentionally dependency-free: the Anthropic SDK is never imported, only duck-typed against `client.messages.create(...)`. That keeps the package importable without an API key, hermetically testable in CI, and embeddable inside other portfolio repos (notably `rag-production-kit` and `agent-orchestration-platform`) without forcing them to take an SDK dep.
+
+Today the five runtime layers and one offline sibling have all shipped:
+
+- **Prompt-cache wrapper** (#1) — the duck-typed Anthropic-SDK wrapper above; `CacheTelemetry` per call and aggregate.
+- **Semantic response cache** (#2) — `cost_optimizer.semantic_cache` keys on an embedding of the user prompt, caches the full response, and exposes TTL plus exact-prompt invalidation. Pluggable `Embedder` Protocol (default in-repo hash embedder; swap in a real one).
+- **Uncertainty-routed model fallback** (#3) — `cost_optimizer.router` first-passes the cheap model and escalates to the strong model only when a confidence signal (logprob entropy or judge score) clears a threshold. The threshold curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset.
+- **Anthropic Batch API integration** (#4) — `cost_optimizer.batch` wraps the non-realtime batch endpoint with an idempotency key derived from request content, exposes a polling-friendly `BatchJobMeta`, and reports both the realtime-equivalent cost and the actual batch cost so the savings number is directly comparable.
+- **Savings dashboard** (#5) — `streamlit run cost_optimizer/dashboard/app.py` renders the five-strategy savings bench against a realistic mixed workload. Strategy summaries and cumulative series live in `docs/savings.json`; the dashboard reads them directly so the same data backs the README table, the markdown report, and the live UI.
+- **Live-API integration test** (#7) — `tests/integration/` exercises `PromptCacheWrapper` against real Anthropic prompt caching (cold call writes tokens, warm call reads them), gated on `ANTHROPIC_API_KEY` and a `LIVE_CACHE_BUDGET_USD` guardrail (default $0.10). Runs in CI only on `workflow_dispatch`.
+
+Each layer is adoptable on its own; the architecture diagram below shows the seams.
 
 ## Architecture
 
@@ -303,7 +314,23 @@ five-strategy savings bench is reconciled against both the strategy
 summaries and the cumulative series in `tests/test_bench_savings.py`.
 
 ## Demo
-*60-second demo pending.*
+
+Today's hermetic demo is two commands on a fresh clone, both runnable
+without an API key:
+
+```bash
+# Reproduce the savings table + cumulative series under each strategy.
+python scripts/bench_savings.py --dry --out /tmp/savings
+
+# Render the dashboard (reads the committed docs/savings.json).
+streamlit run cost_optimizer/dashboard/app.py
+```
+
+The first writes a fresh `savings.json` and `savings.md` to `/tmp/`
+(passing `--out docs/savings` regenerates the committed copies); the
+second is the live dashboard the README's savings table is derived
+from. A captured 60-second GIF/video walking through both is tracked
+in **#18**.
 
 ## Why these decisions
 See [MEMORY/core_decisions_human.md](MEMORY/core_decisions_human.md).
