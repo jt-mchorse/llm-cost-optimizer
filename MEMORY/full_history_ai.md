@@ -189,3 +189,24 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-19T05:15Z
+duration_min: 30
+issue: 17
+focus: drop_future_layers_framing_plus_extend_snapshot_test
+delta:
+  files_changed: 2   # README.md, tests/test_savings_snapshot.py
+  files_added: 0
+  tests_added: 3
+  test_pass_rate: "133/133"
+context_for_next_session:
+  - readme_what_this_is_fourth_paragraph_rewritten_to_six_bullet_present_tense_layer_picture
+  - demo_section_replaces_bare_pending_with_two_command_hermetic_demo_plus_followup_issue_18
+  - snapshot_test_extended_to_lock_future_layers_string_absence_plus_demo_section_invariant
+  - tamper_verified_reinjecting_future_layers_fires_snapshot
+  - sister_to_eight_other_portfolio_readme_drift_prs_landed_yesterday_or_today_pattern_complete
+  - issue_18_filed_for_captured_demo_asset_priority_low
+decisions_made: []
+followups: ["#18"]
+---
