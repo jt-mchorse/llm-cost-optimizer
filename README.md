@@ -315,22 +315,36 @@ summaries and the cumulative series in `tests/test_bench_savings.py`.
 
 ## Demo
 
-Today's hermetic demo is two commands on a fresh clone, both runnable
-without an API key:
+Today's hermetic demo is one command on a fresh clone, runnable without
+an API key:
 
 ```bash
-# Reproduce the savings table + cumulative series under each strategy.
-python scripts/bench_savings.py --dry --out /tmp/savings
-
-# Render the dashboard (reads the committed docs/savings.json).
-streamlit run cost_optimizer/dashboard/app.py
+scripts/capture_demo.sh
 ```
 
-The first writes a fresh `savings.json` and `savings.md` to `/tmp/`
-(passing `--out docs/savings` regenerates the committed copies); the
-second is the live dashboard the README's savings table is derived
-from. A captured 60-second GIF/video walking through both is tracked
-in **#18**.
+That drives the two surfaces in sequence:
+
+1. **Bench** — `scripts/bench_savings.py --dry` writes a fresh
+   `savings.json` + `savings.md` to a tempdir and cats the rendered
+   five-strategy table to the terminal (baseline → prompt cache →
+   semantic cache → uncertainty router → batch API, with per-strategy
+   `$ saved`, `% saved`, and mean quality).
+2. **Dashboard** — `streamlit run cost_optimizer/dashboard/app.py
+   -- --json <tempdir>/savings.json` (auto-launched when the
+   `[dashboard]` extra is installed; install with
+   `pip install -e '.[dashboard]'`). The dashboard panels are the
+   workload mix, dollars saved vs. baseline, cumulative-$ line chart
+   per strategy, and the quality-maintained table.
+
+Environment knobs: `CAPTURE_PACE_SECONDS` controls section pacing
+(default `2` for recording, `0` for CI); `CAPTURE_LAUNCH_DASHBOARD=0`
+skips the streamlit launch (the path the smoke test exercises);
+`CAPTURE_OUTPUT_DIR` pins the bench artifact location.
+`tests/test_capture_demo_smoke.py` runs the script end-to-end in CI
+so the demo can't bitrot.
+
+The captured 60-second GIF/video that this script drives is tracked in
+**#18**; once recorded it lands at `docs/demo.gif` and gets embedded here.
 
 ## Why these decisions
 See [MEMORY/core_decisions_human.md](MEMORY/core_decisions_human.md).
