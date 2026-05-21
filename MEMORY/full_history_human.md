@@ -159,3 +159,16 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** None.
 
 **Next session:** Repo's open queue is now {#18 (demo capture)}, gated on human action. Same self-filed-actionable pattern available across the other Python repos in this portfolio (prompt-regression-suite, embedding-model-shootout, chunking-strategies-lab, vector-search-at-scale, python-async-llm-pipelines, rag-production-kit).
+
+## 2026-05-21 — Issue #18: Capture script for the two-surface 60s demo
+**Duration:** ~30 min · **Branch:** `session/2026-05-21-1545-issue-18` · **PR:** [#24](https://github.com/jt-mchorse/llm-cost-optimizer/pull/24) (draft — issue stays open for JT's GIF recording)
+
+- `scripts/capture_demo.sh` lands as the deterministic driver for the 60-second README demo. Two surfaces: (1) `scripts/bench_savings.py --dry --out <tempdir>/savings` followed by `cat <tempdir>/savings.md` so the rendered five-strategy table is captured in the terminal portion of the recording; (2) when `CAPTURE_LAUNCH_DASHBOARD=1` (default) and the `[dashboard]` extra is installed, `exec` streamlit on the freshly-generated `<tempdir>/savings.json` via the dashboard's existing `-- --json <path>` argparse hook. Streamlit launch is best-effort — if the extra isn't installed, the script prints the install hint and exits 0 with the bench artifact already produced. Pacing knob `CAPTURE_PACE_SECONDS` (2 for recording, 0 for CI); `CAPTURE_OUTPUT_DIR` pins the artifact location.
+- `tests/test_capture_demo_smoke.py` (5 tests, module-scoped fixture) asserts exit 0, all five strategies appear, the rendered savings.md is `cat`-ed, the dashboard section describes the launch path, and the committed `docs/savings.json` is byte-equal before and after. That last assertion is the load-bearing invariant: the capture must always write to a tempdir so re-running on a different host (or back-to-back) never silently overwrites the published `docs/savings.json` that other artifacts (the snapshot test, the README's quoted numbers) depend on.
+- README "Demo" section rewritten to point at `scripts/capture_demo.sh` and the two surfaces; still names #18 as the follow-up for the actual GIF/video asset and never uses "pending until ..." language. Full suite: 155 passed + 1 pre-existing skip (streamlit not installed in CI).
+
+**Why this work, this session:** Sister to the `llm-eval-harness` capture script landed earlier in the same multi-issue session. The two repos have the same blocker pattern (only one open issue, "60s demo capture", with one autonomous-actionable bullet of three). Landing the reproducible-capture infrastructure now means the GIF recording session is one command in two repos, and both demos can never bitrot between recordings.
+
+**Open questions / blockers:** None. Acceptance criteria 1 (`docs/demo.gif|mp4`) and 2 (README embed) remain pending JT screen capture and are explicitly out of autonomous scope.
+
+**Next session:** Same gate on this repo. Loop to next eligible — prompt-regression-suite is the third repo with the same demo-capture blocker.
