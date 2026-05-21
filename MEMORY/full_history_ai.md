@@ -251,3 +251,29 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-21T15:45Z
+duration_min: 30
+issue: 18
+focus: capture_script_for_60s_demo_two_surfaces
+delta:
+  files_added: 2   # scripts/capture_demo.sh, tests/test_capture_demo_smoke.py
+  files_changed: 1 # README.md (Demo section)
+  tests_added: 5
+  test_pass_rate: "155/155 (+1 skipped streamlit)"
+context_for_next_session:
+  - capture_script_lives_at_scripts_capture_demo_sh_one_bash_entry_point_for_jt_recording
+  - two_surfaces_bench_savings_dry_with_cat_savings_md_then_optional_streamlit_launch_via_exec
+  - dashboard_reads_freshly_generated_tempdir_savings_json_via_existing_dashboard_json_argparse_hook_not_committed_docs_savings_json
+  - capture_pace_seconds_env_default_2_smoke_test_sets_0
+  - capture_launch_dashboard_env_default_1_smoke_test_sets_0_falls_through_gracefully_when_dashboard_extra_missing
+  - capture_output_dir_env_default_mktemp_d
+  - smoke_test_pins_byte_equality_of_docs_savings_json_before_and_after_capture_must_not_mutate_committed_artifact
+  - readme_demo_section_updated_still_names_18_no_pending_until_language
+  - acceptance_criterion_3_capture_script_under_scripts_satisfied_acceptance_1_gif_and_2_readme_embed_remain_blocked_on_human_recording
+  - pr_24_draft_issue_18_stays_open_until_jt_records_gif
+  - sister_to_llm_eval_harness_pr_26_landed_same_session_same_pattern_capture_script_plus_smoke_test
+decisions_made: []
+followups: []
+---
