@@ -251,3 +251,25 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-22T15:11Z
+duration_min: 25
+issue: 25
+focus: fix_readme_cost_optimizer_dashboard_app_py_path_to_dashboard_app_py
+decisions_made: []
+delta:
+  files_changed: 1   # README.md
+  files_added: 1     # tests/test_readme_paths_resolve.py
+  tests_added: 2
+  test_pass_rate: "152/152 (passed) + 1 skipped"
+context_for_next_session:
+  - readme_l21_bullet_and_l326_demo_section_quoted_cost_optimizer_dashboard_app_py_but_dashboard_lives_at_top_level_dashboard_app_py_per_docs_architecture_md_and_actual_filesystem
+  - middle_of_readme_savings_dashboard_section_at_l266_already_used_correct_dashboard_app_py
+  - new_test_test_readme_paths_resolve_extracts_paths_from_backticks_and_code_fences_only_not_prose_so_operator_generated_outputs_like_docs_threshold_demo_png_dont_false_positive
+  - test_uses_known_operator_generated_allow_list_for_three_no_fabricated_benchmark_outputs_threshold_demo_png_threshold_report_md_savings_real_md
+  - hard_pin_test_asserts_cost_optimizer_dashboard_app_py_absent_and_dashboard_app_py_present_so_future_rename_in_either_direction_fails_loud
+  - work_initially_drafted_uncommitted_in_an_earlier_session_this_session_picked_up_the_stash_branched_committed_and_opened_pr_26
+  - ninth_post_v0_1_readme_vs_code_drift_fix_in_the_portfolio_pattern
+followups: []
+---

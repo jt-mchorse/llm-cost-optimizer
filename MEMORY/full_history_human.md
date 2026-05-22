@@ -159,3 +159,13 @@ Chronological log of work sessions. Most recent first below the divider.
 **Open questions / blockers:** None.
 
 **Next session:** Repo's open queue is now {#18 (demo capture)}, gated on human action. Same self-filed-actionable pattern available across the other Python repos in this portfolio (prompt-regression-suite, embedding-model-shootout, chunking-strategies-lab, vector-search-at-scale, python-async-llm-pipelines, rag-production-kit).
+
+## 2026-05-22 — README quoted `cost_optimizer/dashboard/app.py`; actual path is `dashboard/app.py` (#25)
+
+**Duration:** ~25 min. **Issue:** [#25](https://github.com/jt-mchorse/llm-cost-optimizer/issues/25). **PR:** [#26](https://github.com/jt-mchorse/llm-cost-optimizer/pull/26).
+
+Two places in the README quoted `streamlit run cost_optimizer/dashboard/app.py`: the "Today the five runtime layers ship" bullet at L21 and the Demo section at L326. The actual dashboard lives at top-level `dashboard/app.py` (the middle of the README, the architecture doc, and the filesystem all agree on this). A reader who copy-pasted the literal command got `Error: Invalid value: File does not exist`.
+
+Fix is two-line: update L21 and L326. Lock against drift via `tests/test_readme_paths_resolve.py` (+2 tests): the first parses all paths-shaped tokens that appear inside `` `backticks` `` or `` ```bash``` `` fences, then asserts each resolves on disk or appears on an explicit `_KNOWN_OPERATOR_GENERATED` allow-list (three legitimate "operator runs this, then this file appears" docs that the no-fabricated-benchmarks rule says we intentionally don't pre-commit). The second hard-pins the original failure: assert `cost_optimizer/dashboard/app.py` is absent from the README and `dashboard/app.py` is present, so even a future rename in either direction fails CI before merge.
+
+Continuation note: this work was drafted in a prior session that did not open a PR — the code sat in the working tree as an unpushed stash. This session picked the stash up, branched, ran the full pytest suite (152 passed + 1 skipped), tamper-verified the snapshot test fires for the original failure mode, committed code separately from MEMORY, and opened PR #26. The path-snapshot test pattern is portable — any portfolio repo whose README quotes file paths inside code regions could adopt the same lock with ~30 lines of pytest. Open questions / followups: none.
