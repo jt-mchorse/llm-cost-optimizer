@@ -273,3 +273,25 @@ context_for_next_session:
   - ninth_post_v0_1_readme_vs_code_drift_fix_in_the_portfolio_pattern
 followups: []
 ---
+
+---
+session: 2026-05-23T03:15Z
+duration_min: 30
+issue: 27
+focus: architecture_doc_drift_lock_test_only_no_doc_changes
+decisions_made: []
+delta:
+  files_added: 1     # tests/test_architecture_doc.py
+  tests_added: 10
+  test_pass_rate: "162/162 + 1 skipped (streamlit)"
+context_for_next_session:
+  - test_only_lock_no_changes_to_docs_architecture_md_doc_already_in_steady_state_shape
+  - three_invariants_path_token_reachability_active_decision_coverage_banned_phrase_absence
+  - schema_pivot_from_sister_repos_this_doc_annotates_with_d_nnn_not_hash_nn_so_coverage_check_anchors_to_memory_core_decisions_ai_md_active_set
+  - operator_supplied_paths_allowlist_added_for_docs_savings_real_md_per_d_012_with_inverse_safety_net_test_fires_if_listed_path_ever_lands_on_disk
+  - min_active_decision_id_2_excludes_d_001_scope_baseline_intentionally
+  - tamper_verified_three_axes_this_pr_phrase_d_010_removal_nonexistent_path
+  - portfolio_pattern_five_of_twelve_repos_lacking_arch_doc_lock_this_is_the_first_of_those_five_to_ship
+  - next_four_sister_issues_rag_production_kit_chunking_strategies_lab_python_async_llm_pipelines_agent_orchestration_platform
+followups: []
+---
