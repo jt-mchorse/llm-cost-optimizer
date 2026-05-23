@@ -295,3 +295,25 @@ context_for_next_session:
   - next_four_sister_issues_rag_production_kit_chunking_strategies_lab_python_async_llm_pipelines_agent_orchestration_platform
 followups: []
 ---
+
+---
+session: 2026-05-23T23:25Z
+duration_min: 25
+issue: 18
+focus: demo_capture_script_ac3_only_operator_blocked_ac1_ac2
+delta:
+  files_added: 2   # scripts/capture_demo.py, tests/test_capture_demo_smoke.py
+  files_changed: 1  # .gitignore (docs/demo-artifacts/)
+  tests_added: 4
+  test_pass_rate: "171/171 + 1 skipped (streamlit)"
+decisions_made: []
+context_for_next_session:
+  - sister_to_llm_eval_harness_pr_33_same_loop_session_same_two_stage_pattern_stage_1_auto_in_process_stage_2_operator_action_cheatsheet
+  - bench_savings_import_uses_same_sys_path_bootstrap_as_tests_test_bench_savings_py_so_arch_doc_lock_RESOLVABLE_PREFIXES_already_covers_scripts_capture_demo_py
+  - streamlit_launch_subprocess_off_by_default_to_keep_smoke_test_hermetic_streamlit_runs_long_running_server
+  - stable_artifact_paths_savings_demo_md_savings_demo_json_in_docs_demo_artifacts_gitignored
+  - issue_18_now_1_of_3_ac_complete_ac1_gif_mp4_and_ac2_readme_embed_remain_operator_only
+  - portfolio_demo_script_coverage_now_eval_harness_done_cost_optimizer_done_nextjs_already_done_ai_app_already_done_remaining_prompt_regression_suite_15_rag_production_kit_25_mcp_server_cookbook_16
+  - next_in_build_sequence_prompt_regression_suite_15_position_3
+followups: []
+---
