@@ -14,3 +14,9 @@ logs/
 .coverage
 htmlcov/
 *.egg-info/
+
+# Intermediate artifacts written by scripts/capture_demo.py. The
+# committed demo asset lives at docs/demo.gif (or .mp4); the script's
+# stable copies under docs/demo-artifacts/ are regenerated on each
+# re-capture and aren't source.
+docs/demo-artifacts/
