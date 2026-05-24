@@ -183,3 +183,21 @@ Drift caught while authoring: `docs/architecture.md` quotes `docs/savings_real.m
 Tamper-verified three ways: reinjecting `(this PR — issue #1)` in §1 header fires `test_no_banned_phrases`; removing all `D-010` references fires `test_every_active_decision_referenced`; quoting `cost_optimizer/nonexistent.py` fires `test_backtick_paths_resolve_on_disk`.
 
 **Why this work, this session:** First of five sister issues in this night-session sweep. The portfolio pattern of architecture-doc drift was the dominant work-shape of the 2026-05-22 day session; this completes the lock coverage across the Python half of the portfolio. **Open questions / blockers:** none. **Next session:** continue the sweep across `rag-production-kit`, `chunking-strategies-lab`, `python-async-llm-pipelines`, `agent-orchestration-platform`.
+
+## 2026-05-23 — 60-second demo capture script (#18, AC3 of 3)
+
+**Duration:** ~25 min. **Issue:** [#18](https://github.com/jt-mchorse/llm-cost-optimizer/issues/18). **PR:** [#29](https://github.com/jt-mchorse/llm-cost-optimizer/pull/29).
+
+Sister to [`llm-eval-harness#33`](https://github.com/jt-mchorse/llm-eval-harness/pull/33), landed earlier in the same day-session loop. The two-stage structure mirrors the README's "Demo" section commands:
+
+- **STAGE 1 (auto, hermetic).** `scripts/capture_demo.py` calls `scripts.bench_savings.main(["--dry", "--out", <tmp>])` in-process so the rendered five-strategy savings table appears in the recording's terminal frame under an explicit stage banner. Fresh artifact copies land at `docs/demo-artifacts/savings_demo.{md,json}` (gitignored). The bench-import helper uses the same `sys.path` bootstrap as `tests/test_bench_savings.py`, so a future rename of `scripts/bench_savings.py` fails both the test and the capture script at the same time — they share an import contract.
+
+- **STAGE 2 (operator-action).** Cheat-sheet prints the exact `streamlit run dashboard/app.py` command, the `http://localhost:8501` URL, and a three-step checklist (strategy summary → cumulative-savings chart → strategy comparison view) so the click path is reproducible across recordings. `--launch-streamlit` subprocess-spawns the dashboard for one-key operator sessions; off by default because streamlit is a long-running server that can't run hermetically in CI.
+
+`tests/test_capture_demo_smoke.py` adds four tests under the same hermetic contract as the existing smoke suites. Pass count: 167 → 171, plus the same one pre-existing streamlit-dashboard skip.
+
+**Why this work, this session:** Second issue in the day-session multi-issue loop. The portfolio reached the quiet point where every open issue is a `[demo]` GIF/MP4 capture, the v0.1 quality bar's only outstanding row across all twelve repos. Of the three acceptance criteria, AC3 (capture script) is the only one Claude can land — AC1 and AC2 need a real screen recorder. Same pattern as the first loop iteration on `llm-eval-harness`; this one extends the script-coverage row across the cost-optimizer demo.
+
+**Open questions / blockers:** AC1 + AC2 require operator action (screen recorder + README embed). The PR is ready for review on AC3 standalone — issue #18 stays open until JT records.
+
+**Next session:** Continue the loop. Build-sequence pos 3 is `prompt-regression-suite` #15 — same AC3-only pattern.
