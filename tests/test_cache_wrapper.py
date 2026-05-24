@@ -269,3 +269,62 @@ def test_wrapper_accepts_explicit_pricing_override():
     result = w.create(system="sys", messages=[{"role": "user", "content": "x"}])
     # 1M cached tokens at $10/MTok input, 90% off = $9 saved
     assert result.telemetry.dollars_saved == pytest.approx(9.0, rel=1e-9)
+
+
+# Issue #34: ModelPricing rejects negative rates/multipliers and empty model.
+# Negative values silently invert the sign of dollars_saved at
+# cache_wrapper.py:177-179; D-003 requires savings math be traceable to a
+# documented rate, never fabricated — extend that from "no invented model"
+# to "no invented numbers within a known model".
+@pytest.mark.parametrize(
+    "field,bad_value",
+    [
+        ("input_per_mtok", -0.01),
+        ("input_per_mtok", -100.0),
+        ("cache_write_multiplier", -0.01),
+        ("cache_write_multiplier", -2.0),
+        ("cache_read_multiplier", -0.01),
+        ("cache_read_multiplier", -1.0),
+    ],
+)
+def test_model_pricing_rejects_negative_numeric_field(field: str, bad_value: float):
+    kwargs: dict[str, float | str] = {
+        "model": "custom-x",
+        "input_per_mtok": 1.0,
+    }
+    kwargs[field] = bad_value
+    with pytest.raises(ValueError, match=rf"{field} must be >= 0\.0"):
+        ModelPricing(**kwargs)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("bad_model", ["", None, 123])
+def test_model_pricing_rejects_invalid_model_string(bad_model: object):
+    with pytest.raises(ValueError, match="model must be a non-empty string"):
+        ModelPricing(model=bad_model, input_per_mtok=1.0)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["input_per_mtok", "cache_write_multiplier", "cache_read_multiplier"],
+)
+def test_model_pricing_accepts_zero_for_numeric_fields(field: str):
+    # Zero is meaningful: free inputs / zero-cost cache writes / zero-cost
+    # cache reads are all valid for synthetic-workload testing scenarios.
+    kwargs: dict[str, float | str] = {
+        "model": "custom-x",
+        "input_per_mtok": 1.0,
+    }
+    kwargs[field] = 0.0
+    # No raise; constructor returns a valid instance.
+    p = ModelPricing(**kwargs)  # type: ignore[arg-type]
+    assert getattr(p, field) == 0.0
+
+
+def test_model_pricing_builtin_table_loads_under_new_validator():
+    # Smoke-test that the four built-in entries at pricing.py:42-45 still
+    # construct cleanly under __post_init__. Pins against accidental
+    # regression of the table's literals.
+    for model in ("claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5"):
+        p = get_pricing(model)
+        assert p.model == model
+        assert p.input_per_mtok >= 0.0

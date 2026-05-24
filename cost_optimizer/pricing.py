@@ -35,6 +35,20 @@ class ModelPricing:
     cache_write_multiplier: float = 1.25
     cache_read_multiplier: float = 0.10
 
+    def __post_init__(self) -> None:
+        # D-003 extends from "no invented model" to "no invented numbers within
+        # a known model": a negative rate or multiplier silently inverts the
+        # sign of dollars_saved at cache_wrapper.py:177-179.
+        if not isinstance(self.model, str) or not self.model:
+            raise ValueError(f"model must be a non-empty string; got {self.model!r}")
+        for name, value in (
+            ("input_per_mtok", self.input_per_mtok),
+            ("cache_write_multiplier", self.cache_write_multiplier),
+            ("cache_read_multiplier", self.cache_read_multiplier),
+        ):
+            if value < 0.0:
+                raise ValueError(f"{name} must be >= 0.0; got {value}")
+
 
 # Input $/MTok as of 2026-05. Update when Anthropic publishes new pricing;
 # the rule is "cite the docs in the commit" rather than guess.
