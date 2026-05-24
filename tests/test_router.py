@@ -338,3 +338,95 @@ def test_router_with_both_signals_records_all_values() -> None:
     assert decision.model_id == "claude-opus-4-7"
     assert decision.signal_values["entropy"] == pytest.approx(math.log(5), rel=1e-6)
     assert decision.signal_values["judge"] == 0.3
+
+
+# ----------------------------------------------------------------------
+# Signal-name uniqueness (#32)
+# ----------------------------------------------------------------------
+# D-009 designates `RouterDecision.signal_values` as the per-signal
+# telemetry the savings dashboard reads for cost attribution. Two signals
+# sharing a `name` would silently overwrite each other in that dict — the
+# guard catches it at construction so the failure is loud and names the
+# offending duplicate.
+
+
+def test_duplicate_signal_names_raises_at_construction() -> None:
+    adapter = StubAdapter(response=FakeResponse(text="x"))
+    trip = SignalReading(value=0.9, trip=True)
+    no_trip = SignalReading(value=0.1, trip=False)
+    with pytest.raises(ValueError, match=r"duplicate signal names: \['judge'\]"):
+        UncertaintyRouter(
+            cheap_model="claude-haiku-4-5",
+            strong_model="claude-opus-4-7",
+            cheap_adapter=adapter,
+            signals=[
+                ConstantSignal(name="judge", reading=trip),
+                ConstantSignal(name="judge", reading=no_trip),
+            ],
+        )
+
+
+def test_duplicate_signal_names_message_lists_only_colliding_name() -> None:
+    adapter = StubAdapter(response=FakeResponse(text="x"))
+    r = SignalReading(value=0.0, trip=False)
+    with pytest.raises(ValueError, match=r"duplicate signal names: \['judge'\]") as exc_info:
+        UncertaintyRouter(
+            cheap_model="claude-haiku-4-5",
+            strong_model="claude-opus-4-7",
+            cheap_adapter=adapter,
+            signals=[
+                ConstantSignal(name="judge", reading=r),
+                ConstantSignal(name="entropy", reading=r),
+                ConstantSignal(name="judge", reading=r),
+            ],
+        )
+    assert "entropy" not in str(exc_info.value)
+
+
+def test_distinct_names_with_same_signal_class_construct_cleanly() -> None:
+    # Legitimate use case: two judges with different rubrics, deliberately
+    # given distinct names so the dashboard can attribute escalation cost
+    # per-rubric. The guard must not over-trigger on this.
+    adapter = StubAdapter(response=FakeResponse(text="answer", prompt="q"))
+    judge_a = StubJudge(canned_score=0.3)
+    judge_b = StubJudge(canned_score=0.9)
+    router = UncertaintyRouter(
+        cheap_model="claude-haiku-4-5",
+        strong_model="claude-opus-4-7",
+        cheap_adapter=adapter,
+        signals=[
+            JudgeConfidenceSignal(
+                judge=judge_a, rubric="faithfulness", threshold=0.7, name="judge_factual"
+            ),
+            JudgeConfidenceSignal(
+                judge=judge_b, rubric="safety", threshold=0.7, name="judge_safety"
+            ),
+        ],
+    )
+    decision = router.route({})
+    # First (factual) trips, second (safety) does not — both readings recorded.
+    assert decision.triggered_signal == "judge_factual"
+    assert decision.signal_values == {"judge_factual": 0.3, "judge_safety": 0.9}
+
+
+def test_default_name_pairing_entropy_plus_judge_still_constructs() -> None:
+    # Regression pin: the canonical default-name shape (one EntropySignal +
+    # one JudgeConfidenceSignal) has different defaults ("entropy" vs
+    # "judge"), so the guard must not break the README's recommended setup.
+    adapter = StubAdapter(response=FakeResponse(text="ok", prompt="q"))
+    judge = StubJudge(canned_score=0.8)
+    router = UncertaintyRouter(
+        cheap_model="claude-haiku-4-5",
+        strong_model="claude-opus-4-7",
+        cheap_adapter=adapter,
+        signals=[
+            EntropySignal(),
+            JudgeConfidenceSignal(judge=judge, rubric="faithfulness"),
+        ],
+    )
+    # Constructed fine; no logprobs on the response so entropy returns
+    # None / no-trip and judge passes (0.8 >= 0.7), so cheap stays.
+    decision = router.route({})
+    assert decision.model_id == "claude-haiku-4-5"
+    assert decision.triggered_signal is None
+    assert set(decision.signal_values.keys()) == {"entropy", "judge"}
