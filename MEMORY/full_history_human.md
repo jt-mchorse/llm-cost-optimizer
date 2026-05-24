@@ -201,3 +201,19 @@ Sister to [`llm-eval-harness#33`](https://github.com/jt-mchorse/llm-eval-harness
 **Open questions / blockers:** AC1 + AC2 require operator action (screen recorder + README embed). The PR is ready for review on AC3 standalone — issue #18 stays open until JT records.
 
 **Next session:** Continue the loop. Build-sequence pos 3 is `prompt-regression-suite` #15 — same AC3-only pattern.
+
+## 2026-05-24 — Issue #30: `--dry`/`--no-dry` parity, real-API guard was dead code
+
+**Duration:** ~20 min. **Issue:** [#30](https://github.com/jt-mchorse/llm-cost-optimizer/issues/30). **Branch:** `session/2026-05-24-0317-issue-30`.
+
+`scripts/bench_savings.py` and `scripts/tune_threshold.py` both declared `--dry` as `action="store_true", default=True`, which pinned `args.dry` to True forever and made the `if not args.dry: print("::error::real-API ... not implemented"); return 2` block immediately below it unreachable. Both existing tests acknowledged the gap in a comment — `# default for --dry is True; can't actually trigger --no-dry from argparse` — and asserted `rc == 0` on a bare invocation instead of the documented `rc == 2`.
+
+Switched both flags to `action=argparse.BooleanOptionalAction` (Python 3.9+ stdlib, already the project floor per `pyproject.toml`'s `requires-python`). `--no-dry` now actually opts into the real-API branch and the existing guard fires correctly. Rewrote the two `test_main_*` tests to invoke `--no-dry`, assert `rc == 2`, assert the `::error::real-API ... not implemented` marker is on stderr, and assert no artifacts were written; added a sister `test_main_dry_default_path_still_succeeds` in `tests/test_bench_savings.py` to belt-and-braces the unchanged stub path.
+
+D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo — was documented in the README and the source but couldn't be enforced at the CLI layer until this fix. Now `--no-dry` is a real CI assertion, not just an inline comment.
+
+**Why this work, this session:** Opportunistic second issue in the night-session multi-issue loop after landing `llm-eval-harness` #34's `diff --format markdown` parity. Same shape of work — surface a quietly-broken contract, fix it, lock with a test, no new D-NNN.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** Continue the night-session loop on build-sequence #3 (`prompt-regression-suite`) and beyond. The pattern this session establishes — "look for CLI flags or guards that should be enforceable but aren't" — generalizes across the portfolio's other dry/stub modes.
