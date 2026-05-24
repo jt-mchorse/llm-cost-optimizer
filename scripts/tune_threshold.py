@@ -238,9 +238,13 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--dry",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
         default=True,
-        help="Run against committed stub fixtures (default in CI / no API).",
+        help=(
+            "Run against committed stub fixtures (default in CI / no API). "
+            "`--no-dry` opts into real-API mode, which currently errors out "
+            "until the operator wires real adapters per D-007."
+        ),
     )
     p.add_argument(
         "--out",

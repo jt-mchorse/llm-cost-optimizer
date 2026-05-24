@@ -74,9 +74,16 @@ def test_main_dry_writes_json(tmp_path: Path) -> None:
     assert {r["threshold"] for r in payload["rows"]} == {0.5, 1.5}
 
 
-def test_main_non_dry_mode_exits_with_documented_error(capsys) -> None:
-    rc = main(["--out", "/tmp/should-not-be-written", "--thresholds", "0.5"])
-    # --dry defaults to True; explicit override of default isn't on the
-    # CLI surface today (we documented it as honest stub). So a bare run
-    # without --dry should still succeed in dry mode.
-    assert rc == 0
+def test_main_non_dry_mode_exits_with_documented_error(tmp_path: Path, capsys) -> None:
+    """`--no-dry` reaches the D-007 real-API-not-implemented guard and exits 2.
+
+    The flag previously couldn't be set to False (action="store_true" with
+    default=True made the guard unreachable). It now uses BooleanOptionalAction
+    so `--no-dry` actually opts into the real-API branch.
+    """
+    out_stem = tmp_path / "should-not-be-written"
+    rc = main(["--no-dry", "--out", str(out_stem), "--thresholds", "0.5"])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "real-API tune mode is not implemented" in captured.err
+    assert not out_stem.with_suffix(".json").exists()

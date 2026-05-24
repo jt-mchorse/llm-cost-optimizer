@@ -225,18 +225,32 @@ def test_main_writes_artifacts_and_returns_zero(tmp_path: Path) -> None:
 
 
 def test_main_real_api_mode_errors_out_until_implemented(
+    tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    rc = main(["--out", "/tmp/should_not_exist"])  # default --dry=True, override via no flag
-    # default for --dry is True; can't actually trigger --no-dry from argparse
-    # without action=store_false. The check is: passing the flag explicitly
-    # still works. The real-API "not implemented" branch only fires when --dry=False,
-    # which our argparse plumbing currently can't produce. So this test simply
-    # asserts the default path succeeds (the alternative non-dry guard lives in
-    # the source as a defensive bail).
+    """`--no-dry` reaches the D-007 real-API-not-implemented guard and exits 2.
+
+    The flag previously couldn't be set to False (action="store_true" with
+    default=True made the guard unreachable). It now uses BooleanOptionalAction
+    so `--no-dry` actually opts into the real-API branch.
+    """
+    rc = main(["--no-dry", "--out", str(tmp_path / "should_not_exist")])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "real-API bench mode is not implemented" in captured.err
+    assert not (tmp_path / "should_not_exist.json").exists()
+
+
+def test_main_dry_default_path_still_succeeds(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """With no flag, the stub path runs to completion and writes the bench artifacts."""
+    out_stem = tmp_path / "savings"
+    rc = main(["--out", str(out_stem), "--n", "60"])
+    _ = capsys.readouterr()
     assert rc == 0
-    # Suppress unused warning about capsys
-    _ = capsys
+    assert out_stem.with_suffix(".json").exists()
+    assert out_stem.with_suffix(".md").exists()
 
 
 def test_streamlit_dashboard_module_imports_when_extra_installed() -> None:
