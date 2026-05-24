@@ -358,3 +358,26 @@ context_for_next_session:
   - third_phase_bc_target_in_today_180_min_day_session_after_merging_8_prs_in_phase_a
 followups: []
 ---
+
+---
+session: 2026-05-24T23:50Z
+duration_min: 18
+issue: 34
+focus: model_pricing_post_init_rejects_negative_rates_and_empty_model
+delta:
+  files_changed: 1   # cost_optimizer/pricing.py
+  files_added: 0
+  tests_added: 11   # 6 parametrized negative-value cases + 3 invalid-model cases + 3 inclusive-zero cases + 1 builtin-table smoke
+  test_pass_rate: "184/184 + 1 skipped (streamlit)"
+decisions_made: []
+context_for_next_session:
+  - model_pricing_frozen_dataclass_now_post_init_validates_input_per_mtok_cache_write_multiplier_cache_read_multiplier_all_ge_zero_and_model_non_empty_string
+  - harm_was_dollars_saved_at_cache_wrapper_py_177_to_179_silently_flipping_sign_when_input_per_mtok_or_cache_read_multiplier_was_negative
+  - d_003_in_repo_pricing_table_unknown_models_raise_principle_now_extended_from_no_invented_model_to_no_invented_numbers_within_a_known_model
+  - frozen_dataclass_post_init_runs_at_construction_does_not_break_frozenness_which_only_blocks_reassignment_pattern_worth_remembering
+  - zero_accepted_for_three_numeric_fields_meaningful_for_synthetic_workload_testing_free_inputs_zero_cost_cache_writes_zero_cost_cache_reads
+  - builtin_table_smoke_test_loops_all_four_keys_and_asserts_construction_clean_pins_against_accidental_regression_of_pricing_py_42_to_45_literals
+  - upper_bound_on_cache_read_multiplier_le_one_deliberately_deferred_strict_ge_zero_already_blocks_sign_flip_harm_class_separate_target_if_surfaces
+  - second_phase_bc_target_in_180_min_day_session_after_phase_a_merged_pr_33_for_this_repo_plus_llm_eval_harness_40_first_phase_bc_target
+followups: []
+---
