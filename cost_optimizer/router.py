@@ -237,6 +237,22 @@ class UncertaintyRouter:
     cheap_adapter: CheapAdapter
     signals: list[EscalationSignal] = field(default_factory=list)
 
+    def __post_init__(self) -> None:
+        # Duplicate `name` values in `signals` would silently overwrite each
+        # other in `RouterDecision.signal_values` (which D-009 designates as
+        # cost-attribution telemetry for the savings dashboard). Catch it at
+        # construction so the failure is loud and surfaces the offending name,
+        # rather than a quietly truncated readings dict at every `route()` call.
+        names = [s.name for s in self.signals]
+        seen: set[str] = set()
+        dups: set[str] = set()
+        for n in names:
+            if n in seen:
+                dups.add(n)
+            seen.add(n)
+        if dups:
+            raise ValueError(f"duplicate signal names: {sorted(dups)}")
+
     def route(self, request: Any) -> RouterDecision:
         cheap_response = self.cheap_adapter.call_cheap(request)
         readings: dict[str, float | None] = {}

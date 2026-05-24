@@ -217,3 +217,16 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — PR ready for review.
 
 **Next session:** Continue the night-session loop on build-sequence #3 (`prompt-regression-suite`) and beyond. The pattern this session establishes — "look for CLI flags or guards that should be enforceable but aren't" — generalizes across the portfolio's other dry/stub modes.
+
+## 2026-05-24 — Issue #32: UncertaintyRouter validates signal names are unique at construction
+**Duration:** ~30 min · **Branch:** `session/2026-05-24-issue-32`
+
+- `UncertaintyRouter` accepted `signals: list[EscalationSignal]` but never checked that the `name` attributes were unique. `route()` builds `signal_values: dict[str, float | None]` by `readings[sig.name] = reading.value`; two signals sharing a name silently overwrote each other. D-009 explicitly designates `signal_values` as the dashboard's cost-attribution telemetry, so the bug was a data-integrity hole, not just a quality-of-life one.
+- Added a `__post_init__` that raises `ValueError(f"duplicate signal names: {sorted(dups)}")` — same message shape as the existing `batch.submit()` duplicate-`custom_ids` guard, so the cost-optimizer keeps a consistent loud-failure dialect.
+- Four new tests in `tests/test_router.py` under a `#32` block: same-name raises; three-signal case (two collide, one unique) lists only the colliding name; deliberately-distinct names on the same `JudgeConfidenceSignal` class construct cleanly and `route()` records both readings (the legitimate multi-judge use case); regression-pin that `[EntropySignal(), JudgeConfidenceSignal()]` — the canonical README pairing with different default names — still constructs.
+
+**Why this work, this session:** Sister to `python-async-llm-pipelines` #28 (constructor-time validation parity) which landed in Phase A of this same day-session. The cost-optimizer was the last hot module in the portfolio that built a name-keyed telemetry dict without policing the names. Surfacing a real data-integrity bug, not just a guard-rail polish.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** Continue the day-session loop. Build-sequence priority next is `prompt-regression-suite` (position 3) or back to `llm-eval-harness` (position 1) — both have a similar "is there a quietly-broken Protocol contract" hunting ground.

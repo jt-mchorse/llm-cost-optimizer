@@ -337,3 +337,24 @@ context_for_next_session:
   - opportunistic_second_issue_in_night_session_after_landing_llm_eval_harness_issue_34_diff_format_markdown_parity
 followups: []
 ---
+
+---
+session: 2026-05-24T19:30Z
+duration_min: 30
+issue: 32
+focus: router_signal_name_uniqueness_construction_time_guard
+delta:
+  files_changed: 1   # cost_optimizer/router.py
+  files_added: 0
+  tests_added: 4
+  test_pass_rate: "171/171 + 1 skipped (streamlit)"
+decisions_made: []
+context_for_next_session:
+  - uncertaintyrouter_post_init_now_raises_valueerror_on_duplicate_signal_names_naming_the_dups
+  - d_009_designates_signal_values_as_dashboard_cost_attribution_telemetry_so_silent_overwrite_was_a_real_data_integrity_bug
+  - message_shape_matches_batch_submit_duplicate_custom_ids_guard_at_batch_py_216_portfolio_consistency
+  - tests_pin_two_same_name_raises_three_signal_case_lists_only_colliding_name_distinct_names_construct_clean_and_default_pair_regression
+  - sister_to_python_async_llm_pipelines_28_constructor_time_validation_parity_landed_phase_a_same_day_session
+  - third_phase_bc_target_in_today_180_min_day_session_after_merging_8_prs_in_phase_a
+followups: []
+---
