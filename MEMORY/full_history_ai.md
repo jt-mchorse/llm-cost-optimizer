@@ -317,3 +317,23 @@ context_for_next_session:
   - next_in_build_sequence_prompt_regression_suite_15_position_3
 followups: []
 ---
+
+---
+session: 2026-05-24T03:25Z
+duration_min: 20
+issue: 30
+focus: dry_flag_unreachable_when_false_real_api_guard_was_dead_code
+delta:
+  files_changed: 4   # scripts/bench_savings.py, scripts/tune_threshold.py, tests/test_bench_savings.py, tests/test_tune_threshold.py
+  tests_added: 1     # bench-savings sister dry-default test; tune-threshold and bench-savings real-api tests rewritten
+  test_pass_rate: "167_passed_1_skipped"
+decisions_made: []
+context_for_next_session:
+  - dry_flag_was_action_store_true_with_default_true_so_args_dry_pinned_true_forever_real_api_guard_immediately_below_was_unreachable
+  - existing_tests_in_bench_savings_and_tune_threshold_explicitly_documented_the_gap_in_comments_instead_of_asserting_the_guard
+  - fix_uses_argparse_booleanoptionalaction_py_3_9_plus_already_the_project_floor_so_no_extra_compat_layer_needed
+  - tests_rewritten_to_actually_invoke_no_dry_and_assert_rc_2_plus_stderr_marker_plus_no_artifacts_written_belt_and_braces
+  - d_007_posture_real_api_mode_is_operator_supplied_is_now_enforceable_at_the_cli_layer_not_just_documented_in_the_source
+  - opportunistic_second_issue_in_night_session_after_landing_llm_eval_harness_issue_34_diff_format_markdown_parity
+followups: []
+---
