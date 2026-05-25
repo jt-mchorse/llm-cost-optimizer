@@ -256,3 +256,16 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — PR ready for review.
 
 **Next session:** Continue the loop with rag-production-kit or embedding-model-shootout for a second iteration. Per memory, the cost dataclasses in those repos already got `__post_init__` validation in the fixup-merged PRs today; the operational/runtime gaps (TTL-like, similarity-threshold-like, signal-like) likely remain.
+
+## 2026-05-25 — Issue #38: BatchRequest/BatchResultRow/BatchJobMeta __post_init__ guards
+**Duration:** ~25 min · **Branch:** `session/2026-05-25-1535-issue-38`
+
+- `cost_optimizer/batch.py` was the last unvalidated dataclass module in the repo — pricing and router both gained `__post_init__` guards in the recent sweep (#34, #36), but the batch API still accepted degenerate numerics silently. Added three guards at the dataclass boundary: `BatchRequest.max_tokens` (int >= 1, reject bool), `BatchResultRow.prompt_tokens`/`completion_tokens` (int >= 0, reject bool), `BatchJobMeta.n_requests` (int >= 1, reject bool).
+- Each guard explicitly rejects `bool` because `bool` is an `int` subclass in Python; and rejects `float` (even `1.0`) because the field is typed `int`. Zero is permitted for `BatchResultRow` (the canonical "failed row" surface — existing tests pin this), rejected for the other two.
+- 37 new tests in three nested classes follow the established `TestEntropySignalThresholdValidation` pattern: `pytest.mark.parametrize` over a bad-value table plus a boundary-accept test per field. All 238 existing tests stay green; ruff clean.
+
+**Why this work, this session:** The Phase A merge pass closed 11 PRs across all 12 repos; only one priority:high issue (`mcp-server-cookbook#32`) remained, and Phase B+C closed it via a 12-line README test-count drift fix. With zero open priority:high left, I went repo-by-repo looking for the latent sweep gap and found that `batch.py` had been skipped. Filing and closing #38 in the same session matches the prompt's "aim for 2-4 issues per DAY session" directive.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** Continue the loop. The portfolio's dataclass-validation sweep is now arguably complete across this repo; the trending workflow will surface fresh work topics.

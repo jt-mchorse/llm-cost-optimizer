@@ -68,6 +68,18 @@ class BatchRequest:
     max_tokens: int = 1024
     system: str | None = None  # optional system prompt
 
+    def __post_init__(self) -> None:
+        # max_tokens=0 silently submits a 400-bound payload; negative or
+        # non-int (incl. bool, which is an int subclass in Python) makes
+        # the in-memory backend store garbage. Mirrors the contract-tightening
+        # sweep (pricing.py, router.py).
+        if isinstance(self.max_tokens, bool) or not isinstance(self.max_tokens, int):
+            raise ValueError(
+                f"BatchRequest.max_tokens must be an int >= 1; got {self.max_tokens!r}"
+            )
+        if self.max_tokens < 1:
+            raise ValueError(f"BatchRequest.max_tokens must be an int >= 1; got {self.max_tokens}")
+
 
 @dataclass(frozen=True)
 class BatchResultRow:
@@ -82,6 +94,20 @@ class BatchResultRow:
     prompt_tokens: int
     completion_tokens: int
     error: str | None = None
+
+    def __post_init__(self) -> None:
+        # Zero is valid (failed rows surface as 0/0 — see tests/test_batch.py
+        # line 88), but negative or non-int would silently invert cost math
+        # when aggregated upstream. Bool is rejected explicitly because
+        # `bool` is an `int` subclass in Python.
+        for name, value in (
+            ("prompt_tokens", self.prompt_tokens),
+            ("completion_tokens", self.completion_tokens),
+        ):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError(f"BatchResultRow.{name} must be an int >= 0; got {value!r}")
+            if value < 0:
+                raise ValueError(f"BatchResultRow.{name} must be an int >= 0; got {value}")
 
 
 # Status strings deliberately match the Anthropic Messages-Batch API's
@@ -108,6 +134,18 @@ class BatchJobMeta:
     status: str
     n_requests: int
     created_at_iso: str
+
+    def __post_init__(self) -> None:
+        # A zero-request batch is meaningless. The cast in `_extract_meta`
+        # (`int(n or 0)`) bottoms out at 0 if the response omits the count
+        # field — that's a backend-shape bug, not a valid batch, so reject
+        # it here at the construction boundary.
+        if isinstance(self.n_requests, bool) or not isinstance(self.n_requests, int):
+            raise ValueError(
+                f"BatchJobMeta.n_requests must be an int >= 1; got {self.n_requests!r}"
+            )
+        if self.n_requests < 1:
+            raise ValueError(f"BatchJobMeta.n_requests must be an int >= 1; got {self.n_requests}")
 
 
 class IdempotencyConflict(Exception):

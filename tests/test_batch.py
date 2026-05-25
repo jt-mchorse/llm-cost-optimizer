@@ -410,3 +410,91 @@ def test_anthropic_backend_rejects_bad_client_shape():
 def test_anthropic_backend_rejects_none_client():
     with pytest.raises(ValueError, match="requires a client"):
         AnthropicBatchBackend(None)
+
+
+# ----------------------------------------------------------------------
+# Contract-tightening: __post_init__ validation on the dataclasses (#38)
+# ----------------------------------------------------------------------
+
+
+class TestBatchRequestMaxTokensValidation:
+    @pytest.mark.parametrize("bad", [0, -1, -1024])
+    def test_rejects_non_positive(self, bad: int) -> None:
+        with pytest.raises(ValueError, match=r"BatchRequest\.max_tokens must be an int >= 1"):
+            BatchRequest(custom_id="r-0", user="u", model="fake", max_tokens=bad)
+
+    @pytest.mark.parametrize("bad", [True, False, 1.5, "1024", None, 1.0])
+    def test_rejects_non_int(self, bad) -> None:
+        # bool is an int subclass in Python, so True/False are explicitly rejected.
+        # 1.0 (float) is rejected even though it equals 1 — must be int.
+        with pytest.raises(ValueError, match=r"BatchRequest\.max_tokens must be an int >= 1"):
+            BatchRequest(custom_id="r-0", user="u", model="fake", max_tokens=bad)  # type: ignore[arg-type]
+
+    def test_accepts_one_minimum(self) -> None:
+        r = BatchRequest(custom_id="r-0", user="u", model="fake", max_tokens=1)
+        assert r.max_tokens == 1
+
+    def test_accepts_default(self) -> None:
+        r = BatchRequest(custom_id="r-0", user="u", model="fake")
+        assert r.max_tokens == 1024
+
+
+class TestBatchResultRowTokenValidation:
+    @pytest.mark.parametrize("field", ["prompt_tokens", "completion_tokens"])
+    @pytest.mark.parametrize("bad", [-1, -100])
+    def test_rejects_negative(self, field: str, bad: int) -> None:
+        kwargs = dict(custom_id="r-0", response_text="x", prompt_tokens=0, completion_tokens=0)
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"BatchResultRow\.{field} must be an int >= 0"):
+            BatchResultRow(**kwargs)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("field", ["prompt_tokens", "completion_tokens"])
+    @pytest.mark.parametrize("bad", [True, False, 1.5, "5", None, 1.0])
+    def test_rejects_non_int(self, field: str, bad) -> None:
+        kwargs = dict(custom_id="r-0", response_text="x", prompt_tokens=0, completion_tokens=0)
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"BatchResultRow\.{field} must be an int >= 0"):
+            BatchResultRow(**kwargs)  # type: ignore[arg-type]
+
+    def test_accepts_zero_boundary_failed_row(self) -> None:
+        # Zero is the canonical "row failed" surface — see existing test
+        # `test_results_for_partial_failure_with_zero_token_rows`.
+        row = BatchResultRow(
+            custom_id="r-0", response_text=None, prompt_tokens=0, completion_tokens=0, error="boom"
+        )
+        assert row.prompt_tokens == 0
+        assert row.completion_tokens == 0
+
+
+class TestBatchJobMetaNRequestsValidation:
+    @pytest.mark.parametrize("bad", [0, -1])
+    def test_rejects_non_positive(self, bad: int) -> None:
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            BatchJobMeta(
+                job_id="j-1",
+                idempotency_key="k-1",
+                status=PENDING,
+                n_requests=bad,
+                created_at_iso="2026-05-25T00:00:00Z",
+            )
+
+    @pytest.mark.parametrize("bad", [True, False, 1.5, "2", None, 1.0])
+    def test_rejects_non_int(self, bad) -> None:
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            BatchJobMeta(
+                job_id="j-1",
+                idempotency_key="k-1",
+                status=PENDING,
+                n_requests=bad,  # type: ignore[arg-type]
+                created_at_iso="2026-05-25T00:00:00Z",
+            )
+
+    def test_accepts_one_minimum(self) -> None:
+        meta = BatchJobMeta(
+            job_id="j-1",
+            idempotency_key="k-1",
+            status=PENDING,
+            n_requests=1,
+            created_at_iso="2026-05-25T00:00:00Z",
+        )
+        assert meta.n_requests == 1

@@ -407,3 +407,27 @@ context_for_next_session:
   - seventh_phase_bc_target_in_360_min_night_session_after_prompt_regression_35_agent_orchestration_29_mcp_cookbook_32_nextjs_streaming_24_ai_app_integration_tests_24_llm_eval_harness_42
 followups: []
 ---
+
+---
+session: 2026-05-25T15:40Z
+duration_min: 25
+issue: 38
+focus: batch_dataclass_post_init_validation_closes_last_unvalidated_module
+delta:
+  files_changed: 2   # cost_optimizer/batch.py, tests/test_batch.py
+  files_added: 0
+  tests_added: 37   # 27 -> 64 in test_batch.py; full repo: 202 -> 238 passed (1 skipped streamlit)
+  test_pass_rate: "238_passed_1_skipped_streamlit"
+decisions_made: []
+context_for_next_session:
+  - batch_py_was_the_last_unvalidated_dataclass_module_in_the_repo_pricing_and_router_already_swept
+  - batchrequest_max_tokens_default_1024_no_runtime_check_zero_silently_submitted_400_bound_payload_in_memory_backend_stored_garbage
+  - batchresultrow_prompt_tokens_completion_tokens_zero_valid_failed_row_surface_existing_test_pins_this_negative_would_invert_aggregated_cost_math_upstream
+  - batchjobmeta_n_requests_extract_meta_cast_int_n_or_0_bottoms_at_zero_on_malformed_backend_response_post_init_now_treats_that_as_a_bug_not_a_valid_batch
+  - bool_explicitly_rejected_in_all_three_classes_because_bool_is_int_subclass_in_python
+  - float_eq_1_0_rejected_even_though_equals_int_1_must_be_int_strict_type_check
+  - 37_new_tests_three_nested_classes_parametrize_tables_for_bad_values_plus_boundary_acceptance
+  - matches_existing_sweep_pattern_test_entropy_signal_threshold_validation_test_judge_confidence_signal_threshold_validation
+  - second_phase_bc_target_in_180_min_day_session_after_mcp_cookbook_32_readme_test_count_drift_fix
+followups: []
+---
