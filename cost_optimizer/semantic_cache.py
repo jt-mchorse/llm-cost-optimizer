@@ -381,8 +381,12 @@ class SemanticCache:
     ) -> None:
         if not (0.0 < similarity_threshold <= 1.0):
             raise ValueError(f"similarity_threshold must be in (0, 1]; got {similarity_threshold}")
-        if default_ttl_s is not None and default_ttl_s <= 0:
-            raise ValueError(f"default_ttl_s must be positive; got {default_ttl_s}")
+        # Extend the existing sign-only check to finiteness (#36). A NaN ttl
+        # would store as expires_at = now + NaN = NaN, then every subsequent
+        # `now < expires_at` comparison is false → every entry reads as
+        # expired → the cache silently goes fully bypassed without diagnostic.
+        if default_ttl_s is not None and (not math.isfinite(default_ttl_s) or default_ttl_s <= 0):
+            raise ValueError(f"default_ttl_s must be a finite positive number; got {default_ttl_s}")
         self.embedder = embedder
         self.storage = storage
         self.similarity_threshold = similarity_threshold

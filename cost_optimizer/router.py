@@ -106,6 +106,19 @@ class EntropySignal:
     threshold: float = 1.5  # ~3 plausible tokens with equal mass
     name: str = "entropy"
 
+    def __post_init__(self) -> None:
+        # Entropy is bounded [0, +inf), so threshold should be finite and >= 0.
+        # NaN passes `>= threshold` always-false → silent disable (escalation
+        # gate never fires); negative makes every reading >= threshold → silent
+        # always-trip (D-009 savings dashboard reports cost as if cheap-model
+        # path was taken when in fact the strong model ran on every request);
+        # +Infinity is silent-disable as well. Mirrors the contract-tightening
+        # sweep across the portfolio (#36).
+        if not math.isfinite(self.threshold) or self.threshold < 0.0:
+            raise ValueError(
+                f"EntropySignal.threshold must be a finite number >= 0.0; got {self.threshold}"
+            )
+
     def measure(self, response: Any) -> SignalReading:
         # Anthropic-style: response.content is a list of blocks, each
         # with an optional `logprobs` field. We look at the first text
@@ -177,6 +190,18 @@ class JudgeConfidenceSignal:
     rubric: str
     threshold: float = 0.7
     name: str = "judge"
+
+    def __post_init__(self) -> None:
+        # Judge score is bounded [0, 1] per llm-eval-harness JudgeScore. NaN
+        # makes `score < threshold` always-false → silent disable; > 1 makes
+        # every score < threshold → silent always-trip → strong model on every
+        # request; < 0 → silent disable (no real score satisfies score < neg).
+        # Same harm class as EntropySignal above (#36).
+        if not math.isfinite(self.threshold) or not (0.0 <= self.threshold <= 1.0):
+            raise ValueError(
+                f"JudgeConfidenceSignal.threshold must be a finite number in [0.0, 1.0]; "
+                f"got {self.threshold}"
+            )
 
     def measure(self, response: Any) -> SignalReading:
         text = _extract_text(response)
