@@ -277,7 +277,7 @@ def test_wrapper_accepts_explicit_pricing_override():
 # documented rate, never fabricated — extend that from "no invented model"
 # to "no invented numbers within a known model".
 @pytest.mark.parametrize(
-    "field,bad_value",
+    ("field", "bad_value"),
     [
         ("input_per_mtok", -0.01),
         ("input_per_mtok", -100.0),
