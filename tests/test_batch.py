@@ -459,7 +459,9 @@ class TestBatchResultRowTokenValidation:
     def test_accepts_zero_boundary_failed_row(self) -> None:
         # Zero is the canonical "row failed" surface — see existing test
         # `test_results_for_partial_failure_with_zero_token_rows`.
-        row = BatchResultRow(custom_id="r-0", response_text=None, prompt_tokens=0, completion_tokens=0, error="boom")
+        row = BatchResultRow(
+            custom_id="r-0", response_text=None, prompt_tokens=0, completion_tokens=0, error="boom"
+        )
         assert row.prompt_tokens == 0
         assert row.completion_tokens == 0
 

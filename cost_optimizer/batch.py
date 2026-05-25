@@ -78,9 +78,7 @@ class BatchRequest:
                 f"BatchRequest.max_tokens must be an int >= 1; got {self.max_tokens!r}"
             )
         if self.max_tokens < 1:
-            raise ValueError(
-                f"BatchRequest.max_tokens must be an int >= 1; got {self.max_tokens}"
-            )
+            raise ValueError(f"BatchRequest.max_tokens must be an int >= 1; got {self.max_tokens}")
 
 
 @dataclass(frozen=True)
@@ -107,13 +105,9 @@ class BatchResultRow:
             ("completion_tokens", self.completion_tokens),
         ):
             if isinstance(value, bool) or not isinstance(value, int):
-                raise ValueError(
-                    f"BatchResultRow.{name} must be an int >= 0; got {value!r}"
-                )
+                raise ValueError(f"BatchResultRow.{name} must be an int >= 0; got {value!r}")
             if value < 0:
-                raise ValueError(
-                    f"BatchResultRow.{name} must be an int >= 0; got {value}"
-                )
+                raise ValueError(f"BatchResultRow.{name} must be an int >= 0; got {value}")
 
 
 # Status strings deliberately match the Anthropic Messages-Batch API's
@@ -151,9 +145,7 @@ class BatchJobMeta:
                 f"BatchJobMeta.n_requests must be an int >= 1; got {self.n_requests!r}"
             )
         if self.n_requests < 1:
-            raise ValueError(
-                f"BatchJobMeta.n_requests must be an int >= 1; got {self.n_requests}"
-            )
+            raise ValueError(f"BatchJobMeta.n_requests must be an int >= 1; got {self.n_requests}")
 
 
 class IdempotencyConflict(Exception):
