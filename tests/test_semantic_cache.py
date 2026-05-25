@@ -268,6 +268,23 @@ def test_ttl_validated_positive():
         )
 
 
+# Issue #36: extend default_ttl_s sign-only check to finiteness. NaN ttl
+# would store as expires_at=now+NaN=NaN; every subsequent now<expires_at
+# check is false → every entry reads as expired → cache silently bypassed.
+@pytest.mark.parametrize(
+    "bad",
+    [float("nan"), float("inf"), float("-inf")],
+)
+def test_ttl_rejects_non_finite(bad: float):
+    with pytest.raises(ValueError, match="finite positive number"):
+        SemanticCache(
+            embedder=HashEmbedder(),
+            storage=InMemoryStorage(),
+            similarity_threshold=0.9,
+            default_ttl_s=bad,
+        )
+
+
 def test_stats_track_hit_rate():
     cache, _ = _cache()
     cache.put("p", "v", model="m")

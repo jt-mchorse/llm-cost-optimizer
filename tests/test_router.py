@@ -430,3 +430,62 @@ def test_default_name_pairing_entropy_plus_judge_still_constructs() -> None:
     assert decision.model_id == "claude-haiku-4-5"
     assert decision.triggered_signal is None
     assert set(decision.signal_values.keys()) == {"entropy", "judge"}
+
+
+# Issue #36: EntropySignal and JudgeConfidenceSignal thresholds were
+# unvalidated. NaN/Infinity silently disabled the escalation gate; out-of-
+# bounds values silently inverted it. Either failure mode reverses D-009's
+# savings-dashboard intent without diagnostic.
+class TestEntropySignalThresholdValidation:
+    @pytest.mark.parametrize(
+        "bad",
+        [-0.01, -1.0, float("nan"), float("inf"), float("-inf")],
+    )
+    def test_rejects_non_finite_or_negative(self, bad: float) -> None:
+        with pytest.raises(
+            ValueError, match=r"EntropySignal\.threshold must be a finite number >= 0\.0"
+        ):
+            EntropySignal(threshold=bad)
+
+    def test_accepts_zero_boundary(self) -> None:
+        # Zero is meaningful — "trip on any nonzero entropy".
+        sig = EntropySignal(threshold=0.0)
+        assert sig.threshold == 0.0
+
+    def test_accepts_default(self) -> None:
+        sig = EntropySignal()
+        assert sig.threshold == 1.5
+
+
+class TestJudgeConfidenceSignalThresholdValidation:
+    @pytest.mark.parametrize(
+        "bad",
+        [-0.01, 1.01, 2.0, float("nan"), float("inf"), float("-inf")],
+    )
+    def test_rejects_out_of_bounds_or_non_finite(self, bad: float) -> None:
+        from cost_optimizer.router import JudgeConfidenceSignal as JCS
+
+        class _StubJudge:
+            def score(self, *_a, **_k):
+                class V:
+                    score = 0.5
+
+                return V()
+
+        with pytest.raises(
+            ValueError,
+            match=r"JudgeConfidenceSignal\.threshold must be a finite number in \[0\.0, 1\.0\]",
+        ):
+            JCS(judge=_StubJudge(), rubric="faithfulness", threshold=bad)
+
+    def test_accepts_inclusive_boundaries(self) -> None:
+        class _StubJudge:
+            def score(self, *_a, **_k):
+                class V:
+                    score = 0.5
+
+                return V()
+
+        for ok in (0.0, 0.5, 1.0):
+            sig = JudgeConfidenceSignal(judge=_StubJudge(), rubric="faithfulness", threshold=ok)
+            assert sig.threshold == ok

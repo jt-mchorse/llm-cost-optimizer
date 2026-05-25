@@ -243,3 +243,16 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — PR ready for review.
 
 **Next session:** Continue the day-session loop. Build-sequence position #3 (`prompt-regression-suite`) is the natural next pickup; scan its public-surface threshold/range parameters for the same shape of gap.
+
+## 2026-05-25 — Issue #36: validate router signal thresholds and SemanticCache TTL finiteness
+**Duration:** ~25 min · **Branch:** `session/2026-05-24-issue-36`
+
+- Three sites silently absorbed operator misconfig that directly affected cost decisions. **`EntropySignal.threshold`** and **`JudgeConfidenceSignal.threshold`** had no validation at all: NaN made the trip comparison always-false → signal never trips → escalation gate silently disables; negative entropy threshold made every reading satisfy `>= threshold` → silent always-trip → strong model on every request → D-009 savings dashboard silently reports wrong cost attribution. Judge threshold `> 1.0` had the same silent-always-trip shape. **`SemanticCache.default_ttl_s`** had a sign-only `<= 0` check that accepted NaN; a NaN TTL stored as `expires_at = now + NaN = NaN`, then every `now < expires_at` check is false → every entry reads as expired → cache silently bypassed.
+- Added `__post_init__` validation to both signal dataclasses using `math.isfinite` plus field-appropriate ranges (entropy `>= 0`; judge `[0, 1]`). Extended `SemanticCache.__init__` `default_ttl_s` sign-only check to finiteness with the error message "must be a finite positive number" (the new message keeps "positive" as a substring so the existing `test_ttl_validated_positive` test still passes unchanged).
+- 16 new tests: parametrized rejection per signal (NaN, +Infinity, -Infinity, negative for entropy, out-of-range for judge); inclusive-boundary acceptance for each (`threshold=0.0` for entropy; `threshold ∈ {0.0, 0.5, 1.0}` for judge); default-value regression for both signals. SemanticCache adds 3 parametrized non-finite cases. Test count 202. Ruff + format clean.
+
+**Why this work, this session:** Seventh Phase B+C target in the 360-min night session. Second PR in llm-cost-optimizer tonight; the first was via the Phase A fixup-merge of #35 (ModelPricing `__post_init__` validation). The cost-dataclass side was already done; this PR completes the cost-decision side, making D-009's savings-dashboard cost-attribution surface loud-on-misconfig end-to-end.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** Continue the loop with rag-production-kit or embedding-model-shootout for a second iteration. Per memory, the cost dataclasses in those repos already got `__post_init__` validation in the fixup-merged PRs today; the operational/runtime gaps (TTL-like, similarity-threshold-like, signal-like) likely remain.
