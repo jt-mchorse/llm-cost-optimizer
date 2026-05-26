@@ -482,3 +482,20 @@ context_for_next_session:
   - same_session_two_repos_pattern_demonstrates_the_portfolio_wide_pattern_uniformity_is_real_not_aspirational
 followups: []
 ---
+
+---
+session: 2026-05-26T23:30Z
+duration_min: 10
+issue: 44
+focus: readme_decision_range_upper_bound_lock
+delta:
+  files_changed: 2
+  tests_added: 1
+context_for_next_session:
+  - readme_decision_range_lock_pattern_now_three_repos_chunking_lab_eval_harness_cost_optimizer
+  - nine_more_repos_still_missing_lock_prompt_regression_rag_kit_emb_shootout_vector_search_async_pipelines_agent_orch_mcp_cookbook_nextjs_streaming_ai_integration_tests
+  - new_focused_test_file_pattern_test_readme_decision_range_py_when_existing_readme_locks_are_already_split_across_multiple_files_keeps_diff_clean
+  - module_scoped_helper_max_active_decision_id_scans_memory_core_decisions_ai_md_for_non_superseded_entries
+decisions_made: []
+followups: []
+---
