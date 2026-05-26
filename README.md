@@ -25,7 +25,7 @@ Each layer is adoptable on its own; the architecture diagram below shows the sea
 
 ## Architecture
 
-Five layers ship today plus a live-API integration posture. Each layer is adoptable on its own — semantic cache → uncertainty router → prompt-cache wrapper at runtime, batch-API as the offline sibling, and the savings dashboard reading bench artifacts that are produced from the same pricing table the runtime layers use. The full integrated diagram, per-layer flows, and the design decisions behind each one live in **[docs/architecture.md](docs/architecture.md)**.
+Five layers ship today plus a live-API integration posture. Each layer is adoptable on its own — semantic cache → uncertainty router → prompt-cache wrapper at runtime, batch-API as the offline sibling, and the savings dashboard reading bench artifacts that are produced from the same pricing table the runtime layers use. The full integrated diagram, per-layer flows, and the design decisions behind each one (D-002…D-012) live in **[docs/architecture.md](docs/architecture.md)**.
 
 ## Quickstart
 
