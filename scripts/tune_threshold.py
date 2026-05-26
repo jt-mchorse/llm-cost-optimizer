@@ -41,6 +41,7 @@ from cost_optimizer.router import (  # noqa: E402
     EntropySignal,
     UncertaintyRouter,
 )
+from scripts._io import atomic_write_text  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -284,14 +285,13 @@ def main(argv: list[str] | None = None) -> int:
     out_stem = Path(args.out)
     out_json = out_stem.with_suffix(".json")
     out_png = out_stem.with_suffix(".png")
-    out_json.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "mode": "dry",
         "cheap_dollars_per_request": args.cheap_dollars,
         "strong_dollars_per_request": args.strong_dollars,
         "rows": [asdict(r) for r in rows],
     }
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
     plot_written = _try_save_plot(rows, out_png)
     print(f"sweep wrote {out_json}")
     if plot_written:

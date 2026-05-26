@@ -70,6 +70,7 @@ from cost_optimizer.semantic_cache import (  # noqa: E402
     InMemoryStorage,
     SemanticCache,
 )
+from scripts._io import atomic_write_text  # noqa: E402
 
 # ----------------------------------------------------------------------
 # Workload generation (deterministic)
@@ -728,7 +729,7 @@ def _write_workload(workload: list[WorkloadRow], out: Path) -> None:
             for r in workload
         ],
     }
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    atomic_write_text(out, json.dumps(payload, indent=2, sort_keys=True))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -767,9 +768,8 @@ def main(argv: list[str] | None = None) -> int:
     out_json = out_stem.with_suffix(".json")
     out_md = out_stem.with_suffix(".md")
     out_workload = out_stem.parent / "savings_workload.json"
-    out_json.parent.mkdir(parents=True, exist_ok=True)
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-    out_md.write_text(_format_markdown(payload), encoding="utf-8")
+    atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
+    atomic_write_text(out_md, _format_markdown(payload))
     _write_workload(_build_workload(n=args.n, seed=args.seed), out_workload)
 
     print(f"bench wrote {out_json}")
