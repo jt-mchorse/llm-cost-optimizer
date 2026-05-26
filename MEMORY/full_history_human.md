@@ -269,3 +269,16 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — PR ready for review.
 
 **Next session:** Continue the loop. The portfolio's dataclass-validation sweep is now arguably complete across this repo; the trending workflow will surface fresh work topics.
+
+## 2026-05-26 — Issue #40: HashEmbedder.ngram completes the portfolio's four-implementation HashEmbedder sweep
+**Duration:** ~20 min · **Branch:** `session/2026-05-26-0030-issue-40`
+
+- `HashEmbedder.__init__(ngram)` in `cost_optimizer/semantic_cache.py:60-63` was the last remaining sign-only HashEmbedder construction site in the portfolio. Today's sweep already tightened `rag-production-kit#43` (HashEmbedder.dim), `embedding-model-shootout#36` (hash_embedder.dim + ngram), and `prompt-regression-suite#38` (HashEmbedder.ngram). This PR closes the loop — all four implementations now share the `not isinstance(int) or isinstance(bool) or <= 0` contract with the matching `"must be a positive integer; got {ngram!r}"` error.
+- Closed the cache-hit-rate-degradation harm class — `HashEmbedder(ngram=True)` silently bound to True (=1), produced unigram embeddings with worse retrieval quality, and the SemanticCache hit-rate silently degraded with no error. **Since this repo exists to optimize cost via cache hits, silent hit-rate loss is the worst-shaped failure mode for the repo purpose.**
+- Updated one pre-existing test's `match=` regex from `">= 1"` to `"ngram must be a positive integer"`. New 15-value parametrize reject matrix + 5-value acceptance matrix + default-ngram pin (21 new collected cases). Full suite 238 → 259 passed (1 skipped streamlit). Ruff clean.
+
+**Why this work, this session:** Tenth Phase B+C target in the 360-min night session. Picked because the four-HashEmbedder portfolio symmetry was 3/4 complete after today's earlier sweeps and `prompt-regression-suite#38` (this night). Closing the loop brings the contract to 4/4.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** The night session has now produced 9 Phase B+C PRs across 9 repos (or 10 PRs across 10 repos counting this one), plus 4 Phase A rescue merges. The portfolio-wide validation-sweep arc is comprehensively saturated. Future sessions should pivot away from validation per the prior memory's guidance.
