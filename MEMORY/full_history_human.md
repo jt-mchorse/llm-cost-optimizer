@@ -282,3 +282,17 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — PR ready for review.
 
 **Next session:** The night session has now produced 9 Phase B+C PRs across 9 repos (or 10 PRs across 10 repos counting this one), plus 4 Phase A rescue merges. The portfolio-wide validation-sweep arc is comprehensively saturated. Future sessions should pivot away from validation per the prior memory's guidance.
+
+## 2026-05-26 — Issue #42: Atomic `--out` writes in bench/sweep scripts (the atomicity pattern propagates)
+**Duration:** ~25 min · **Branch:** `session/2026-05-26-1517-issue-42`
+
+- Four `Path.write_text` call sites across `scripts/bench_savings.py` (3) and `scripts/tune_threshold.py` (1) wrote artifacts non-atomically. The streamlit dashboard (`cost_optimizer/dashboard/app.py`) loads `docs/savings.json` per the demo flow — Streamlit re-renders on file change, so a SIGINT mid-write displays partial strategy rows silently (the worst shape for this repo's purpose). `docs/savings.md` renders inline on the README; half-written breaks it in the same window. `tune_threshold.py`'s JSON feeds operator plot regen.
+- Added `scripts/_io.py` with `atomic_write_text(path, text)` — `tempfile.NamedTemporaryFile(dir=parent, delete=False)` + `fsync` + `os.replace` + `contextlib.suppress(FileNotFoundError)` cleanup. Same shape as the helper landed in `llm-eval-harness#48` earlier this session so the portfolio-wide pattern is uniform. Lives under `scripts/` as a private utility (leading-underscore) so it doesn't expand the `cost_optimizer` public surface.
+- Routed `bench_savings.py:731` (`_write_workload`), `bench_savings.py:771` (`savings.json`), `bench_savings.py:772` (`savings.md`), and `tune_threshold.py:294` through the helper. The `out_json.parent.mkdir(...)` calls were dropped because the helper does it.
+- New `tests/test_atomic_write.py` (10 tests): six unit tests on the helper (happy path / parent-dir create / overwrite / `os.replace`-raises destination-absent / temp-cleanup-on-failure / overwrite-fails destination-unchanged — the property `Path.write_text` could never offer) plus four integration tests (bench_savings with monkeypatched `os.replace` asserts none of the three artifacts exist after failure; tune_threshold same; end-to-end happy paths through both scripts assert valid contents). Full suite 286 → 296 (one streamlit skip pre-existing). Lint + format green.
+
+**Why this work, this session:** Second Phase B+C target in today's 180-min DAY session. Parallels `llm-eval-harness#48` (filed and merged earlier this session) — same harm class (output-layer corruption), same fix shape (sibling-tempfile + fsync + os.replace). Demonstrates that the portfolio-wide pattern uniformity called out in the prior memory entry is real, not aspirational.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** Atomicity arc continues. `prompt-regression-suite` writes HTML diff reports; `rag-production-kit` writes cost-telemetry rollups. Both plausibly need the same pattern. Two more repos closes the arc.
