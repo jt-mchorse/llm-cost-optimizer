@@ -58,8 +58,16 @@ class HashEmbedder:
     """
 
     def __init__(self, *, ngram: int = 2) -> None:
-        if ngram < 1:
-            raise ValueError("ngram must be >= 1")
+        # Extends sign-only `ngram < 1` to the portfolio positive-int contract
+        # (#40). The same shape landed in `rag-production-kit#43`,
+        # `embedding-model-shootout#36`, and `prompt-regression-suite#38`.
+        # Sign-only accepted `True` (silently bound; unigram embedding had
+        # worse retrieval quality but no error → cache hit-rate silently
+        # degraded), float (bound, then `_ngrams` raised TypeError deep in
+        # the call chain), and `NaN`/`Inf` (bound, surfaced as cryptic
+        # range/overflow errors).
+        if not isinstance(ngram, int) or isinstance(ngram, bool) or ngram <= 0:
+            raise ValueError(f"ngram must be a positive integer; got {ngram!r}")
         self.ngram = ngram
 
     def embed(self, text: str) -> list[float]:

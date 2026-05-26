@@ -10,6 +10,8 @@ Three layers covered hermetically:
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from cost_optimizer.semantic_cache import (
@@ -85,13 +87,63 @@ def test_hash_embedder_empty_returns_nonzero_vector():
 
 
 def test_hash_embedder_rejects_negative_ngram():
-    with pytest.raises(ValueError, match=">= 1"):
+    # Extended in #40 to the portfolio positive-integer contract; the
+    # original "must be >= 1" wording was tightened to "must be a positive
+    # integer".
+    with pytest.raises(ValueError, match="ngram must be a positive integer"):
         HashEmbedder(ngram=0)
 
 
 def test_hash_embedder_rejects_non_string():
     with pytest.raises(TypeError):
         HashEmbedder().embed(42)  # type: ignore[arg-type]
+
+
+# Issue #40: completes the portfolio's HashEmbedder sweep. Sign-only
+# `ngram < 1` accepted bool (silently bound, unigram embedding silently
+# degraded cache hit-rate — the worst harm class for this repo's purpose),
+# float (silently bound, then `_ngrams` raised TypeError deep in the
+# call chain), and NaN/Inf (silently bound, range/overflow errors at
+# embed time). Mirrors rag-production-kit#43, embedding-model-shootout#36,
+# and prompt-regression-suite#38.
+
+
+@pytest.mark.parametrize(
+    "bad_ngram",
+    [
+        True,
+        False,
+        0,
+        -1,
+        -2,
+        0.5,
+        1.5,
+        2.0,
+        math.nan,
+        math.inf,
+        -math.inf,
+        None,
+        "2",
+        [2],
+        (2,),
+    ],
+)
+def test_hash_embedder_rejects_non_positive_int_ngram(bad_ngram):
+    with pytest.raises(ValueError, match="ngram must be a positive integer"):
+        HashEmbedder(ngram=bad_ngram)
+
+
+@pytest.mark.parametrize("good_ngram", [1, 2, 3, 5, 100])
+def test_hash_embedder_accepts_positive_int_ngram(good_ngram):
+    e = HashEmbedder(ngram=good_ngram)
+    assert e.ngram == good_ngram
+
+
+def test_hash_embedder_default_ngram_unchanged():
+    # Default constructor path stays bound to 2; no behaviour change for
+    # the 99% case.
+    e = HashEmbedder()
+    assert e.ngram == 2
 
 
 # ----------------------------------------------------------------------
