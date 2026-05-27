@@ -23,7 +23,15 @@ README = REPO_ROOT / "README.md"
 
 # Substrings, lowercase. Substring match (case-insensitive). Pinned in a
 # tuple so a future loose edit can't silently drop one.
-BANNED_PHRASES = ("this pr",)
+#
+# The pattern uses U+00B7 middle dot + space + "this pr" instead of
+# bare "this pr" so we tie the match to the exact section-header
+# drift shape ("## Foo (#N · this PR)") and don't false-positive
+# on legitimate prose substrings like "this producer", "this
+# practice", "this print", etc. Tightened in python-async-llm-
+# pipelines#40 (where "backpressure to this producer" forced the
+# fix); propagated here for portfolio uniformity.
+BANNED_PHRASES = ("· this pr",)
 
 
 @pytest.fixture(scope="module")
@@ -48,4 +56,4 @@ def test_banned_phrases_tuple_locked() -> None:
     # Hard-pin so a future loose edit of this test can't silently drop
     # one of the guards. Same shape as test_architecture_doc.py's
     # `test_banned_phrases_locked`.
-    assert BANNED_PHRASES == ("this pr",)
+    assert BANNED_PHRASES == ("· this pr",)
