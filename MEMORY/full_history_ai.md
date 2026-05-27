@@ -499,3 +499,20 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-05-27T03:40Z
+duration_min: 12
+issue: 46
+focus: drop_stale_this_pr_from_four_readme_section_headers_plus_banned_phrase_lock
+delta:
+  files_changed: 2   # README.md, tests/test_readme_banned_phrases.py
+  tests_added: 3     # existence + parametrized banned-phrase + hard-pin tuple
+context_for_next_session:
+  - propagation_of_prompt_regression_suite_43_lock_pattern_to_llm_cost_optimizer_same_drift_class_four_stale_this_pr_section_headers_for_shipped_surface_semantic_cache_model_routing_batch_api_savings_dashboard
+  - test_readme_banned_phrases_py_now_in_two_repos_prompt_regression_suite_and_llm_cost_optimizer_pattern_is_self_replicating_per_repo_text_only_diff_is_the_repo_specific_section_names_in_the_docstring
+  - lock_runs_under_existing_pytest_invocation_no_workflow_changes_needed
+  - full_suite_273_pass_1_skip_streamlit_not_installed_in_dev_env_expected
+decisions_made: []
+followups: []
+---
