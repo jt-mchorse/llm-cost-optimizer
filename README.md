@@ -77,7 +77,7 @@ wrapped = PromptCacheWrapper(
 
 If you're testing locally without an API key, the wrapper works against any object exposing `client.messages.create(...)` — see `tests/test_cache_wrapper.py` for the fake client used by the test suite.
 
-## Semantic cache (#2 · this PR)
+## Semantic cache (#2)
 
 The second layer is a **semantic response cache** — keyed by embedding
 similarity, not exact-match on the prompt string. Two paraphrased
@@ -133,7 +133,7 @@ the `HashEmbedder` would produce numbers that don't generalize to
 production. The cache infrastructure is shipped here; the dashboard
 plots the numbers when #5 lands.
 
-## Model routing (#3 · this PR)
+## Model routing (#3)
 
 The third layer is **uncertainty-routed model fallback**: the cheap
 model handles every request; the router escalates to the strong model
@@ -190,7 +190,7 @@ claim that "quality at 80/20 ≥ quality at 100% strong" — the
 lands in `docs/threshold_report.md` only when the operator runs the
 script against a real API and a real dataset.
 
-## Batch API integration (#4 · this PR)
+## Batch API integration (#4)
 
 Anthropic's Messages Batch API charges 50% of standard input/output
 rates and runs eligible non-realtime workloads asynchronously. The
@@ -241,7 +241,7 @@ For local development and tests, use `InMemoryBatchBackend` — same
 protocol, dedupes on idempotency key, exposes `advance(job_id)` and
 `complete(job_id, results=…)` test helpers, zero dependencies.
 
-## Savings dashboard (#5 · this PR)
+## Savings dashboard (#5)
 
 The dashboard ties the four cost layers together: every shipped
 strategy runs against the *same* synthetic workload, and the resulting
