@@ -296,3 +296,15 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — PR ready for review.
 
 **Next session:** Atomicity arc continues. `prompt-regression-suite` writes HTML diff reports; `rag-production-kit` writes cost-telemetry rollups. Both plausibly need the same pattern. Two more repos closes the arc.
+
+## 2026-05-26 — Issue #44: README decision-range upper-bound lock
+**Duration:** ~10 min · **Branch:** `session/2026-05-26-2322-issue-44`
+
+- Added `tests/test_readme_decision_range.py` with the active-decision-range upper-bound invariant.
+- Bumped README's architecture-section summary to cite `D-002…D-012`.
+
+**Why this work, this session:** Same cross-portfolio drift class authored in chunking-strategies-lab this session and propagated to llm-eval-harness moments ago — extending to llm-cost-optimizer is propagation 2 of 10.
+
+**Open questions / blockers:** none.
+
+**Next session:** Continue propagation to prompt-regression-suite, then onward per build sequence.
