@@ -308,3 +308,17 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none.
 
 **Next session:** Continue propagation to prompt-regression-suite, then onward per build sequence.
+
+## 2026-05-27 — Issue #46: drop stale "· this PR" from four README section headers + banned-phrase lock
+**Duration:** ~12 min · **Branch:** `session/2026-05-27-0324-issue-46`
+
+- Four section headers in `README.md` still carried PR-time framing ("· this PR") for surface that's been shipped for weeks: `Semantic cache (#2 · this PR)`, `Model routing (#3 · this PR)`, `Batch API integration (#4 · this PR)`, `Savings dashboard (#5 · this PR)`. Same drift class `prompt-regression-suite#43` just resolved.
+- Rewrote the four headers to steady-state form.
+- New lock: `tests/test_readme_banned_phrases.py` with `BANNED_PHRASES = ("this pr",)` + hard-pin tuple test. Mirrors the lock authored in `prompt-regression-suite#43` — same shape, same docstring, repo-specific section names only.
+- Full suite 273 pass + 1 expected skip (streamlit not installed in dev env). Lock test 3/3 pass.
+
+**Why this work, this session:** Iteration 4 of an autonomous NIGHT session loop, second repo in the README banned-phrase lock propagation arc.
+
+**Open questions / blockers:** none — PR ready for review.
+
+**Next session:** Two more repos in the portfolio have the same `· this PR` drift: `embedding-model-shootout` (1 hit) and `python-async-llm-pipelines` (2 hits). Same fix shape applies to both.
