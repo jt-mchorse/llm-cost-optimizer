@@ -23,11 +23,15 @@ entries it touches without forcing a full flush.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Protocol
+
+from cost_optimizer.io_utils import atomic_write_text
 
 # ----------------------------------------------------------------------
 # Embedder Protocol + dep-free reference
@@ -349,6 +353,25 @@ class CacheStats:
         n = self.total_lookups
         return self.hits / n if n > 0 else 0.0
 
+    def to_dict(self) -> dict[str, Any]:
+        """JSON-stable dict for observability/logging sinks (#52).
+
+        Mirrors ``CacheTelemetry.to_dict`` in ``cache_wrapper.py``: the
+        raw counter fields plus the two derived properties so log
+        consumers don't have to recompute them (and risk drift if the
+        formula ever changes). Pairs with
+        ``SemanticCache.dump_stats_json`` for the on-disk path; metric
+        backends consume the in-process dict directly.
+        """
+        return {
+            "hits": self.hits,
+            "misses": self.misses,
+            "invalidations": self.invalidations,
+            "expired_purged": self.expired_purged,
+            "total_lookups": self.total_lookups,
+            "hit_rate": self.hit_rate,
+        }
+
 
 # ----------------------------------------------------------------------
 # SemanticCache
@@ -471,6 +494,19 @@ class SemanticCache:
         n = self.storage.invalidate_by_tag(tag)
         self.stats.invalidations += n
         return n
+
+    def dump_stats_json(self, path: str | Path) -> None:
+        """Write the current cache stats to ``path`` as JSON (#52).
+
+        Atomic on POSIX — uses ``cost_optimizer.io_utils.atomic_write_text``
+        so a Ctrl-C / disk-full / OOM between truncate and flush can't
+        leave a log-tailer reading a half-written file. Byte-shape parity
+        with ``PromptCacheWrapper.dump_aggregate_json`` from the prompt-
+        cache layer: sorted keys, indent=2, trailing newline. Operators
+        can tail / diff the file across restarts.
+        """
+        payload = json.dumps(self.stats.to_dict(), sort_keys=True, indent=2) + "\n"
+        atomic_write_text(path, payload)
 
     def _scoped_prompt(self, prompt: str, model: str) -> str:
         # Embedding input includes the model id so the two-model "different

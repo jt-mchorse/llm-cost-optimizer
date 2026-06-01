@@ -142,6 +142,14 @@ response back into the cache.
   `measure_false_positive_rate()`, not online via random sampling.
   Online sampling silently bleeds savings; offline measurement is an
   operator-initiated cost.
+- **CacheStats observability (#52).** `CacheStats.to_dict()` and
+  `SemanticCache.dump_stats_json(path)` ship the same observability
+  shape the prompt-cache wrapper layer exposes (#50): a stable JSON
+  dict with the four raw counters (`hits`, `misses`, `invalidations`,
+  `expired_purged`) plus the two derived properties (`total_lookups`,
+  `hit_rate`). Written atomically through `cost_optimizer/io_utils.py`
+  so the two cache layers expose one observability shape to operators
+  tailing the files or scraping the dicts.
 
 ---
 
