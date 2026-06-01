@@ -87,6 +87,13 @@ runtime stack and almost everything else flows through it.
 - Pricing is a small in-repo table (`cost_optimizer/pricing.py`),
   updated by hand from Anthropic's published rates, including the
   cache write/read multipliers (1.25× / 0.10×). Never fabricated.
+- `CacheTelemetry.to_dict()` and `PromptCacheWrapper.dump_aggregate_json(path)`
+  (#50) ship the observability shape: a stable JSON dict with all five
+  telemetry fields (`hits`, `misses`, `tokens_cached`, `tokens_written`,
+  `dollars_saved`) written atomically through the package-level
+  `atomic_write_text` helper at `cost_optimizer/io_utils.py`.
+  `scripts/_io.py` remains as a backwards-compat re-export of the
+  helper for `scripts/bench_savings.py` and `scripts/tune_threshold.py`.
 
 ---
 

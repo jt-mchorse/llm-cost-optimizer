@@ -33,8 +33,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts import _io as io_mod  # noqa: E402
-from scripts._io import atomic_write_text  # noqa: E402
+from cost_optimizer import io_utils as io_mod  # noqa: E402
+from cost_optimizer.io_utils import atomic_write_text  # noqa: E402
 from scripts.bench_savings import main as bench_main  # noqa: E402
 from scripts.tune_threshold import main as tune_main  # noqa: E402
 

@@ -18,10 +18,13 @@ wrapper testable with a fake client and importable without an API key.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Protocol
 
+from cost_optimizer.io_utils import atomic_write_text
 from cost_optimizer.pricing import ModelPricing, get_pricing
 
 
@@ -47,6 +50,23 @@ class CacheTelemetry:
             tokens_written=self.tokens_written + other.tokens_written,
             dollars_saved=self.dollars_saved + other.dollars_saved,
         )
+
+    def to_dict(self) -> dict[str, Any]:
+        """JSON-stable dict for observability/logging sinks.
+
+        Locked shape so downstream consumers can parse without knowing
+        the dataclass field order. Pairs with
+        ``PromptCacheWrapper.dump_aggregate_json`` for the on-disk
+        path; metric backends like statsd/prometheus consume the
+        in-process dict directly.
+        """
+        return {
+            "hits": self.hits,
+            "misses": self.misses,
+            "tokens_cached": self.tokens_cached,
+            "tokens_written": self.tokens_written,
+            "dollars_saved": self.dollars_saved,
+        }
 
 
 @dataclass(frozen=True)
@@ -122,6 +142,22 @@ class PromptCacheWrapper:
     def reset(self) -> None:
         """Clear the aggregate counters. Per-call telemetry is unaffected."""
         self._aggregate = CacheTelemetry.zero()
+
+    def dump_aggregate_json(self, path: str | Path) -> None:
+        """Write the current aggregate telemetry to ``path`` as JSON.
+
+        Atomic on POSIX — uses ``cost_optimizer.io_utils.atomic_write_text``
+        so a Ctrl-C / disk-full / OOM between truncate and flush can't
+        leave the consumer reading a half-written file. Same pattern the
+        bench writer uses for ``docs/savings.json``; this surface is for
+        runtime aggregation against a long-lived wrapper.
+
+        The on-disk shape is ``CacheTelemetry.to_dict()`` with sorted
+        keys and a final newline. Operators can tail / diff the file
+        across restarts.
+        """
+        payload = json.dumps(self._aggregate.to_dict(), sort_keys=True, indent=2) + "\n"
+        atomic_write_text(path, payload)
 
     def create(self, **kwargs: Any) -> CallResult:
         """Call the underlying ``messages.create`` with cache_control applied.
