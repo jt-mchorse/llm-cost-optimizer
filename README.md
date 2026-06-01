@@ -14,7 +14,7 @@ The wrapper is intentionally dependency-free: the Anthropic SDK is never importe
 
 Today the five runtime layers and one offline sibling have all shipped:
 
-- **Prompt-cache wrapper** (#1) — the duck-typed Anthropic-SDK wrapper above; `CacheTelemetry` per call and aggregate.
+- **Prompt-cache wrapper** (#1) — the duck-typed Anthropic-SDK wrapper above; `CacheTelemetry` per call and aggregate. `CacheTelemetry.to_dict()` and `PromptCacheWrapper.dump_aggregate_json(path)` (#50) emit a JSON-stable observability shape — atomic-written so a log-tailer never reads a half-written file.
 - **Semantic response cache** (#2) — `cost_optimizer.semantic_cache` keys on an embedding of the user prompt, caches the full response, and exposes TTL plus exact-prompt invalidation. Pluggable `Embedder` Protocol (default in-repo hash embedder; swap in a real one).
 - **Uncertainty-routed model fallback** (#3) — `cost_optimizer.router` first-passes the cheap model and escalates to the strong model only when a confidence signal (logprob entropy or judge score) clears a threshold. The threshold curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset.
 - **Anthropic Batch API integration** (#4) — `cost_optimizer.batch` wraps the non-realtime batch endpoint with an idempotency key derived from request content, exposes a polling-friendly `BatchJobMeta`, and reports both the realtime-equivalent cost and the actual batch cost so the savings number is directly comparable.

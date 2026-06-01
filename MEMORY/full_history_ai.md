@@ -531,3 +531,26 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-06-01T15:55Z
+duration_min: 35
+issue: 50
+focus: cache_telemetry_to_dict_plus_prompt_cache_wrapper_dump_aggregate_json_plus_io_utils_promotion
+phase: day_session_phase_b_iteration_2
+delta:
+  files_changed: 5   # README.md, cost_optimizer/cache_wrapper.py, docs/architecture.md, scripts/_io.py, tests/test_atomic_write.py
+  files_added: 2     # cost_optimizer/io_utils.py + tests/test_cache_wrapper_dump.py
+  tests_added: 8     # to_dict field set + round trip + zero state + dump file shape + parent mkdir + atomic overwrite + zero canary + scripts_io identity
+context_for_next_session:
+  - cache_telemetry_to_dict_returns_full_field_set_dict_hits_misses_tokens_cached_tokens_written_dollars_saved_field_set_lock_via_dataclasses_fields_catches_silent_field_addition_without_serializer_update
+  - prompt_cache_wrapper_dump_aggregate_json_writes_sorted_keys_json_with_trailing_newline_via_package_level_atomic_write_text_so_log_tailer_never_reads_half_written_file_during_sigint_disk_full_oom
+  - cost_optimizer_io_utils_atomic_write_text_promoted_from_scripts_io_py_mirror_of_llm_eval_harness_d_015_atomic_write_helpers_live_at_package_level_not_in_operator_facing_scripts_dir
+  - scripts_io_py_now_thin_re_export_back_compat_for_bench_savings_and_tune_threshold_call_sites_no_caller_change_needed_identity_check_in_test_locks_no_parallel_implementation_drift
+  - tests_test_atomic_write_py_monkeypatch_target_updated_from_scripts_io_os_to_cost_optimizer_io_utils_os_since_scripts_io_no_longer_imports_os_directly
+  - docs_architecture_md_test_caught_double_colon_in_function_reference_being_parsed_as_a_path_regex_workaround_was_to_split_function_name_into_plain_prose
+  - readme_what_this_is_bullet_for_layer_1_extended_no_other_readme_changes_needed_existing_locks_test_readme_decision_range_test_readme_banned_phrases_test_readme_defaults_snapshot_all_clean
+  - portfolio_io_utils_pattern_now_two_repos_llm_eval_harness_and_llm_cost_optimizer_both_have_package_level_io_utils_atomic_write_text_with_runtime_or_cli_writer_at_the_package_level
+decisions_made: []
+followups: []
+---

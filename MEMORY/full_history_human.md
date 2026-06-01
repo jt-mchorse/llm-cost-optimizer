@@ -333,3 +333,18 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none.
 
 **Next session:** continue portfolio propagation.
+
+## 2026-06-01 — Issue #50: Observability surface for cache telemetry
+**Duration:** ~35 min · **Branch:** `session/2026-06-01-1524-issue-50`
+
+- Added `CacheTelemetry.to_dict()` returning the dataclass field set verbatim (`{hits, misses, tokens_cached, tokens_written, dollars_saved}`). Locked by a field-set test against `dataclasses.fields(t)` so adding a new field to `CacheTelemetry` without teaching `to_dict` about it fails loud.
+- Added `PromptCacheWrapper.dump_aggregate_json(path)` that writes the current `self.aggregate.to_dict()` as sorted-keys JSON with a trailing newline through the package-level atomic-write helper. `Path.write_text` was the obvious shape but it's not atomic — a Ctrl-C / disk-full / OOM between truncate and flush leaves the consumer reading a half-written file, which a log tailer or dashboard would crash on.
+- Promoted `scripts/_io.py::atomic_write_text` to `cost_optimizer/io_utils.py`. Mirrors `llm-eval-harness` D-015 ("atomic-write helpers live at the package level, not file-private"). `scripts/_io.py` becomes a re-export so existing imports in `bench_savings.py` / `tune_threshold.py` keep working unchanged; an identity check (`scripts._io.atomic_write_text is cost_optimizer.io_utils.atomic_write_text`) is locked by a test so a future fork of the helper into two parallel implementations fails loud.
+- Updated `tests/test_atomic_write.py`'s monkeypatch target from `scripts._io.os` to `cost_optimizer.io_utils.os` since the canonical home moved. All five `monkeypatch.setattr(io_mod.os, "replace", boom)` tests in that file still exercise the same atomicity invariant — the change is just the address.
+- README "What this is" #1 bullet extended to name the new surface. `docs/architecture.md` Prompt-cache "Why these decisions" section extends to the JSON observability shape and the io_utils promotion. The architecture-doc lock caught a `::` in a function reference being parsed as a path; rewrote the prose to avoid double-colons.
+
+**Why this work, this session:** Second DAY-session iteration of 2026-06-01. Build sequence picked `llm-cost-optimizer` next (earliest in §8 with zero open priority:high after `llm-eval-harness`). The runtime layer had aggregate telemetry but no serialization surface — the most common downstream use is shipping aggregate metrics to an observability sink, which today requires hand-rolled field extraction. Real productive gap, additive surface, no decision touched.
+
+**Open questions / blockers:** none — 281 pytest pass + 1 expected skip (streamlit not in dev env), ruff clean.
+
+**Next session:** the next natural extension is a streaming/per-call sink (`PromptCacheWrapper.on_call(callback)` or similar) so each individual `CallResult` flows through to a metrics backend without the caller polling `aggregate`. Out of scope for #50 — would be a clean follow-up.
