@@ -348,3 +348,17 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — 281 pytest pass + 1 expected skip (streamlit not in dev env), ruff clean.
 
 **Next session:** the next natural extension is a streaming/per-call sink (`PromptCacheWrapper.on_call(callback)` or similar) so each individual `CallResult` flows through to a metrics backend without the caller polling `aggregate`. Out of scope for #50 — would be a clean follow-up.
+
+## 2026-06-01 — Issue #52: `CacheStats.to_dict` + `SemanticCache.dump_stats_json` (observability parity)
+**Duration:** ~35 min · **Branch:** `session/2026-06-01-1935-issue-52`
+
+- Added `CacheStats.to_dict()` to `cost_optimizer/semantic_cache.py` returning the four raw counters (`hits`, `misses`, `invalidations`, `expired_purged`) plus the two derived properties (`total_lookups`, `hit_rate`). Derived fields are included so downstream log consumers don't recompute them from the raw counters — and so a future formula change is locked at the dict layer too, not just the property.
+- Added `SemanticCache.dump_stats_json(path)` that writes `stats.to_dict()` via the package-level `cost_optimizer.io_utils.atomic_write_text` helper (the same helper #50 promoted from `scripts/_io.py`). Sorted-keys JSON, `indent=2`, trailing newline — byte-shape parity with `PromptCacheWrapper.dump_aggregate_json` so one log-parsing config consumes both files.
+- 8 new tests in `tests/test_semantic_cache_dump.py` mirror the matrix `tests/test_cache_wrapper_dump.py` set up for #50: raw-field-set exhaustiveness via `dataclasses.fields`, derived-field correctness as a separate lock with triangulation against the manual formula, zero-state `hit_rate=0.0` lock (not NaN; the property short-circuits on `n_lookups == 0`), on-disk shape lock with sorted-keys check, parent-dir auto-create (from `atomic_write_text`'s `parent.mkdir(parents=True)`), atomic-overwrite with no tempfile leftovers, zero-state canary writer.
+- README "Semantic response cache" bullet (#2) extended with one sentence on the new observability shape citing #52. `docs/architecture.md` layer-2 invariants section gains a parallel paragraph naming the parity with #50. No new D-NNN — this is pure pattern parity work.
+
+**Why this work, this session:** Iteration 3 of today's DAY session. Iterations 1 and 2 closed `llm-eval-harness#58` (validate --calibration) and `prompt-regression-suite#49` (prompt-snap validate). Looking at the just-merged #51 (PR for #50 cache-wrapper observability), the symmetric gap on the other cache layer was obvious — `CacheStats` had no `to_dict`, `SemanticCache` had no `dump_stats_json`, the two layers were exposing two different observability shapes to downstream consumers in `rag-production-kit` and `agent-orchestration-platform`. Filing #52 and shipping the parity inside the same day session shrinks the cross-repo integration surface.
+
+**Open questions / blockers:** none — full pytest pass (290/290 with one streamlit-extras skip), ruff check + format clean, live smoke shows the on-disk JSON has the expected shape.
+
+**Next session:** with the two cache layers at observability parity, the natural follow-on is wiring both into the savings dashboard so the live UI can show hit-rate over time alongside the existing per-strategy dollar charts. Out of scope here; would be a clean #5-adjacent issue if operators ask for it.
