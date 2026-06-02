@@ -32,6 +32,7 @@ from scripts.bench_savings import (  # noqa: E402
     BATCH_DISCOUNT_FACTOR,
     CHEAP_MODEL,
     STRONG_MODEL,
+    StrategyResult,
     _build_workload,
     _cumulative_savings,
     _format_markdown,
@@ -261,3 +262,80 @@ def test_streamlit_dashboard_module_imports_when_extra_installed() -> None:
     sys.path.insert(0, str(_REPO_ROOT))
     # `dashboard.app` is the module; importing it should not raise.
     import dashboard.app  # noqa: F401
+
+
+# ----------------------------------------------------------------------
+# #54: StrategyResult.to_dict — explicit field-by-field contract
+# (no dataclasses.asdict). Same pattern as #50 (CacheTelemetry.to_dict)
+# and #52 (CacheStats.to_dict) at the package level.
+# ----------------------------------------------------------------------
+
+
+def _make_result(extra: dict | None = None) -> StrategyResult:
+    return StrategyResult(
+        strategy="test",
+        n_rows=10,
+        total_usd=1.5,
+        baseline_usd=2.0,
+        saved_usd=0.5,
+        saved_pct=25.0,
+        mean_quality=0.85,
+        extra={"hits": 5} if extra is None else extra,
+    )
+
+
+def test_strategy_result_to_dict_field_set_is_pinned() -> None:
+    d = _make_result().to_dict()
+    assert sorted(d.keys()) == [
+        "baseline_usd",
+        "extra",
+        "mean_quality",
+        "n_rows",
+        "saved_pct",
+        "saved_usd",
+        "strategy",
+        "total_usd",
+    ]
+
+
+def test_strategy_result_to_dict_values_round_trip() -> None:
+    r = _make_result(extra={})
+    assert r.to_dict() == {
+        "strategy": "test",
+        "n_rows": 10,
+        "total_usd": 1.5,
+        "baseline_usd": 2.0,
+        "saved_usd": 0.5,
+        "saved_pct": 25.0,
+        "mean_quality": 0.85,
+        "extra": {},
+    }
+
+
+def test_strategy_result_to_dict_extra_is_shallow_copied() -> None:
+    # The frozen dataclass's extra mapping must not be reachable via
+    # the returned dict — caller mutation must not bleed back.
+    r = _make_result()
+    out = r.to_dict()
+    out["extra"]["leaked"] = "yes"
+    assert "leaked" not in r.extra
+
+
+def test_run_bench_payload_strategies_use_to_dict_shape() -> None:
+    # Acceptance regression: every row under payload["strategies"]
+    # has the same field set the to_dict contract pins. Catches a
+    # future drift where the list-comp re-introduces asdict.
+    payload = run_bench(n=50, seed=1)
+    assert isinstance(payload["strategies"], list)
+    assert len(payload["strategies"]) > 0
+    for row in payload["strategies"]:
+        assert sorted(row.keys()) == [
+            "baseline_usd",
+            "extra",
+            "mean_quality",
+            "n_rows",
+            "saved_pct",
+            "saved_usd",
+            "strategy",
+            "total_usd",
+        ]
