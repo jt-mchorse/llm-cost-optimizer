@@ -87,3 +87,74 @@ def test_main_non_dry_mode_exits_with_documented_error(tmp_path: Path, capsys) -
     assert rc == 2
     assert "real-API tune mode is not implemented" in captured.err
     assert not out_stem.with_suffix(".json").exists()
+
+
+# ----------------------------------------------------------------------
+# #54: ThresholdSweepRow.to_dict — explicit field-by-field contract.
+# Mirrors StrategyResult.to_dict in scripts/bench_savings.py.
+# ----------------------------------------------------------------------
+
+
+def test_threshold_sweep_row_to_dict_field_set_is_pinned() -> None:
+    r = ThresholdSweepRow(
+        threshold=0.95,
+        escalation_rate=0.10,
+        mean_quality_cheap=0.80,
+        mean_quality_escalated=0.95,
+        mean_quality_overall=0.85,
+        dollars_per_request=0.0001,
+        n=100,
+    )
+    d = r.to_dict()
+    assert sorted(d.keys()) == [
+        "dollars_per_request",
+        "escalation_rate",
+        "mean_quality_cheap",
+        "mean_quality_escalated",
+        "mean_quality_overall",
+        "n",
+        "threshold",
+    ]
+
+
+def test_threshold_sweep_row_to_dict_values_round_trip() -> None:
+    r = ThresholdSweepRow(
+        threshold=0.5,
+        escalation_rate=0.25,
+        mean_quality_cheap=0.7,
+        mean_quality_escalated=0.9,
+        mean_quality_overall=0.75,
+        dollars_per_request=0.0002,
+        n=50,
+    )
+    assert r.to_dict() == {
+        "threshold": 0.5,
+        "escalation_rate": 0.25,
+        "mean_quality_cheap": 0.7,
+        "mean_quality_escalated": 0.9,
+        "mean_quality_overall": 0.75,
+        "dollars_per_request": 0.0002,
+        "n": 50,
+    }
+
+
+def test_main_dry_payload_rows_use_to_dict_shape(tmp_path: Path) -> None:
+    # Acceptance regression: every row under payload["rows"] has the
+    # exact field set the to_dict contract pins. Catches a future drift
+    # where the list-comp re-introduces asdict.
+    out = tmp_path / "sweep.json"
+    rc = main(["--dry", "--out", str(out)])
+    assert rc == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert isinstance(payload["rows"], list)
+    assert len(payload["rows"]) > 0
+    for row in payload["rows"]:
+        assert sorted(row.keys()) == [
+            "dollars_per_request",
+            "escalation_rate",
+            "mean_quality_cheap",
+            "mean_quality_escalated",
+            "mean_quality_overall",
+            "n",
+            "threshold",
+        ]

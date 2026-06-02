@@ -47,7 +47,7 @@ import hashlib
 import json
 import math
 import sys
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -270,6 +270,24 @@ class StrategyResult:
     saved_pct: float
     mean_quality: float
     extra: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        # Eight-field contract (#54) — replaces `asdict(s)` in the
+        # _build_payload list-comp so a future internal-only field on
+        # StrategyResult can't silently leak into docs/savings.json or
+        # the dashboard at cost_optimizer/dashboard/app.py.
+        # `extra` is shallow-copied so caller mutation of the returned
+        # dict doesn't bleed back into the frozen dataclass.
+        return {
+            "strategy": self.strategy,
+            "n_rows": self.n_rows,
+            "total_usd": self.total_usd,
+            "baseline_usd": self.baseline_usd,
+            "saved_usd": self.saved_usd,
+            "saved_pct": self.saved_pct,
+            "mean_quality": self.mean_quality,
+            "extra": dict(self.extra),
+        }
 
 
 def _dollars_input_only(prompt_tokens: int, *, model: str) -> float:
@@ -706,7 +724,7 @@ def run_bench(*, n: int = 500, seed: int = 0xC057) -> dict[str, Any]:
         "strong_model": STRONG_MODEL,
         "workload_mix": mix,
         "total_prompt_tokens": sum(r.prompt_tokens for r in workload),
-        "strategies": [asdict(s) for s in strategies],
+        "strategies": [s.to_dict() for s in strategies],
         "cumulative_savings_by_strategy": cumulative,
     }
 

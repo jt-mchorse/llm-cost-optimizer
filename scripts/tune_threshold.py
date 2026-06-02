@@ -29,7 +29,7 @@ import argparse
 import json
 import math
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -53,6 +53,21 @@ class ThresholdSweepRow:
     mean_quality_overall: float
     dollars_per_request: float
     n: int
+
+    def to_dict(self) -> dict[str, Any]:
+        # Seven-field contract (#54) — replaces `asdict(r)` in the
+        # _build_payload list-comp so a future internal-only field on
+        # ThresholdSweepRow can't silently leak into the sweep JSON
+        # consumers (docs / dashboard / external analysis).
+        return {
+            "threshold": self.threshold,
+            "escalation_rate": self.escalation_rate,
+            "mean_quality_cheap": self.mean_quality_cheap,
+            "mean_quality_escalated": self.mean_quality_escalated,
+            "mean_quality_overall": self.mean_quality_overall,
+            "dollars_per_request": self.dollars_per_request,
+            "n": self.n,
+        }
 
 
 # Stub cheap-model adapter that returns a fake response with canned
@@ -289,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
         "mode": "dry",
         "cheap_dollars_per_request": args.cheap_dollars,
         "strong_dollars_per_request": args.strong_dollars,
-        "rows": [asdict(r) for r in rows],
+        "rows": [r.to_dict() for r in rows],
     }
     atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
     plot_written = _try_save_plot(rows, out_png)

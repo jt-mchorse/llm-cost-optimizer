@@ -362,3 +362,19 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — full pytest pass (290/290 with one streamlit-extras skip), ruff check + format clean, live smoke shows the on-disk JSON has the expected shape.
 
 **Next session:** with the two cache layers at observability parity, the natural follow-on is wiring both into the savings dashboard so the live UI can show hit-rate over time alongside the existing per-strategy dollar charts. Out of scope here; would be a clean #5-adjacent issue if operators ask for it.
+
+## 2026-06-02 — Issue #54: StrategyResult.to_dict + ThresholdSweepRow.to_dict
+**Duration:** ~18 min · **Branch:** `session/2026-06-02-0356-issue-54`
+
+- Closed the last `dataclasses.asdict` usages in this repo. After #50 / #52 / the `io_utils` package-level promotion, the remaining gaps lived in the two operator-facing scripts:
+  - `scripts/bench_savings.py`: `StrategyResult.to_dict` (8-field contract; `extra` shallow-copied) replaces `[asdict(s) for s in strategies]` in `_build_payload`.
+  - `scripts/tune_threshold.py`: `ThresholdSweepRow.to_dict` (7-field contract) replaces `[asdict(r) for r in rows]` in `_build_payload`.
+- Both files drop the `asdict` import; `grep -rn asdict scripts/ cost_optimizer/` returns no source matches (only stale `__pycache__`).
+- 7 new tests across `tests/test_bench_savings.py` + `tests/test_tune_threshold.py`: per-class sorted-keys pin, value round-trip, shallow-copy guard on `StrategyResult.extra`, and an acceptance regression that the script's emitted payload uses the same field set as `to_dict`. The acceptance regression is the catch-net for a future refactor that re-introduces `asdict` in the list-comp without updating the dataclass.
+- 288/288 pass (was 281, +7 new cases). Ruff check + format clean. No new `D-NNN` — pure extension of the observability-parity arc.
+
+**Why this work, this session:** Iteration 6 of the night session loop. The five other repos in the observability-parity arc (vector-search-at-scale, prompt-regression-suite, python-async-llm-pipelines, rag-production-kit, and llm-cost-optimizer's package-level surface) are saturated; this PR completes the arc by closing the script-level dataclasses in the only repo that still had them.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** Observability-parity arc now fully saturated across the Python repos at both package and script levels. Future iterations should pivot to either novel parity opportunities outside the asdict / to_dict arc, or operator-blocked items (demo capture, trending workflow secrets).
