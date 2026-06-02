@@ -578,3 +578,25 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-06-02T04:05Z
+duration_min: 18
+issue: 54
+focus: strategy_result_to_dict_plus_threshold_sweep_row_to_dict_close_last_asdict_gaps_in_scripts
+phase: night_session_phase_b_iteration_6
+delta:
+  files_changed: 4   # scripts/bench_savings.py + scripts/tune_threshold.py + tests/test_bench_savings.py + tests/test_tune_threshold.py
+  tests_added: 7
+context_for_next_session:
+  - last_asdict_usages_in_this_repo_closed_strategy_result_to_dict_in_scripts_bench_savings_replaces_l709_list_comp_threshold_sweep_row_to_dict_in_scripts_tune_threshold_replaces_l292_list_comp
+  - grep_for_asdict_under_scripts_and_cost_optimizer_returns_only_stale_pycache_matches_no_source_matches_remain
+  - strategy_result_eight_field_contract_strategy_n_rows_total_usd_baseline_usd_saved_usd_saved_pct_mean_quality_extra_with_extra_shallow_copied
+  - threshold_sweep_row_seven_field_contract_threshold_escalation_rate_mean_quality_cheap_mean_quality_escalated_mean_quality_overall_dollars_per_request_n
+  - acceptance_regression_tests_run_bench_payload_strategies_use_to_dict_shape_and_main_dry_payload_rows_use_to_dict_shape_both_assert_field_set_via_sorted_keys_catch_future_asdict_drift
+  - 288_pytest_pass_was_281_ruff_check_format_clean
+  - observability_parity_arc_for_this_repo_now_complete_three_surfaces_cache_telemetry_50_cache_stats_52_plus_two_script_dataclasses_this_pr_all_explicit_field_contracts_no_asdict_reliance
+  - no_new_d_nnn_pure_extension_of_observability_parity_arc
+decisions_made: []
+followups: []
+---
