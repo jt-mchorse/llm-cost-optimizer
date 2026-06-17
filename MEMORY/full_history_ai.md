@@ -619,3 +619,22 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-06-17T23:22Z
+duration_min: 20
+issue: 58
+focus: timeout_minutes_guard_ci_yml_plus_lock_propagation_from_llm_eval_harness_62
+phase: day_session_phase_b_iteration_3
+delta:
+  files_added: 1   # tests/test_workflows_timeout_minutes.py
+  files_changed: 1 # .github/workflows/ci.yml (3 timeout-minutes inserts)
+  tests_added: 13   # 1 smoke + 3 parametrized x 4 jobs (3 from ci.yml + 1 from integration.yml)
+context_for_next_session:
+  - propagation_of_llm_eval_harness_62_canonical_first_hop_shipped_30_min_earlier_same_session_band_1_to_30_replicated_no_repo_specific_override_needed
+  - integration_yml_already_had_timeout_minutes_10_before_this_pr_so_full_coverage_post_merge_is_2_of_2_workflows_4_of_4_jobs
+  - test_count_301_to_314_thirteen_new_one_pre_existing_skip_streamlit_dashboard_extra_no_regressions
+  - companion_to_test_workflows_yaml_parseable_py_55_same_silent_rot_arc_different_failure_mode
+followups: []
+decisions_made: []
+---
