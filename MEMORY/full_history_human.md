@@ -378,3 +378,18 @@ D-007's posture — real-API bench/tune mode is operator-supplied, not in-repo �
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** Observability-parity arc now fully saturated across the Python repos at both package and script levels. Future iterations should pivot to either novel parity opportunities outside the asdict / to_dict arc, or operator-blocked items (demo capture, trending workflow secrets).
+
+## 2026-06-17 — Issue #56: Workflow YAML-parseability lock
+**Duration:** ~10 min · **Branch:** `session/2026-06-17-1919-issue-56`
+
+Added `tests/test_workflows_yaml_parseable.py` (5 tests across `ci.yml`
+and `integration.yml`) and pulled `pyyaml>=6.0` into the `dev` extras.
+
+**Why this work, this session:** Fifth hop of the `portfolio-ops#30`
+propagation arc — same inverse safety net for the 21-day silent CI
+outage closed in `portfolio-ops#27`.
+
+**Open questions / blockers:** none — local `pytest` 301 → 306 + ruff
+clean; PR #57 open.
+
+**Next session:** continue propagation to the remaining 7 repos.
