@@ -30,6 +30,9 @@ dev = [
   "pytest-cov>=4.1",
   "ruff>=0.5",
   "fakeredis>=2.20",   # exercises RedisStorage hermetically in unit tests
+  # Powers tests/test_workflows_yaml_parseable.py (#56), the inverse
+  # safety net for the 21-day silent CI outage closed in portfolio-ops#27.
+  "pyyaml>=6.0",
 ]
 # Bring your own SDK at the call site; not required to import this package.
 anthropic = ["anthropic>=0.39"]
