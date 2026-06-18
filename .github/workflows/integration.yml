@@ -18,6 +18,14 @@ on:
         default: "claude-haiku-4-5"
         type: string
 
+# Manual dispatch with API spend; if the operator double-clicks the
+# Run-workflow button or quickly redispatches with different inputs,
+# this lock cancels the in-flight run so we don't double-bill the
+# LIVE_CACHE_BUDGET_USD ceiling.
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   live-cache:
     runs-on: ubuntu-latest

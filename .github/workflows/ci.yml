@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# Cancel an in-flight run when a newer push lands on the same ref. Cuts
+# wall time on rapid push-on-push by ~30-60s of wasted CI quota.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest

@@ -638,3 +638,23 @@ context_for_next_session:
 followups: []
 decisions_made: []
 ---
+
+---
+session: 2026-06-18T15:25Z
+duration_min: 15
+issue: 60
+focus: workflow_concurrency_guard_plus_lock_test_propagation_from_llm_eval_harness_64
+phase: day_session_phase_b_iteration_2
+delta:
+  files_added: 1   # tests/test_workflows_concurrency.py
+  files_changed: 2 # .github/workflows/{ci.yml,integration.yml} top-level concurrency block each
+  tests_added: 7   # 1 smoke + 3 parametrized x 2 workflows
+context_for_next_session:
+  - second_per_repo_hop_of_concurrency_lock_propagation_canonical_first_hop_llm_eval_harness_64_65
+  - ci_yml_gets_group_ci_dollar_github_ref_integration_yml_gets_group_integration_dollar_github_ref_distinct_so_manual_dispatch_live_api_suite_doesnt_cancel_ci_runs_on_same_ref
+  - integration_yml_specific_concern_documented_in_test_docstring_operator_double_click_run_workflow_or_rapid_redispatch_doublebills_live_cache_budget_usd_ceiling_concurrency_lock_prevents
+  - lock_test_copy_from_llm_eval_harness_with_docstring_origin_swapped_to_this_repo_60_and_propagated_from_note_added
+  - test_count_314_to_321_seven_new_full_pytest_clean_321_passed_1_skipped_streamlit_unchanged_ruff_check_plus_format_check_clean
+decisions_made: []
+followups: [#60]
+---
