@@ -393,3 +393,15 @@ outage closed in `portfolio-ops#27`.
 clean; PR #57 open.
 
 **Next session:** continue propagation to the remaining 7 repos.
+
+## 2026-06-17 — Issue #58: timeout-minutes guard for ci.yml
+**Duration:** ~20 min · **Branch:** `session/2026-06-17-2322-issue-58`
+
+- Added `timeout-minutes: 15` to each ci.yml job (lint, test, memory-check). `integration.yml`'s job already had `timeout-minutes: 10`.
+- Added `tests/test_workflows_timeout_minutes.py` — same shape as the canonical lock in `llm-eval-harness` (1 smoke + 3 parametrized × 4 jobs = 13 tests). Policy band `[1, 30]` replicated without override.
+
+**Why this work, this session:** propagation of `llm-eval-harness#62` shipped earlier in the same session as part of the multi-issue day-session loop. Next in §8 build sequence and already had one bounded workflow, making it the natural follow-on.
+
+**Open questions / blockers:** none. 301 → 314 pytest passes. PR #59 open.
+
+**Next session:** continue propagating across the remaining 10 portfolio repos when time/scope allows. After a few weekly audit-cron cycles (portfolio-ops#34), consider adding a `missing-timeout` fingerprint to the audit script so the cron surfaces unguarded jobs directly.
