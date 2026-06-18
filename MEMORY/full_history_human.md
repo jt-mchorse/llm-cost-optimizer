@@ -405,3 +405,25 @@ clean; PR #57 open.
 **Open questions / blockers:** none. 301 → 314 pytest passes. PR #59 open.
 
 **Next session:** continue propagating across the remaining 10 portfolio repos when time/scope allows. After a few weekly audit-cron cycles (portfolio-ops#34), consider adding a `missing-timeout` fingerprint to the audit script so the cron surfaces unguarded jobs directly.
+
+## 2026-06-18 — Issue #60: concurrency guard + lock test
+**Duration:** ~15 min · **Branch:** `session/2026-06-18-1519-issue-60`
+
+- Added top-level `concurrency:` to `ci.yml` (`ci-${{ github.ref }}`)
+  and `integration.yml` (`integration-${{ github.ref }}`, distinct so
+  the manual-dispatch live-API suite doesn't cancel CI runs on the same
+  ref).
+- Copied `tests/test_workflows_concurrency.py` from llm-eval-harness with
+  docstring origin updated; integration-workflow note specifically calls
+  out the `LIVE_CACHE_BUDGET_USD` double-billing risk a missing
+  concurrency lock would expose on operator redispatch.
+
+**Why this work, this session:** second per-repo hop in the
+concurrency-lock propagation arc. Canonical first hop: llm-eval-harness
+#64 / #65. Audit-side fingerprint: portfolio-ops #41.
+
+**Open questions / blockers:** none. Test count 314 → 321 (1 streamlit
+skip unchanged).
+
+**Next session:** continue propagation to remaining priority-tier and
+non-tier repos.
