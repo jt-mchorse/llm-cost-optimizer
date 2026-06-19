@@ -443,6 +443,7 @@ def test_run_bench_payload_non_router_rows_have_null_router_stats() -> None:
 # #66: dashboard panel helpers — `_pick_router_row`, `_router_panel_rows`
 # ----------------------------------------------------------------------
 
+
 def _make_synthetic_payload(*, with_router: bool, router_stats: dict | None = None) -> dict:
     strategies: list[dict] = [
         {"strategy": "baseline (strong on everything)", "router_stats": None},
