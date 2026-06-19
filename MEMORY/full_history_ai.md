@@ -658,3 +658,27 @@ context_for_next_session:
 decisions_made: []
 followups: [#60]
 ---
+
+---
+session: 2026-06-19T03:35Z
+duration_min: 35
+issue: 62
+focus: router_observability_surface_router_stats_to_dict_plus_dump_stats_json
+phase: night_session_phase_b_iteration_1
+delta:
+  files_added: 1   # tests/test_router_dump.py
+  files_changed: 3 # cost_optimizer/router.py + cost_optimizer/__init__.py + docs/architecture.md
+  tests_added: 10  # 3 to_dict + 3 accumulation + 4 dump_stats_json
+context_for_next_session:
+  - closes_last_observability_gap_in_runtime_layer_sibling_of_50_prompt_cache_dump_aggregate_json_and_52_semantic_cache_dump_stats_json
+  - router_stats_dataclass_counters_total_routes_escalations_cheap_only_per_signal_trips_first_trip_wins_attribution_per_signal_measured_didnt_trip_vs_couldnt_measure_distinction_plus_derived_escalation_rate
+  - uncertainty_router_accumulates_stats_in_route_per_call_to_dict_defensively_copies_per_signal_dicts_so_snapshot_callers_cant_mutate_live_counters
+  - dump_stats_json_byte_shape_parity_with_50_52_sorted_keys_indent_2_trailing_newline_via_io_utils_atomic_write_text
+  - architecture_doc_section_3_gets_matching_bullet_locked_by_test_architecture_doc_py_no_changes_needed_there
+  - public_surface_lock_test_is_ast_driven_auto_includes_new_router_stats_export_without_manual_update
+  - test_count_321_to_331_ten_new_full_pytest_clean_331_passed_1_skipped_streamlit_unchanged_ruff_check_plus_format_check_clean
+  - all_three_runtime_classes_prompt_cache_semantic_cache_router_now_expose_one_observability_shape_to_log_tailers_metric_backends
+  - follow_up_potential_plumbing_router_stats_into_savings_dashboard_separate_issue_per_session_plan
+decisions_made: []
+followups: []
+---

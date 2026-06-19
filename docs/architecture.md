@@ -193,6 +193,18 @@ through their own `PromptCacheWrapper` (or none).
   mode with a 5-row canned dataset; real-API threshold tuning is
   explicitly an operator step, not a CI step, to avoid silent
   per-row API spend on every test run.
+- **RouterStats observability (#62).** `RouterStats.to_dict()` and
+  `UncertaintyRouter.dump_stats_json(path)` ship the same observability
+  shape the two cache layers expose (#50 / #52): a stable JSON dict
+  with the three raw counters (`total_routes`, `escalations`,
+  `cheap_only`), two per-signal breakdowns (`per_signal_trips` for
+  first-trip-wins attribution, `per_signal_measured` for the
+  didn't-trip vs. couldn't-measure distinction), and the derived
+  `escalation_rate`. Written atomically through
+  `cost_optimizer/io_utils.py`. Closes the last observability gap in
+  the runtime layer — all three runtime classes now expose one
+  observability shape to operators tailing the files or scraping the
+  dicts.
 
 ---
 
