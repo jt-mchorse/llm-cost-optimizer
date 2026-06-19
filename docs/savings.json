@@ -16020,6 +16020,7 @@
       "extra": {},
       "mean_quality": 0.886,
       "n_rows": 500,
+      "router_stats": null,
       "saved_pct": 0.0,
       "saved_usd": 0.0,
       "strategy": "baseline (no optimization, cheap model)",
@@ -16033,6 +16034,7 @@
       },
       "mean_quality": 0.886,
       "n_rows": 500,
+      "router_stats": null,
       "saved_pct": 0.8405,
       "saved_usd": 0.048476,
       "strategy": "prompt caching (system prefix)",
@@ -16047,6 +16049,7 @@
       },
       "mean_quality": 0.886,
       "n_rows": 500,
+      "router_stats": null,
       "saved_pct": 0.5622,
       "saved_usd": 0.032423,
       "strategy": "semantic cache (HashEmbedder, threshold 0.95)",
@@ -16060,6 +16063,18 @@
       },
       "mean_quality": 0.921,
       "n_rows": 500,
+      "router_stats": {
+        "cheap_only": 450,
+        "escalation_rate": 0.1,
+        "escalations": 50,
+        "per_signal_measured": {
+          "entropy": 500
+        },
+        "per_signal_trips": {
+          "entropy": 50
+        },
+        "total_routes": 500
+      },
       "saved_pct": -1.5475,
       "saved_usd": -0.08925,
       "strategy": "uncertainty router (entropy threshold 1.5)",
@@ -16073,6 +16088,7 @@
       },
       "mean_quality": 0.886,
       "n_rows": 500,
+      "router_stats": null,
       "saved_pct": 0.5,
       "saved_usd": 0.028837,
       "strategy": "batch API (discount 0.50\u00d7)",

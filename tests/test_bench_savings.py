@@ -265,9 +265,10 @@ def test_streamlit_dashboard_module_imports_when_extra_installed() -> None:
 
 
 # ----------------------------------------------------------------------
-# #54: StrategyResult.to_dict — explicit field-by-field contract
+# #54 + #64: StrategyResult.to_dict — explicit field-by-field contract
 # (no dataclasses.asdict). Same pattern as #50 (CacheTelemetry.to_dict)
-# and #52 (CacheStats.to_dict) at the package level.
+# and #52 (CacheStats.to_dict) at the package level. Nine fields after
+# #64 added the optional `router_stats` snapshot.
 # ----------------------------------------------------------------------
 
 
@@ -291,6 +292,7 @@ def test_strategy_result_to_dict_field_set_is_pinned() -> None:
         "extra",
         "mean_quality",
         "n_rows",
+        "router_stats",
         "saved_pct",
         "saved_usd",
         "strategy",
@@ -309,6 +311,8 @@ def test_strategy_result_to_dict_values_round_trip() -> None:
         "saved_pct": 25.0,
         "mean_quality": 0.85,
         "extra": {},
+        # #64: router_stats defaults to None for non-router strategies.
+        "router_stats": None,
     }
 
 
@@ -319,6 +323,38 @@ def test_strategy_result_to_dict_extra_is_shallow_copied() -> None:
     out = r.to_dict()
     out["extra"]["leaked"] = "yes"
     assert "leaked" not in r.extra
+
+
+def test_strategy_result_to_dict_router_stats_is_deep_copied_when_present() -> None:
+    # #64: router_stats contains nested dicts (per_signal_trips,
+    # per_signal_measured). Caller mutation of those nested dicts must
+    # not bleed back into the frozen dataclass — the to_dict path
+    # rebuilds the nested dicts as fresh objects.
+    inner_trips = {"entropy": 3}
+    r = StrategyResult(
+        strategy="router-test",
+        n_rows=10,
+        total_usd=1.0,
+        baseline_usd=2.0,
+        saved_usd=1.0,
+        saved_pct=50.0,
+        mean_quality=0.9,
+        router_stats={
+            "total_routes": 10,
+            "escalations": 3,
+            "cheap_only": 7,
+            "per_signal_trips": inner_trips,
+            "per_signal_measured": {"entropy": 10},
+            "escalation_rate": 0.3,
+        },
+    )
+    out = r.to_dict()
+    out["router_stats"]["per_signal_trips"]["leaked"] = 99
+    out["router_stats"]["escalations"] = 999
+    # Original frozen value untouched; nested dict identity also fresh.
+    assert "leaked" not in inner_trips
+    assert r.router_stats is not None
+    assert r.router_stats["escalations"] == 3
 
 
 def test_run_bench_payload_strategies_use_to_dict_shape() -> None:
@@ -334,8 +370,70 @@ def test_run_bench_payload_strategies_use_to_dict_shape() -> None:
             "extra",
             "mean_quality",
             "n_rows",
+            "router_stats",
             "saved_pct",
             "saved_usd",
             "strategy",
             "total_usd",
         ]
+
+
+def test_run_bench_payload_router_row_carries_router_stats() -> None:
+    # #64: the router strategy's row must carry a `router_stats` dict
+    # snapshotted from `UncertaintyRouter.stats.to_dict()` (PR #63 / issue #62).
+    # The four non-router rows must have `router_stats=None` so the
+    # field is unambiguously a router-only annotation.
+    payload = run_bench(n=500, seed=0xC057)
+    router_rows = [s for s in payload["strategies"] if "router" in s["strategy"]]
+    assert len(router_rows) == 1, "expected exactly one router strategy row"
+    rs = router_rows[0]["router_stats"]
+    assert isinstance(rs, dict), "router row must carry a router_stats dict"
+
+    assert set(rs) == {
+        "total_routes",
+        "escalations",
+        "cheap_only",
+        "per_signal_trips",
+        "per_signal_measured",
+        "escalation_rate",
+    }, f"router_stats keys drifted: {sorted(rs)}"
+
+    # Cross-check against the manually-tracked extra counters that the
+    # bench has emitted since before #64 — same physical quantity, two
+    # names. If these ever disagree, RouterStats and the manual counter
+    # have drifted and one of them is wrong.
+    extra = router_rows[0]["extra"]
+    assert rs["escalations"] == extra["escalated"], (
+        f"RouterStats.escalations ({rs['escalations']}) disagrees with manual "
+        f"extra.escalated ({extra['escalated']}). One of the two derivations "
+        f"is wrong; route() side-effect accounting and the bench loop counter "
+        f"must agree."
+    )
+    assert rs["escalation_rate"] == pytest.approx(extra["escalation_rate"]), (
+        f"RouterStats.escalation_rate ({rs['escalation_rate']}) disagrees with "
+        f"manual extra.escalation_rate ({extra['escalation_rate']})."
+    )
+    assert rs["total_routes"] == 500, "router was called once per row in the workload"
+    assert rs["cheap_only"] + rs["escalations"] == rs["total_routes"]
+
+    # Single-signal config today: every `route()` measures `entropy`,
+    # and only `entropy` ever trips. Lock that explicitly so a future
+    # multi-signal change has to update this assertion deliberately.
+    assert rs["per_signal_measured"].get("entropy") == 500
+    assert rs["per_signal_trips"].get("entropy") == extra["escalated"]
+
+
+def test_run_bench_payload_non_router_rows_have_null_router_stats() -> None:
+    # #64: the four non-router strategies must have `router_stats=None`
+    # so a downstream consumer (e.g., the dashboard) can identify the
+    # router row unambiguously by `router_stats is not None` without a
+    # string-substring check on the strategy label.
+    payload = run_bench(n=50, seed=1)
+    non_router = [s for s in payload["strategies"] if "router" not in s["strategy"]]
+    assert len(non_router) == 4, "expected 4 non-router strategies (baseline + 3)"
+    for row in non_router:
+        assert row["router_stats"] is None, (
+            f"strategy {row['strategy']!r} unexpectedly carries router_stats "
+            f"({row['router_stats']!r}); only the uncertainty-router strategy "
+            f"should populate this field."
+        )
