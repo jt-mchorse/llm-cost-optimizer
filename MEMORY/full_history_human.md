@@ -504,3 +504,18 @@ panel rendering `router_stats.per_signal_trips` and
 `router_stats.per_signal_measured` as a small `st.dataframe` alongside
 the existing cache-savings panels. Currently visible via the `Raw
 JSON` expander only.
+
+## 2026-06-19 — Issue #66: Per-signal router escalation panel in the dashboard
+**Duration:** ~35 min · **Branch:** `session/2026-06-19-issue-66`
+
+- Added `_pick_router_row(payload)` and `_router_panel_rows(router_stats)` to `dashboard/app.py` — two small pure helpers split out of `main()` so they're unit-testable without Streamlit's runtime. `_pick_router_row` is structural (`router_stats is not None`), not lexical, so relabeling the bench's router doesn't break the panel.
+- `_router_panel_rows` emits one row per signal in the union of `per_signal_trips ∪ per_signal_measured`, sorted alphabetically. Columns: `signal`, `trips`, `measured`, `trip_rate`. `trip_rate` defaults to `0.0` when `measured == 0` so a signal that was wired up but never reached (earlier signal short-circuited) doesn't `ZeroDivisionError`.
+- New `Router per-signal escalation` subheader inserted between `Quality maintained?` and `Per-strategy details`. When no row has `router_stats` (pre-#64 hand-rolled artifact), falls back to `st.info` rather than crashing.
+- 7 new tests behind the existing `importlib.util.find_spec("streamlit"|"pandas")` skip pattern: structural-not-lexical row pick, sorted output, zero-division guard, signal-in-only-one-dict union behavior, and a cross-check against the committed `docs/savings.json` (single-signal entropy lock matching #64's contract test).
+- Two CI iterations needed before clean: first `ruff check` caught a `PT018` compound assert in the union-test (split into 4 asserts), then `ruff format --check` flagged one block needing reformat (auto-fix + commit). Third push clean across lint, test ×2, memory-check.
+
+**Why this work, this session:** explicit follow-on hint from PR #65's memory entry. Closes the second phase of the JSON-now-dashboard-panel-later split — the per-signal breakdown is now one scroll away from the dollar columns instead of hidden in the `Raw JSON` expander. Second substantive close of the day-session multi-issue loop after rag-production-kit #60 (PR #61 lint fixup).
+
+**Open questions / blockers:** none. 335 → 342 pytest passes. PR #67 merged into main.
+
+**Next session:** the dashboard observability story for the router is now complete for single-signal config. Per the issue body's out-of-scope, multi-signal config in the bench (so the panel can demonstrate attribution power with a real second signal) is a separate issue worth filing — it'd need a second signal in the routing config that doesn't pollute the snapshot. Per-signal *dollar* attribution is also a separate issue (the bench would need to track which signal caused each escalation row).
