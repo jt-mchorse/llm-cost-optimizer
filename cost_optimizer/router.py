@@ -35,9 +35,13 @@ one-class change implementing the `EscalationSignal` Protocol.
 
 from __future__ import annotations
 
+import json
 import math
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Protocol
+
+from cost_optimizer.io_utils import atomic_write_text
 
 
 @dataclass(frozen=True)
@@ -74,6 +78,54 @@ class SignalReading:
 
     value: float | None
     trip: bool
+
+
+@dataclass
+class RouterStats:
+    """Cumulative router activity across `route()` calls.
+
+    Sibling of `CacheTelemetry` (prompt-cache layer) and `CacheStats`
+    (semantic-cache layer): the runtime layer's roll-up state for an
+    observability sink. `to_dict` returns a JSON-stable shape with the
+    derived `escalation_rate` included so log consumers don't have to
+    recompute it.
+
+    `per_signal_trips` counts the *first* signal that tripped on each
+    `route()` (per RouterDecision.triggered_signal — first-trip-wins).
+    `per_signal_measured` counts every signal that returned a non-None
+    reading, so a consumer can distinguish "didn't trip" from "couldn't
+    measure" — the same distinction `RouterDecision.signal_values`
+    preserves at the per-call layer.
+    """
+
+    total_routes: int = 0
+    escalations: int = 0
+    cheap_only: int = 0
+    per_signal_trips: dict[str, int] = field(default_factory=dict)
+    per_signal_measured: dict[str, int] = field(default_factory=dict)
+
+    @property
+    def escalation_rate(self) -> float:
+        return self.escalations / self.total_routes if self.total_routes > 0 else 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        """JSON-stable dict for observability/logging sinks.
+
+        Mirrors `CacheTelemetry.to_dict` and `CacheStats.to_dict`: the
+        raw counter fields plus the derived `escalation_rate` so log
+        consumers don't have to recompute it (and risk drift if the
+        formula ever changes). Pairs with
+        `UncertaintyRouter.dump_stats_json` for the on-disk path;
+        metric backends consume the in-process dict directly.
+        """
+        return {
+            "total_routes": self.total_routes,
+            "escalations": self.escalations,
+            "cheap_only": self.cheap_only,
+            "per_signal_trips": dict(self.per_signal_trips),
+            "per_signal_measured": dict(self.per_signal_measured),
+            "escalation_rate": self.escalation_rate,
+        }
 
 
 class EscalationSignal(Protocol):
@@ -261,6 +313,7 @@ class UncertaintyRouter:
     strong_model: str
     cheap_adapter: CheapAdapter
     signals: list[EscalationSignal] = field(default_factory=list)
+    stats: RouterStats = field(default_factory=RouterStats)
 
     def __post_init__(self) -> None:
         # Duplicate `name` values in `signals` would silently overwrite each
@@ -286,14 +339,40 @@ class UncertaintyRouter:
         for sig in self.signals:
             reading = sig.measure(cheap_response)
             readings[sig.name] = reading.value
+            if reading.value is not None:
+                self.stats.per_signal_measured[sig.name] = (
+                    self.stats.per_signal_measured.get(sig.name, 0) + 1
+                )
             if reading.trip and triggered is None:
                 # First-trip-wins: lock in escalation but keep measuring
                 # the remaining signals so telemetry sees every value.
                 triggered = sig.name
                 chosen = self.strong_model
+        self.stats.total_routes += 1
+        if triggered is not None:
+            self.stats.escalations += 1
+            self.stats.per_signal_trips[triggered] = (
+                self.stats.per_signal_trips.get(triggered, 0) + 1
+            )
+        else:
+            self.stats.cheap_only += 1
         return RouterDecision(
             model_id=chosen,
             triggered_signal=triggered,
             signal_values=readings,
             cheap_response=cheap_response,
         )
+
+    def dump_stats_json(self, path: str | Path) -> None:
+        """Write the current router stats to ``path`` as JSON.
+
+        Atomic on POSIX — uses ``cost_optimizer.io_utils.atomic_write_text``
+        so a Ctrl-C / disk-full / OOM between truncate and flush can't
+        leave a log-tailer reading a half-written file. Byte-shape parity
+        with ``PromptCacheWrapper.dump_aggregate_json`` and
+        ``SemanticCache.dump_stats_json``: sorted keys, indent=2,
+        trailing newline. Operators can tail / diff the file across
+        restarts.
+        """
+        payload = json.dumps(self.stats.to_dict(), sort_keys=True, indent=2) + "\n"
+        atomic_write_text(path, payload)

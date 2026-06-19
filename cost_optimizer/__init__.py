@@ -27,6 +27,7 @@ from cost_optimizer.router import (
     EscalationSignal,
     JudgeConfidenceSignal,
     RouterDecision,
+    RouterStats,
     SignalReading,
     UncertaintyRouter,
 )
@@ -71,6 +72,7 @@ __all__ = [
     "EscalationSignal",
     "JudgeConfidenceSignal",
     "RouterDecision",
+    "RouterStats",
     "SignalReading",
     "UncertaintyRouter",
     # Batch API layer (#4)
