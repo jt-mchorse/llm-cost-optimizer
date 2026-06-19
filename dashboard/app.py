@@ -44,6 +44,45 @@ def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _pick_router_row(payload: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the strategy row whose ``router_stats`` field is populated.
+
+    A dashboard identifies the router by ``router_stats is not None``
+    rather than substring-matching the human-facing strategy label, so
+    relabeling the bench's router doesn't break the panel.
+    """
+    return next(
+        (s for s in payload.get("strategies", []) if s.get("router_stats") is not None),
+        None,
+    )
+
+
+def _router_panel_rows(router_stats: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build the per-signal rows for the router escalation table.
+
+    One row per signal name in ``per_signal_trips ∪ per_signal_measured``.
+    ``trip_rate`` is ``trips / measured`` and defaults to ``0.0`` when
+    ``measured == 0`` (e.g., a signal that was wired up but never had a
+    sample reach it because an earlier signal short-circuited the chain).
+    """
+    trips = router_stats.get("per_signal_trips", {})
+    measured = router_stats.get("per_signal_measured", {})
+    signals = sorted(set(trips) | set(measured))
+    rows: list[dict[str, Any]] = []
+    for sig in signals:
+        t = int(trips.get(sig, 0))
+        m = int(measured.get(sig, 0))
+        rows.append(
+            {
+                "signal": sig,
+                "trips": t,
+                "measured": m,
+                "trip_rate": (t / m) if m > 0 else 0.0,
+            }
+        )
+    return rows
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     # Streamlit forwards everything after `--` to the script; pull our
     # own flag out without consuming Streamlit's own args.
@@ -141,6 +180,29 @@ def main() -> None:
         "sampling); a larger drop is flagged so the operator inspects "
         "before publishing."
     )
+
+    # ----- router per-signal escalation breakdown (#66) -----
+    st.subheader("Router per-signal escalation")
+    router_row = _pick_router_row(payload)
+    if router_row is None:
+        st.info(
+            "No strategy row in this artifact carries `router_stats` — "
+            "the bench was run without an uncertainty router, or with a "
+            "hand-rolled artifact that pre-dates #64. Re-run "
+            "`scripts/bench_savings.py` to populate it."
+        )
+    else:
+        rows = _router_panel_rows(router_row["router_stats"])
+        st.dataframe(pd.DataFrame(rows).set_index("signal"), width="stretch")
+        st.caption(
+            "`trips` is first-trip-wins attribution per signal; "
+            "`measured` is how many rows reached that signal "
+            "(earlier signals can short-circuit). `trip_rate = "
+            "trips / measured`, defaulting to 0.0 when `measured` "
+            "is 0 — the only way to debug a router that's escalating "
+            "either too much or not enough (the dollar columns can't "
+            "tell you *which* signal is firing)."
+        )
 
     # ----- strategy table -----
     st.subheader("Per-strategy details")
