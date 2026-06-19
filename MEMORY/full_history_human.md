@@ -460,3 +460,47 @@ open and ready.
 **Next session:** consider plumbing `RouterStats` into the savings
 dashboard so per-signal escalation cost is visible alongside cache
 savings (separate issue).
+
+## 2026-06-19 — Issue #64: Surface `RouterStats.to_dict()` in savings JSON
+**Duration:** ~30 min · **Branch:** `session/2026-06-19-issue-64`
+
+- Added optional `router_stats: dict[str, Any] | None = None` field to
+  `StrategyResult`. Populated only on the uncertainty-router row from
+  `router.stats.to_dict()` (#62 / PR #63); `None` everywhere else so a
+  dashboard can identify the router by `router_stats is not None`
+  without a string-substring check on the strategy label.
+- Eight-field contract (#54) becomes nine-field (#54 + #64). Three
+  pinning tests get `router_stats` added in alphabetical position;
+  shallow-copy invariant for `extra` is mirrored by a deep-copy
+  invariant for `router_stats` (nested `per_signal_*` dicts can't
+  bleed back to the frozen dataclass).
+- Regenerated `docs/savings.json` (16 lines added, `null` on four
+  rows + populated dict on the router). `docs/savings.md` is
+  unchanged — `_format_markdown` renders the `extra` column only,
+  so the README table is also unchanged.
+- New acceptance tests: `router_row_carries_router_stats` (six
+  expected keys, cross-check against `extra.escalated`, single-signal
+  lock on `per_signal_measured.entropy == 500` and `per_signal_trips
+  .entropy == extra.escalated`), `non_router_rows_have_null_router_stats`
+  (four non-router strategies must have `router_stats is None`).
+- Architecture doc gets a matching `#64` bullet under the runtime layer
+  section after the `#62` bullet, documenting the JSON-now /
+  dashboard-panel-later split.
+
+**Why this work, this session:** closes the explicit "Next session"
+follow-up from PR #63's memory entry, phase one of two phases of
+the dashboard plumbing. Phase two (a dedicated `st.dataframe` panel
+for per-signal breakdown) is a follow-on issue — keeping the JSON
+expansion small and reviewable on its own. Continues the multi-issue
+loop in this session (third issue closed) — third sibling of the
+sink-parity arc across portfolio-ops #52, rag-production-kit #60,
+and now llm-cost-optimizer #64.
+
+**Open questions / blockers:** none. 331 → 334 pytest passes. PR #65
+open and ready.
+
+**Next session:** file the follow-on issue for the dedicated dashboard
+panel rendering `router_stats.per_signal_trips` and
+`router_stats.per_signal_measured` as a small `st.dataframe` alongside
+the existing cache-savings panels. Currently visible via the `Raw
+JSON` expander only.
