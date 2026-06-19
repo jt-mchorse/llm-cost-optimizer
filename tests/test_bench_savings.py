@@ -437,3 +437,144 @@ def test_run_bench_payload_non_router_rows_have_null_router_stats() -> None:
             f"({row['router_stats']!r}); only the uncertainty-router strategy "
             f"should populate this field."
         )
+
+
+# ----------------------------------------------------------------------
+# #66: dashboard panel helpers — `_pick_router_row`, `_router_panel_rows`
+# ----------------------------------------------------------------------
+
+
+def _make_synthetic_payload(*, with_router: bool, router_stats: dict | None = None) -> dict:
+    strategies: list[dict] = [
+        {"strategy": "baseline (strong on everything)", "router_stats": None},
+        {"strategy": "uncertainty router (entropy threshold 1.5)", "router_stats": None},
+        {"strategy": "prompt-cache wrapper", "router_stats": None},
+    ]
+    if with_router:
+        strategies[1]["router_stats"] = router_stats or {
+            "total_routes": 100,
+            "cheap_only": 90,
+            "escalations": 10,
+            "escalation_rate": 0.1,
+            "per_signal_trips": {"entropy": 10},
+            "per_signal_measured": {"entropy": 100},
+        }
+    return {"strategies": strategies}
+
+
+def test_pick_router_row_finds_row_with_router_stats() -> None:
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _pick_router_row  # noqa: E402
+
+    payload = _make_synthetic_payload(with_router=True)
+    row = _pick_router_row(payload)
+    assert row is not None
+    assert row["router_stats"]["total_routes"] == 100
+
+
+def test_pick_router_row_returns_none_when_no_router_stats_present() -> None:
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _pick_router_row  # noqa: E402
+
+    payload = _make_synthetic_payload(with_router=False)
+    assert _pick_router_row(payload) is None
+
+
+def test_pick_router_row_does_not_substring_match_strategy_label() -> None:
+    """A row whose `strategy` happens to contain `"router"` but whose
+    `router_stats` is None must not be picked. The picker is structural,
+    not lexical — relabeling the bench's router won't break the panel."""
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _pick_router_row  # noqa: E402
+
+    payload = {
+        "strategies": [
+            {"strategy": "router-shaped label without stats", "router_stats": None},
+        ]
+    }
+    assert _pick_router_row(payload) is None
+
+
+def test_router_panel_rows_emits_one_row_per_signal_in_sorted_order() -> None:
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _router_panel_rows  # noqa: E402
+
+    router_stats = {
+        "per_signal_trips": {"entropy": 8, "logprob": 2},
+        "per_signal_measured": {"entropy": 100, "logprob": 92},
+    }
+    rows = _router_panel_rows(router_stats)
+    assert [r["signal"] for r in rows] == ["entropy", "logprob"]
+    e = next(r for r in rows if r["signal"] == "entropy")
+    assert e["trips"] == 8
+    assert e["measured"] == 100
+    assert e["trip_rate"] == 0.08
+
+
+def test_router_panel_rows_trip_rate_defaults_to_zero_when_measured_is_zero() -> None:
+    """A signal that's wired up but never reached (earlier signal short-
+    circuited every row) shows measured=0; trip_rate must be 0.0, not a
+    ZeroDivisionError."""
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _router_panel_rows  # noqa: E402
+
+    router_stats = {
+        "per_signal_trips": {"unreached": 0},
+        "per_signal_measured": {"unreached": 0},
+    }
+    rows = _router_panel_rows(router_stats)
+    assert rows == [{"signal": "unreached", "trips": 0, "measured": 0, "trip_rate": 0.0}]
+
+
+def test_router_panel_rows_handles_signal_in_only_one_dict() -> None:
+    """`per_signal_trips` and `per_signal_measured` can independently
+    list a signal — the union (sorted) is the row set, missing values
+    default to 0."""
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _router_panel_rows  # noqa: E402
+
+    rows = _router_panel_rows(
+        {
+            "per_signal_trips": {"entropy": 5},
+            "per_signal_measured": {"logprob": 10},
+        }
+    )
+    assert [r["signal"] for r in rows] == ["entropy", "logprob"]
+    e = next(r for r in rows if r["signal"] == "entropy")
+    lp = next(r for r in rows if r["signal"] == "logprob")
+    assert e["measured"] == 0
+    assert e["trip_rate"] == 0.0
+    assert lp["trips"] == 0
+    assert lp["trip_rate"] == 0.0
+
+
+def test_router_panel_rows_on_real_savings_json_produces_expected_entropy_row() -> None:
+    """Cross-check against the committed `docs/savings.json` artifact."""
+    if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
+        pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
+    sys.path.insert(0, str(_REPO_ROOT))
+    from dashboard.app import _pick_router_row, _router_panel_rows  # noqa: E402
+
+    payload = json.loads((_REPO_ROOT / "docs" / "savings.json").read_text(encoding="utf-8"))
+    router = _pick_router_row(payload)
+    assert router is not None
+    rows = _router_panel_rows(router["router_stats"])
+    # The committed bench uses only the entropy signal today; lock that.
+    assert [r["signal"] for r in rows] == ["entropy"]
+    entropy = rows[0]
+    assert entropy["measured"] == router["router_stats"]["per_signal_measured"]["entropy"]
+    assert entropy["trips"] == router["router_stats"]["per_signal_trips"]["entropy"]
+    # And the trip rate matches escalation_rate (single-signal lock).
+    assert abs(entropy["trip_rate"] - router["router_stats"]["escalation_rate"]) < 1e-9
