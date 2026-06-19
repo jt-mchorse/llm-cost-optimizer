@@ -205,6 +205,16 @@ through their own `PromptCacheWrapper` (or none).
   the runtime layer — all three runtime classes now expose one
   observability shape to operators tailing the files or scraping the
   dicts.
+- **RouterStats in the savings JSON (#64).** `StrategyResult` carries
+  an optional `router_stats: dict | None` field — populated only on
+  the uncertainty-router row from `router.stats.to_dict()` (#62),
+  `None` on the four other rows so a dashboard can identify the router
+  by `router_stats is not None` without a string-substring check. The
+  bench's `_format_markdown` ignores the field (so `docs/savings.md`
+  and the README table stay clean); the dashboard `Raw JSON` expander
+  surfaces it immediately. A dedicated `st.dataframe` panel for the
+  per-signal breakdown is a follow-on issue — keeping the JSON
+  expansion small and reviewable on its own.
 
 ---
 

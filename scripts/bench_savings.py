@@ -270,14 +270,23 @@ class StrategyResult:
     saved_pct: float
     mean_quality: float
     extra: dict[str, Any] = field(default_factory=dict)
+    # Optional canonical RouterStats snapshot (#64). Only populated on
+    # the uncertainty-router strategy row; `None` everywhere else so the
+    # four non-router rows stay unchanged in shape. Carries the same
+    # data `UncertaintyRouter.dump_stats_json` (#62) writes: total_routes,
+    # escalations, cheap_only, per_signal_trips, per_signal_measured,
+    # escalation_rate. Exposed in docs/savings.json for dashboard
+    # consumers; the markdown sink ignores it.
+    router_stats: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        # Eight-field contract (#54) — replaces `asdict(s)` in the
+        # Nine-field contract (#54 + #64) — replaces `asdict(s)` in the
         # _build_payload list-comp so a future internal-only field on
         # StrategyResult can't silently leak into docs/savings.json or
         # the dashboard at cost_optimizer/dashboard/app.py.
         # `extra` is shallow-copied so caller mutation of the returned
-        # dict doesn't bleed back into the frozen dataclass.
+        # dict doesn't bleed back into the frozen dataclass; `router_stats`
+        # is shallow-copied for the same reason when present.
         return {
             "strategy": self.strategy,
             "n_rows": self.n_rows,
@@ -287,6 +296,11 @@ class StrategyResult:
             "saved_pct": self.saved_pct,
             "mean_quality": self.mean_quality,
             "extra": dict(self.extra),
+            "router_stats": (
+                {k: (dict(v) if isinstance(v, dict) else v) for k, v in self.router_stats.items()}
+                if self.router_stats is not None
+                else None
+            ),
         }
 
 
@@ -495,6 +509,12 @@ def _run_router(workload: list[WorkloadRow], baseline: StrategyResult) -> Strate
             "escalated": n_escalated,
             "escalation_rate": round(n_escalated / n, 4),
         },
+        # #64: canonical RouterStats snapshot from the router itself —
+        # surfaces per-signal accounting (per_signal_trips,
+        # per_signal_measured) that the manual `extra` counters can't
+        # represent, so the dashboard can render per-signal escalation
+        # cost alongside cache savings.
+        router_stats=router.stats.to_dict(),
     )
 
 
