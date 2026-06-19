@@ -427,3 +427,36 @@ skip unchanged).
 
 **Next session:** continue propagation to remaining priority-tier and
 non-tier repos.
+
+## 2026-06-19 — Issue #62: router observability surface
+**Duration:** ~35 min · **Branch:** `session/2026-06-19-0310-issue-62`
+
+- Added `RouterStats` dataclass to `cost_optimizer/router.py` with five
+  raw counters (`total_routes`, `escalations`, `cheap_only`,
+  `per_signal_trips`, `per_signal_measured`) plus a derived
+  `escalation_rate` property. `to_dict` defensively copies the
+  per-signal dicts so external callers can't mutate the live counters
+  through the snapshot.
+- `UncertaintyRouter` now accumulates stats in `route()`:
+  first-trip-wins attribution credits only `triggered_signal`;
+  `per_signal_measured` counts every signal that returned a non-`None`
+  reading, preserving the "didn't trip" vs. "couldn't measure"
+  distinction `RouterDecision.signal_values` already exposes per call.
+- `dump_stats_json(path)` ships byte-shape parity with #50/#52: sorted
+  keys, `indent=2`, trailing newline, atomic-write through
+  `io_utils.atomic_write_text`.
+- 10 new tests in `tests/test_router_dump.py` mirror
+  `test_cache_wrapper_dump.py`'s recipe.
+- Architecture doc §3 gets a matching `#62` bullet.
+
+**Why this work, this session:** closes the last observability gap in
+the runtime layer. All three runtime classes (prompt cache, semantic
+cache, router) now expose one observability shape — same JSON dict
+shape, same atomic-write helper, same operator workflow.
+
+**Open questions / blockers:** none. 321 → 331 pytest passes. PR #63
+open and ready.
+
+**Next session:** consider plumbing `RouterStats` into the savings
+dashboard so per-signal escalation cost is visible alongside cache
+savings (separate issue).
