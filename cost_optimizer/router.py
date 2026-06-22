@@ -155,7 +155,7 @@ class EntropySignal:
     on the overall answer. The signal trips when entropy ≥ `threshold`.
     """
 
-    threshold: float = 1.5  # ~3 plausible tokens with equal mass
+    threshold: float = 1.5  # ~4-5 equal-mass tokens (e^1.5 ≈ 4.48; ln4≈1.39, ln5≈1.61)
     name: str = "entropy"
 
     def __post_init__(self) -> None:
