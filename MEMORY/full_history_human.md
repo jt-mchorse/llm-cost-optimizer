@@ -545,3 +545,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** two low-pri leads in `router.py` — (1) `JudgeConfidenceSignal.measure` collapses a missing `verdict.score` to `0.0` via `or 0.0`, which *trips* (escalates) rather than reporting "couldn't measure" (`None`), inconsistent with the EntropySignal contract; latent only because the real eval-harness `Judge` always returns a valid float. (2) The `EntropySignal.threshold=1.5  # ~3 plausible tokens` comment is numerically off (1.5 nats ≈ 4.5 equal-mass tokens; 3 tokens ≈ 1.10 nats). Cosmetic.
+
+## 2026-06-22 — Issue #73: router — "couldn't measure" on missing/non-finite judge score
+**Duration:** ~25 min · **Branch:** `session/2026-06-22-1511-issue-router-confidence`
+
+- Acted on the explicit next-lead from the #71/#72 session: `JudgeConfidenceSignal.measure` used `float(getattr(verdict, "score", None) or 0.0)`. The `or 0.0` collapsed a missing/None judge score to `0.0`, which then tripped (`0.0 < threshold`) and silently escalated **every** request to the expensive model — the opposite of a cost optimizer's purpose. Reachable because the signal is duck-typed (D-002): any object satisfying the `judge.score` contract is accepted, so a judge returning a malformed verdict is a real possibility, not just the eval-harness `Judge` that always returns a valid float.
+- Fix: read the raw score; missing/None → `SignalReading(value=None, trip=False)` ("couldn't measure", matching the EntropySignal and empty-text guards); non-finite (NaN/inf) → same (consistent with the #36/#71 finiteness sweeps); a genuine finite `0.0` is a real measurement and still trips.
+- 6 new tests (missing `.score` attr, `score=None`, parametrized NaN/inf/-inf, and a genuine-`0.0`-still-trips regression guard). Verified the 5 failure-mode tests fail pre-fix and the 0.0 guard passes pre-fix. Suite 363 → 369, ruff clean. PR ready.
+
+**Why this work, this session:** the portfolio is saturated (only `priority:low` demo-capture tasks open). This was a real correctness bug in the cost-routing decision path, already documented as the next lead in prior memory — strictly higher value than a synthetic fill.
+
+**Open questions / blockers:** none.
+
+**Next session:** the cosmetic `EntropySignal.threshold = 1.5  # ~3 plausible tokens` comment is numerically off (filed as #74, priority:low). No other specific lead in `router.py` — signals and the router are now well-hardened.

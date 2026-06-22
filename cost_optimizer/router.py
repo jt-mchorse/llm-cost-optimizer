@@ -280,7 +280,22 @@ class JudgeConfidenceSignal:
         if not text:
             return SignalReading(value=None, trip=False)
         verdict = self.judge.score(prompt or "", text, rubric=self.rubric)
-        score = float(getattr(verdict, "score", None) or 0.0)
+        # A judge that returns a verdict without a usable `.score` (missing,
+        # None, or non-finite) means "couldn't measure" — not "scored zero".
+        # The old `float(getattr(...) or 0.0)` collapsed a missing score to
+        # 0.0, which then tripped (`0.0 < threshold`) and silently escalated
+        # *every* request to the expensive model — the opposite of this tool's
+        # purpose, and inconsistent with the `value=None, trip=False` contract
+        # that EntropySignal (logprobs absent) and the empty-text guard above
+        # both honor. A genuine finite 0.0 is a real measurement and still
+        # trips. Non-finite is rejected for the same reason as the #36/#71
+        # finiteness sweeps: NaN/inf isn't a valid [0, 1] judge score.
+        raw = getattr(verdict, "score", None)
+        if raw is None:
+            return SignalReading(value=None, trip=False)
+        score = float(raw)
+        if not math.isfinite(score):
+            return SignalReading(value=None, trip=False)
         return SignalReading(value=score, trip=score < self.threshold)
 
 
