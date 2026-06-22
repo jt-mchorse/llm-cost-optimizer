@@ -558,3 +558,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** the cosmetic `EntropySignal.threshold = 1.5  # ~3 plausible tokens` comment is numerically off (filed as #74, priority:low). No other specific lead in `router.py` — signals and the router are now well-hardened.
+
+## 2026-06-22 — Issue #74: router — correct the EntropySignal threshold comment
+**Duration:** ~20 min · **Branch:** `session/2026-06-22-2310-issue-74`
+
+- Closed the cosmetic lead that prior sessions (#71/#72/#73) kept carrying forward. The `EntropySignal.threshold = 1.5` comment claimed "~3 plausible tokens with equal mass", but Shannon entropy of N equal-mass tokens is `ln(N)` nats, so 1.5 nats ≈ `e^1.5 ≈ 4.48` tokens. At 3 equal-mass tokens entropy is only `ln(3) ≈ 1.10` — below the threshold, so it doesn't trip. The repo's own existing tests already encoded this (3 tokens → no trip, 5 tokens → trip); the comment just contradicted them.
+- Fix: comment now reads "~4-5 equal-mass tokens (e^1.5 ≈ 4.48; ln4≈1.39, ln5≈1.61)". The threshold value stays 1.5 — it's what the README quickstart and the defaults-snapshot test reference, so re-tuning it would be a separate behavior-change decision, out of scope for a cosmetic issue.
+- Added `test_entropy_default_threshold_maps_to_four_to_five_equal_mass_tokens`, which pins the corrected claim to executable math (1.5 ∈ (ln4, ln5); a 4-token uniform doesn't trip, a 5-token one does) so the comment can't silently drift again. Suite 369 → 370, ruff clean. No behavior change. PR #76 ready.
+
+**Why this work, this session:** the portfolio is saturated (remaining open issues are `priority:low` demo-capture tasks that need screen recording, not doable headless). This was the last documented `router.py` lead — a real doc-accuracy defect on a parameter operators tune, with a test that locks the math.
+
+**Open questions / blockers:** none. `router.py` signals and the router are now well-hardened with no remaining known leads.
+
+**Next session:** no specific `router.py` lead remains. Future substantive work in this repo will need a fresh dogfood sweep (cache layers, batch, savings dashboard) since the issue tracker is down to `priority:low` demo-capture binaries.
