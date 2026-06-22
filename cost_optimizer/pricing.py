@@ -19,6 +19,7 @@ an invented price.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 
@@ -39,6 +40,15 @@ class ModelPricing:
         # D-003 extends from "no invented model" to "no invented numbers within
         # a known model": a negative rate or multiplier silently inverts the
         # sign of dollars_saved at cache_wrapper.py:177-179.
+        #
+        # The sign-only check is also widened to finiteness (#71), matching the
+        # portfolio-wide sweep already applied to SemanticCache.default_ttl_s
+        # and the router signal thresholds (#36): `NaN < 0.0` and
+        # `float("inf") < 0.0` are both False, so a non-finite rate or
+        # multiplier slipped past the negative guard and poisoned
+        # `_dollars_saved` — a NaN rate makes dollars_saved NaN, +Inf makes it
+        # Inf — propagating silently through the aggregate into the savings
+        # dashboard with no diagnostic.
         if not isinstance(self.model, str) or not self.model:
             raise ValueError(f"model must be a non-empty string; got {self.model!r}")
         for name, value in (
@@ -46,8 +56,8 @@ class ModelPricing:
             ("cache_write_multiplier", self.cache_write_multiplier),
             ("cache_read_multiplier", self.cache_read_multiplier),
         ):
-            if value < 0.0:
-                raise ValueError(f"{name} must be >= 0.0; got {value}")
+            if not math.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
 
 
 # Input $/MTok as of 2026-05. Update when Anthropic publishes new pricing;

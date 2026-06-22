@@ -532,3 +532,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** `EntropySignal.threshold` default carries a comment (`1.5  # ~3 plausible tokens with equal mass`) that's numerically off — 1.5 nats ≈ 4.5 equal-mass tokens, ln(3) ≈ 1.10. Cosmetic; low-pri comment fix if a future session needs filler in this repo.
+
+## 2026-06-22 — Issue #71: pricing — reject non-finite rates/multipliers
+**Duration:** ~25 min · **Branch:** `session/2026-06-22-1102-issue-71`
+
+- Found during Phase A code-reading: `ModelPricing.__post_init__` validated rates/multipliers with a sign-only check (`value < 0.0`). But `NaN < 0.0` and `inf < 0.0` are both `False`, so a non-finite rate slipped through and poisoned `cache_wrapper._dollars_saved` — a NaN rate makes savings NaN, +Inf makes them Inf — propagating silently into the aggregate and the savings dashboard with no diagnostic. This is the exact finiteness-sweep gap (#36) already closed on `SemanticCache.default_ttl_s` and the router thresholds; pricing was missed.
+- Fix: widened the guard to `math.isfinite(value) or value < 0.0` with a "must be a finite number >= 0.0" message. Added `tests/test_pricing.py` (18 tests) and updated the one existing test that asserted the old wording.
+- Full suite 359 → 363, ruff clean. PR #72 ready.
+
+**Why this work, this session:** the portfolio is saturated (only binary demo-capture tasks left open). This was a real silent-corruption bug in the savings-math path, found by reading `pricing.py` against the documented #36 sweep — strictly higher value than a synthetic fill.
+
+**Open questions / blockers:** none.
+
+**Next session:** two low-pri leads in `router.py` — (1) `JudgeConfidenceSignal.measure` collapses a missing `verdict.score` to `0.0` via `or 0.0`, which *trips* (escalates) rather than reporting "couldn't measure" (`None`), inconsistent with the EntropySignal contract; latent only because the real eval-harness `Judge` always returns a valid float. (2) The `EntropySignal.threshold=1.5  # ~3 plausible tokens` comment is numerically off (1.5 nats ≈ 4.5 equal-mass tokens; 3 tokens ≈ 1.10 nats). Cosmetic.

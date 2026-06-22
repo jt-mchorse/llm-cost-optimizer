@@ -293,7 +293,8 @@ def test_model_pricing_rejects_negative_numeric_field(field: str, bad_value: flo
         "input_per_mtok": 1.0,
     }
     kwargs[field] = bad_value
-    with pytest.raises(ValueError, match=rf"{field} must be >= 0\.0"):
+    # Message widened to "finite number >= 0.0" alongside the NaN/Inf guard (#71).
+    with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0\.0"):
         ModelPricing(**kwargs)  # type: ignore[arg-type]
 
 
