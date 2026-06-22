@@ -369,6 +369,76 @@ def test_judge_signal_extracts_text_from_sdk_shape() -> None:
     assert judge.last_call == ("q", "answer from sdk", "r")
 
 
+# Issue #73: a judge that returns a verdict without a usable `.score` means
+# "couldn't measure" — not "scored zero". The old `float(... or 0.0)` collapsed
+# a missing score to 0.0, which then tripped (`0.0 < threshold`) and silently
+# escalated every request to the expensive model. The contract is the same
+# `value=None, trip=False` that the empty-text guard above honors.
+
+
+@dataclass
+class _CannedJudge:
+    """`score(...)` returns whatever verdict object it was handed."""
+
+    verdict: Any
+
+    def score(self, prompt: str, response_text: str, *, rubric: str) -> Any:
+        return self.verdict
+
+
+@dataclass
+class _NoScoreVerdict:
+    """A verdict object that has no `.score` attribute at all."""
+
+    reasoning: str = "judge returned an unexpected shape"
+
+
+@dataclass
+class _NullableVerdict:
+    score: float | None
+
+
+def test_judge_signal_missing_score_attr_reports_couldnt_measure() -> None:
+    # Verdict object with no `.score` attribute → can't measure, must not trip.
+    judge = _CannedJudge(verdict=_NoScoreVerdict())
+    signal = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)
+    reading = signal.measure(FakeResponse(text="answer", prompt="q"))
+    assert reading.value is None
+    assert reading.trip is False
+
+
+def test_judge_signal_none_score_reports_couldnt_measure() -> None:
+    # Explicit `score=None` is the same "couldn't measure" case.
+    judge = _CannedJudge(verdict=_NullableVerdict(score=None))
+    signal = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)
+    reading = signal.measure(FakeResponse(text="answer", prompt="q"))
+    assert reading.value is None
+    assert reading.trip is False
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_judge_signal_nonfinite_score_reports_couldnt_measure(bad: float) -> None:
+    # A non-finite score isn't a valid [0, 1] measurement (#36/#71 sweep): a
+    # NaN would make `score < threshold` always-false (silent disable), so it
+    # must surface as "couldn't measure", not as a value.
+    judge = _CannedJudge(verdict=_NullableVerdict(score=bad))
+    signal = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)
+    reading = signal.measure(FakeResponse(text="answer", prompt="q"))
+    assert reading.value is None
+    assert reading.trip is False
+
+
+def test_judge_signal_genuine_zero_score_still_trips() -> None:
+    # Regression guard for the fix: a *real* 0.0 score (judge says the output
+    # is totally unfaithful) is finite and must still trip — only a missing
+    # score is exempt.
+    judge = _CannedJudge(verdict=_NullableVerdict(score=0.0))
+    signal = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)
+    reading = signal.measure(FakeResponse(text="answer", prompt="q"))
+    assert reading.value == 0.0
+    assert reading.trip is True
+
+
 # ----------------------------------------------------------------------
 # End-to-end: router + real signals
 # ----------------------------------------------------------------------
