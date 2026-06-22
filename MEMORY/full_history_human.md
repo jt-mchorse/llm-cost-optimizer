@@ -519,3 +519,16 @@ JSON` expander only.
 **Open questions / blockers:** none. 335 → 342 pytest passes. PR #67 merged into main.
 
 **Next session:** the dashboard observability story for the router is now complete for single-signal config. Per the issue body's out-of-scope, multi-signal config in the bench (so the panel can demonstrate attribution power with a real second signal) is a separate issue worth filing — it'd need a second signal in the routing config that doesn't pollute the snapshot. Per-signal *dollar* attribution is also a separate issue (the bench would need to track which signal caused each escalation row).
+
+## 2026-06-22 — Issue #69: keep EntropySignal defensive on duck-typed responses
+**Duration:** ~25 min · **Branch:** `session/2026-06-22-0340-issue-69`
+
+- Found during Phase A code-reading: `_extract_first_token_logprobs` advertises itself as defensive ("returns None for anything else"), but its nested-SDK-shape branch did `getattr(top, "top_logprobs", None) or top.get("top_logprobs")`. When `top` was a plain object with neither the attribute nor a `.get` method, the `.get` call raised `AttributeError`, crashing `EntropySignal.measure` and aborting the whole `UncertaintyRouter.route()` — the opposite of the router's documented "couldn't measure → fall through to the next signal" contract.
+- Fix: added a small `_read_field(obj, name, default)` helper that reads an attribute first, then a dict key only when `obj` is actually a `dict`, else returns the default — never calling `.get` on a non-dict. Routed both `top_logprobs` and the per-entry `logprob` extraction through it (the per-entry `v.get("logprob")` one line down had the identical latent crash). Removed the now-unneeded `# type: ignore[union-attr]`.
+- 3 new tests: object-typed `top_logprobs` shape, bare-object → `None`, and an end-to-end `route()` that falls through from a logprob-less entropy signal to a tripping judge signal. Suite 342 → 345, ruff clean. PR #70 ready.
+
+**Why this work, this session:** the portfolio is saturated; this was a real `AttributeError` crash in the production routing path (not a synthetic API-completeness fill). I explicitly declined the alternative — adding `from_dict` readers to the three telemetry `to_dict` classes — because nothing hand-rolls typed reconstruction from those JSON artifacts (the dashboard reads them via `.get()` chains by design), so that work would have been busywork.
+
+**Open questions / blockers:** none.
+
+**Next session:** `EntropySignal.threshold` default carries a comment (`1.5  # ~3 plausible tokens with equal mass`) that's numerically off — 1.5 nats ≈ 4.5 equal-mass tokens, ln(3) ≈ 1.10. Cosmetic; low-pri comment fix if a future session needs filler in this repo.
