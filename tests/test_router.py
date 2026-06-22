@@ -28,6 +28,7 @@ from cost_optimizer.router import (
     RouterDecision,
     SignalReading,
     UncertaintyRouter,
+    _extract_first_token_logprobs,
     _shannon_entropy_nats,
 )
 
@@ -246,6 +247,78 @@ def test_entropy_handles_sdk_shape_with_content_blocks() -> None:
     # ln(2) in nats ≈ 0.693; trips at threshold 0.5.
     assert reading.value == pytest.approx(math.log(2), rel=1e-6)
     assert reading.trip is True
+
+
+def test_entropy_handles_sdk_shape_with_object_top_logprobs() -> None:
+    # Object-typed nodes (not dicts): block.logprobs[0] is an object whose
+    # `top_logprobs` attribute holds objects carrying a `.logprob` attribute.
+    class Entry:
+        def __init__(self, logprob: float) -> None:
+            self.logprob = logprob
+
+    class Top:
+        top_logprobs = [Entry(math.log(0.5)), Entry(math.log(0.5))]
+
+    class Block:
+        type = "text"
+        logprobs = [Top()]
+
+    class SdkResponse:
+        content = [Block()]
+
+    reading = EntropySignal(threshold=0.5).measure(SdkResponse())
+    assert reading.value == pytest.approx(math.log(2), rel=1e-6)
+    assert reading.trip is True
+
+
+def test_extract_logprobs_returns_none_for_object_without_attr_or_get() -> None:
+    # Regression for #69: a `top` node that is a plain object with neither a
+    # `top_logprobs` attribute nor a `.get` method must yield None, not raise
+    # AttributeError. The defensive contract is what lets the router fall
+    # through to the next signal on logprob-less responses.
+    class Bare: ...
+
+    class Block:
+        type = "text"
+        logprobs = [Bare()]
+
+    class SdkResponse:
+        content = [Block()]
+
+    assert _extract_first_token_logprobs(SdkResponse()) is None
+    reading = EntropySignal().measure(SdkResponse())
+    assert reading == SignalReading(value=None, trip=False)
+
+
+def test_entropy_signal_falls_through_to_next_signal_on_bare_response() -> None:
+    # End-to-end (#69): EntropySignal can't measure a logprob-less response,
+    # so a second signal that trips must still drive escalation — the entropy
+    # crash previously aborted the whole route() before the judge ran.
+    class Bare:
+        text = "answer"
+        prompt = "q"
+
+    class Block:
+        type = "text"
+        logprobs = [Bare()]  # object lacking top_logprobs + .get
+
+    class SdkResponse:
+        content = [Block()]
+        text = "answer"
+        prompt = "q"
+
+    adapter = StubAdapter(response=SdkResponse())  # type: ignore[arg-type]
+    judge = StubJudge(canned_score=0.1)  # below 0.7 → trips
+    router = UncertaintyRouter(
+        cheap_model="cheap",
+        strong_model="strong",
+        cheap_adapter=adapter,
+        signals=[EntropySignal(), JudgeConfidenceSignal(judge=judge, rubric="r")],
+    )
+    decision = router.route("req")
+    assert decision.triggered_signal == "judge"
+    assert decision.model_id == "strong"
+    assert decision.signal_values["entropy"] is None
 
 
 # ----------------------------------------------------------------------

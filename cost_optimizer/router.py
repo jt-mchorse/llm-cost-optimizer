@@ -199,10 +199,29 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
         logprobs = getattr(first, "logprobs", None)
         if isinstance(logprobs, list) and logprobs:
             top = logprobs[0]
-            top_logprobs = getattr(top, "top_logprobs", None) or top.get("top_logprobs")  # type: ignore[union-attr]
+            top_logprobs = _read_field(top, "top_logprobs")
             if isinstance(top_logprobs, list):
-                return [float(v.get("logprob", 0.0)) for v in top_logprobs]
+                return [float(_read_field(v, "logprob", 0.0)) for v in top_logprobs]
     return None
+
+
+def _read_field(obj: Any, name: str, default: Any = None) -> Any:
+    """Read `name` off either an attribute or a dict key, else `default`.
+
+    The SDK-shape logprob path mixes object-typed and dict-typed nodes
+    depending on the client. A bare `getattr(...) or obj.get(...)` raised
+    `AttributeError` when `obj` was an object that had neither the attribute
+    nor a `.get` method — defeating the "returns None for anything else so
+    signals can stay defensive" contract of `_extract_first_token_logprobs`
+    (#69). This reads attr-first, then dict-key only when `obj` is actually a
+    `dict`, and never calls `.get` on a non-dict.
+    """
+    attr = getattr(obj, name, None)
+    if attr is not None:
+        return attr
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return default
 
 
 def _shannon_entropy_nats(logprobs: list[float]) -> float:
