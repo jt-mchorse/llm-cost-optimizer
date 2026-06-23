@@ -608,3 +608,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** none specific to this issue.
+
+## 2026-06-23 — Issue #83: BatchCostQuote had no validation; a negative/NaN rate silently corrupted the savings dashboard
+**Duration:** ~25 min · **Branch:** `session/2026-06-23-2317-issue-83`
+
+- A Phase A dogfood code-read of the batch cost path found that `BatchCostQuote` — the batch-axis equivalent of `ModelPricing` — had no `__post_init__` at all, while `ModelPricing` (#71) and its siblings `BatchRequest` / `BatchResultRow` all validate their numeric fields. A negative or non-finite `input_per_mtok` / `output_per_mtok` was freely constructible.
+- Reproduced: a `-15.0` rate makes `compare_realtime_vs_batch` return `realtime_usd=-15.0, savings_usd=-7.5` (sign inverted); a `NaN` rate makes the dollar fields `NaN`. In both cases the `savings_pct … if realtime_total > 0 else 0.0` guard masks the percentage to a clean `0.0`, so the garbage dollars land on the savings dashboard (a headline deliverable) with no diagnostic.
+- Added a `__post_init__` rejecting a non-string/empty `model` and a non-finite or negative rate, mirroring `ModelPricing.__post_init__`. Added `import math` (not previously imported in `batch.py`). 15 new tests (negative + NaN/±Inf on each field, empty/non-string model, zero-rate boundary, clean end-to-end flow), red pre-fix / green post-fix. Suite → 391, ruff clean.
+
+**Why this work, this session:** priority-tier repo, next in build sequence after the iteration-1 fix in `llm-eval-harness`; the only `priority:high` issues elsewhere were operator-blocked or `decision-revisit` work deferred to JT. Continues this repo's "no invented/garbage numbers" arc (D-003 / #71) by closing the one cost-rate dataclass that never got the finiteness guard.
+
+**Open questions / blockers:** none.
+
+**Next session:** the dataclass boundary is the right choke point — a constructed `BatchCostQuote` is now trustworthy downstream, so no re-validation was added inside `compare_realtime_vs_batch`.
