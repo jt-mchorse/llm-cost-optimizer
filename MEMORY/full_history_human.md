@@ -596,3 +596,15 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** `AnthropicBatchBackend.poll` reading a never-set `_idempotency_key` (informational, real-API-only) is a separate low-pri lead.
+
+## 2026-06-23 — Issue #81: SignalReading didn't enforce its value=None ⟹ not-trip contract
+**Duration:** ~20 min · **Branch:** `session/2026-06-23-1920-issue-81`
+
+- A Phase A dogfood sweep of the router path found that `SignalReading` documents `value=None` as "couldn't measure" and the router counts only non-None readings in `per_signal_measured`, but nothing stopped a custom `EscalationSignal` from returning `value=None, trip=True`. That would increment `per_signal_trips` without `per_signal_measured`, breaking the `trips ≤ measured` invariant and the dashboard's `trip_rate`.
+- Added a `__post_init__` guard rejecting that combination, matching the module's existing contract-tightening guards. The built-in signals already return `trip=False` when they can't measure (this had been fixed reactively once for judge-confidence); this enforces it for all signals at the type boundary. Suite 373 → 376, ruff clean.
+
+**Why this work, this session:** third of three parallel dogfood finds across priority-tier repos in this DAY session; the only open `priority:high` issues elsewhere were operator-blocked or `decision-revisit` security work.
+
+**Open questions / blockers:** none.
+
+**Next session:** none specific to this issue.

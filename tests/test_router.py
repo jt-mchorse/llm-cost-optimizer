@@ -659,3 +659,29 @@ class TestJudgeConfidenceSignalThresholdValidation:
         for ok in (0.0, 0.5, 1.0):
             sig = JudgeConfidenceSignal(judge=_StubJudge(), rubric="faithfulness", threshold=ok)
             assert sig.threshold == ok
+
+
+# ----------------------------------------------------------------------
+# SignalReading contract: value=None ("couldn't measure") must not trip
+# (#81). The router only counts non-None readings in per_signal_measured,
+# so a value=None+trip=True reading breaks the trips<=measured invariant.
+# ----------------------------------------------------------------------
+
+
+def test_signal_reading_rejects_none_value_with_trip() -> None:
+    with pytest.raises(ValueError, match=r"value=None, trip=True\) is invalid"):
+        SignalReading(value=None, trip=True)
+
+
+def test_signal_reading_allows_none_value_without_trip() -> None:
+    # "couldn't measure, so don't trip" — the contract the built-in signals follow.
+    r = SignalReading(value=None, trip=False)
+    assert r.value is None
+    assert r.trip is False
+
+
+@pytest.mark.parametrize("trip", [True, False])
+def test_signal_reading_allows_measured_value_either_trip(trip: bool) -> None:
+    r = SignalReading(value=0.42, trip=trip)
+    assert r.value == 0.42
+    assert r.trip is trip

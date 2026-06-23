@@ -79,6 +79,26 @@ class SignalReading:
     value: float | None
     trip: bool
 
+    def __post_init__(self) -> None:
+        # A reading that couldn't measure (`value is None`, per the field docs)
+        # must not trip. `route()` only counts non-None readings in
+        # `per_signal_measured` (guarded on `reading.value is not None`) but
+        # counts every trip in `per_signal_trips`, so a `value=None, trip=True`
+        # reading would increment trips without measured — breaking the
+        # `per_signal_trips[s] <= per_signal_measured[s]` invariant the two
+        # counters uphold and dividing the dashboard's `trip_rate` by a
+        # `measured` that omits the trip it's rating. The built-in signals
+        # already honor this (EntropySignal/JudgeConfidenceSignal return
+        # trip=False when they can't measure); enforce it at the type boundary
+        # for third-party EscalationSignal implementations too, matching the
+        # module's other contract-tightening __post_init__ guards.
+        if self.value is None and self.trip:
+            raise ValueError(
+                "SignalReading(value=None, trip=True) is invalid: a signal that "
+                "couldn't measure (value=None) must not trip — return trip=False "
+                "when no measurement is available"
+            )
+
 
 @dataclass
 class RouterStats:
