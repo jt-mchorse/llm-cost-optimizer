@@ -209,6 +209,33 @@ def test_entropy_trips_at_or_above_threshold() -> None:
     assert reading.trip is True
 
 
+def test_entropy_default_threshold_maps_to_four_to_five_equal_mass_tokens() -> None:
+    # Pins the corrected `EntropySignal.threshold = 1.5` comment (#74) to
+    # executable math. Shannon entropy of N equal-mass tokens is ln(N) nats, so
+    # the default 1.5-nat threshold corresponds to e^1.5 ≈ 4.48 equal-mass
+    # tokens — i.e. it trips at ~4-5 plausible tokens, NOT 3 (ln(3) ≈ 1.10 is
+    # below the threshold). The old comment said "~3 plausible tokens", which is
+    # numerically off and would mislead anyone tuning the threshold.
+    default_threshold = EntropySignal().threshold
+    assert default_threshold == 1.5
+    # The boundary sits strictly between 4 and 5 equal-mass tokens.
+    assert math.log(4) < default_threshold < math.log(5)
+
+    # A 4-equal-mass-token distribution (ln4 ≈ 1.386) does NOT trip the default.
+    logp4 = math.log(1 / 4)
+    four = EntropySignal().measure(FakeResponse(first_token_logprobs=[logp4] * 4))
+    assert four.value == pytest.approx(math.log(4), rel=1e-6)
+    assert four.trip is False
+
+    # A 5-equal-mass-token distribution (ln5 ≈ 1.609) does trip it. Together
+    # with the 4-token case this brackets the threshold at 4-5 tokens, the
+    # claim the corrected comment now makes.
+    logp5 = math.log(1 / 5)
+    five = EntropySignal().measure(FakeResponse(first_token_logprobs=[logp5] * 5))
+    assert five.value == pytest.approx(math.log(5), rel=1e-6)
+    assert five.trip is True
+
+
 def test_entropy_handles_truncated_logprobs() -> None:
     # Top-5 logprobs that don't sum to 1; entropy is computed on the
     # normalized distribution, not the raw probs.
