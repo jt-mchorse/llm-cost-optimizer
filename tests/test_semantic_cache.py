@@ -448,6 +448,25 @@ def test_redis_storage_invalidate_by_tag(fake_redis_client):
     assert len(s) == 1
 
 
+def test_redis_storage_reput_with_changed_tags_drops_stale_membership(fake_redis_client):
+    # Re-putting an existing key with a different tag set (reclassification)
+    # must not leave the old tag pointing at the key. Pre-fix the additive
+    # `sadd` left `tag:legal -> a` in place, so invalidating "legal" wrongly
+    # evicted the record even though it's now tagged only "urgent". This
+    # mirrors InMemoryStorage, which replaces the whole record on re-put.
+    from cost_optimizer.semantic_cache import RedisStorage
+
+    s = RedisStorage(client=fake_redis_client)
+    s.put(_record("a", [1.0, 0.0], tags=("legal",)))
+    s.put(_record("a", [1.0, 0.0], tags=("urgent",)))  # reclassified; legal dropped
+    # The entry is no longer tagged "legal" — invalidating "legal" must skip it.
+    assert s.invalidate_by_tag("legal") == 0
+    assert len(s) == 1
+    # The current tag still invalidates it.
+    assert s.invalidate_by_tag("urgent") == 1
+    assert len(s) == 0
+
+
 def test_semantic_cache_with_redis_backend_behaves_like_inmemory(fake_redis_client):
     from cost_optimizer.semantic_cache import RedisStorage
 

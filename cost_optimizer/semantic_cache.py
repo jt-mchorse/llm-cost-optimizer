@@ -229,6 +229,18 @@ class RedisStorage:
         import json
         from binascii import b2a_base64
 
+        # A re-put under an existing key may carry a different tag set. Redis
+        # tag membership is additive (the `sadd` loop below), so without
+        # pruning, a tag the record no longer has would still point at this
+        # key — and a later `invalidate_by_tag` on that lost tag would wrongly
+        # evict the record. Drop those stale memberships first, matching
+        # InMemoryStorage, whose `put` replaces the whole record so old tags
+        # simply vanish.
+        existing = self._load(self._record_key(record.key))
+        if existing is not None:
+            for stale_tag in existing.tags - record.tags:
+                self.client.srem(self._tag_key(stale_tag), record.key)
+
         # Store the vector + payload as a JSON-encoded blob; Redis hashes
         # don't natively carry numeric arrays.
         blob = json.dumps(
