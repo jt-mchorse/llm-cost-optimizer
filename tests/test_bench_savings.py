@@ -578,3 +578,16 @@ def test_router_panel_rows_on_real_savings_json_produces_expected_entropy_row() 
     assert entropy["trips"] == router["router_stats"]["per_signal_trips"]["entropy"]
     # And the trip rate matches escalation_rate (single-signal lock).
     assert abs(entropy["trip_rate"] - router["router_stats"]["escalation_rate"]) < 1e-9
+
+
+def test_run_bench_handles_zero_row_workload_without_crashing() -> None:
+    # An empty workload (--n 0) must not crash. The semantic-cache hit_rate and
+    # router escalation_rate divisions used to raise ZeroDivisionError while the
+    # mean_quality divisions one line above were already guarded.
+    payload = run_bench(n=0)
+    assert payload["n_rows"] == 0
+    by_name = {s["strategy"]: s for s in payload["strategies"]}
+    sem = next(s for s in by_name.values() if "semantic cache" in s["strategy"])
+    router = next(s for s in by_name.values() if "router" in s["strategy"])
+    assert sem["extra"]["hit_rate"] == 0.0
+    assert router["extra"]["escalation_rate"] == 0.0

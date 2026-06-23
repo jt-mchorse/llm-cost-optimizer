@@ -439,7 +439,11 @@ def _run_semantic_cache(workload: list[WorkloadRow], baseline: StrategyResult) -
         saved_usd=round(saved, 6),
         saved_pct=round(pct, 4),
         mean_quality=round(qualities / n, 4) if n else 0.0,
-        extra={"hits": n_hits, "misses": n_misses, "hit_rate": round(n_hits / n, 4)},
+        extra={
+            "hits": n_hits,
+            "misses": n_misses,
+            "hit_rate": round(n_hits / n, 4) if n else 0.0,
+        },
     )
 
 
@@ -507,7 +511,7 @@ def _run_router(workload: list[WorkloadRow], baseline: StrategyResult) -> Strate
         mean_quality=round(qualities / n, 4) if n else 0.0,
         extra={
             "escalated": n_escalated,
-            "escalation_rate": round(n_escalated / n, 4),
+            "escalation_rate": round(n_escalated / n, 4) if n else 0.0,
         },
         # #64: canonical RouterStats snapshot from the router itself —
         # surfaces per-signal accounting (per_signal_trips,
@@ -536,6 +540,24 @@ def _run_batch(workload: list[WorkloadRow], baseline: StrategyResult) -> Strateg
         )
         for r in workload
     ]
+    if not requests:
+        # Empty workload (--n 0): the batch backend rejects an empty submit,
+        # and there's nothing to price. Return a trivial zero result so the
+        # whole bench completes on a degenerate workload, matching the other
+        # strategies' n==0 handling.
+        return StrategyResult(
+            strategy=f"batch API (discount {BATCH_DISCOUNT_FACTOR:.2f}×)",
+            n_rows=0,
+            total_usd=0.0,
+            baseline_usd=baseline.total_usd,
+            saved_usd=round(baseline.total_usd, 6),
+            saved_pct=0.0,
+            mean_quality=0.0,
+            extra={
+                "discount_factor": BATCH_DISCOUNT_FACTOR,
+                "compare_savings_pct_with_outputs": 0.0,
+            },
+        )
     job = backend.submit(requests, idempotency_key="bench-savings-2026-05-17")
     rows_in: list[BatchResultRow] = [
         BatchResultRow(
