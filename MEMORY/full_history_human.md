@@ -571,3 +571,15 @@ JSON` expander only.
 **Open questions / blockers:** none. `router.py` signals and the router are now well-hardened with no remaining known leads.
 
 **Next session:** no specific `router.py` lead remains. Future substantive work in this repo will need a fresh dogfood sweep (cache layers, batch, savings dashboard) since the issue tracker is down to `priority:low` demo-capture binaries.
+
+## 2026-06-23 — Issue #79: bench_savings crashed on an empty (--n 0) workload
+**Duration:** ~20 min · **Branch:** `session/2026-06-23-0415-issue-79`
+
+- Fixed `run_bench(n=0)`, which crashed at three sites the empty path never exercised: `ZeroDivisionError` on the semantic-cache `hit_rate` and router `escalation_rate` divisions (the sibling `mean_quality` divisions were already guarded), and `ValueError` from the batch backend's empty `submit()`.
+- Guarded the two divisions with `if n else 0.0` and short-circuited `_run_batch` to a trivial zero result on an empty workload. Added an `n=0` smoke test. Red pre-fix, green post-fix. Suite 370 → 371, ruff clean.
+
+**Why this work, this session:** found by a different-angle second pass in the night session's Phase A dogfood wave; the reported two divisions were only part of it — fixing them revealed the batch-submit crash, so the PR makes the whole `n=0` path complete rather than partial.
+
+**Open questions / blockers:** none.
+
+**Next session:** `AnthropicBatchBackend.poll` reading a never-set `_idempotency_key` (informational, real-API-only) is a separate low-pri lead.
