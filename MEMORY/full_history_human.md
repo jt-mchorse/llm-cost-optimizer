@@ -572,6 +572,19 @@ JSON` expander only.
 
 **Next session:** no specific `router.py` lead remains. Future substantive work in this repo will need a fresh dogfood sweep (cache layers, batch, savings dashboard) since the issue tracker is down to `priority:low` demo-capture binaries.
 
+## 2026-06-23 — Issue #77: RedisStorage drops stale tag memberships on re-put
+**Duration:** ~25 min · **Branch:** `session/2026-06-23-0321-issue-77`
+
+- Fixed a backend-parity bug in the semantic cache. `RedisStorage.put` recorded tag membership additively (`sadd`) and never pruned tags a re-put record no longer carried. So reclassifying a cached entry — same prompt/model (same key), different tags — left the old tag's Redis set still pointing at the key. A later `invalidate_by_tag` on that lost tag then wrongly evicted the record. `InMemoryStorage` doesn't have this problem because its `put` replaces the whole record. The fix loads any existing record and `srem`s the dropped tags before the additive write.
+- Added a `fakeredis` parity test (`put a:legal → put a:urgent → invalidate_by_tag('legal')` must drop 0 and keep the entry, then `invalidate_by_tag('urgent')` drops it). Verified red pre-fix, green post-fix. Suite 370 → 371, ruff clean.
+
+**Why this work, this session:** found by the night session's Phase A parallel dogfood sweep; it's a real silent-data-loss path (wrong cache eviction) on the production Redis backend, reachable through the public `SemanticCache.put(..., tags=...)` API.
+
+**Open questions / blockers:** none.
+
+**Next session:** dangling tag-set entries after a multi-tagged record is invalidated are benign (record's gone, count stays correct) and were deliberately left out of scope. No other known semantic-cache lead.
+
+---
 ## 2026-06-23 — Issue #79: bench_savings crashed on an empty (--n 0) workload
 **Duration:** ~20 min · **Branch:** `session/2026-06-23-0415-issue-79`
 
