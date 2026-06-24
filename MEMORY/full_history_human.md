@@ -621,3 +621,17 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** the dataclass boundary is the right choke point — a constructed `BatchCostQuote` is now trustworthy downstream, so no re-validation was added inside `compare_realtime_vs_batch`.
+
+---
+## 2026-06-24 — Issue #85: per-call put(ttl_s) was unvalidated while default_ttl_s wasn't
+**Duration:** ~22 min · **Branch:** `session/2026-06-24-0326-issue-85`
+
+- `SemanticCache.put(..., ttl_s=...)` — the per-call override that takes precedence over `default_ttl_s` — applied no finiteness/positivity check, while the constructor validates `default_ttl_s` (#36). A negative `ttl_s` stored an already-expired entry (silently evicted on the next lookup → cache degrades to full bypass with no diagnostic); a NaN/Inf corrupted `expires_at`.
+- Added the same guard to `put`, raising the same descriptive ValueError. `ttl_s=None` still falls back to the default.
+- 6 new tests (non-positive rejected, NaN/±Inf parametrized, None-fallback, valid-positive store/expiry lifecycle). Red via `git stash`, green after. Suite 391 → 397, ruff clean.
+
+**Why this work, this session:** llm-cost-optimizer was the next priority-tier repo by build-sequence tie-break; pricing/batch/router were already saturated, so a parallel dogfood sweep of the cache modules surfaced this asymmetric-validation gap.
+
+**Open questions / blockers:** none.
+
+**Next session:** cache_wrapper.py and io_utils.py are the remaining dogfood frontier in this repo if picked again.
