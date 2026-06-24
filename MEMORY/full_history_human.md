@@ -635,3 +635,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** cache_wrapper.py and io_utils.py are the remaining dogfood frontier in this repo if picked again.
+
+---
+## 2026-06-24 — Issue #87: non-finite embedding silently disabled the semantic cache
+**Duration:** ~25 min · **Branch:** `session/2026-06-24-1523-issue-87`
+
+- A BYO embedder (the documented `Embedder` Protocol seam) returning a NaN/Inf component flowed unvalidated into `cosine()`, making every similarity `nan`. Because `nan >= threshold` is always False, an identical prompt that must be a cache hit was reported as a miss — the cache silently went fully bypassed, the model was re-invoked on every lookup (lost savings), and `nan` leaked into `similarity`/`hit_rate`.
+- Added a `_validate_embedding` seam guard in `lookup` and `put` (reject-loud with a `ValueError` naming the index, matching the module's ttl guards #36/#85 and the sibling prompt-regression-suite #67), plus a defense-in-depth `cosine()` finiteness fallback so `find_nearest` can't be poisoned by a `nan`. 8 tests, red-without / green-with, full suite + ruff clean.
+
+**Why this work, this session:** found via a Phase A dogfood sweep and reproduced end-to-end; llm-cost-optimizer was next in build sequence among the priority tier (D-009) after llm-eval-harness this run.
+
+**Open questions / blockers:** none.
+
+**Next session:** rescaling vectors by max-abs component for an exact `1.0` similarity on huge-but-finite vectors is a separate, lower-value concern (the `cosine` finiteness fallback is the minimal consistent fix).
