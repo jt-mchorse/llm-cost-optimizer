@@ -498,3 +498,44 @@ class TestBatchJobMetaNRequestsValidation:
             created_at_iso="2026-05-25T00:00:00Z",
         )
         assert meta.n_requests == 1
+
+
+class TestBatchCostQuoteRateValidation:
+    # `BatchCostQuote` is the batch-axis equivalent of `ModelPricing`, which
+    # got this guard in #71. A negative rate inverts the savings sign and a
+    # non-finite rate poisons the dollar fields of `CostComparison` straight
+    # onto the savings dashboard — while `savings_pct` is masked to a clean
+    # 0.0 by the `realtime_total > 0` guard. Validate at the dataclass
+    # boundary, mirroring the sibling `BatchResultRow` / `BatchRequest` guards.
+
+    @pytest.mark.parametrize("field", ["input_per_mtok", "output_per_mtok"])
+    @pytest.mark.parametrize("bad", [-0.01, -15.0, float("nan"), float("inf"), float("-inf")])
+    def test_rejects_negative_or_non_finite_rate(self, field: str, bad: float) -> None:
+        kwargs = dict(model="m", input_per_mtok=10.0, output_per_mtok=40.0)
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0.0"):
+            BatchCostQuote(**kwargs)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("bad", ["", None, 0])
+    def test_rejects_empty_or_non_string_model(self, bad) -> None:
+        with pytest.raises(ValueError, match=r"model must be a non-empty string"):
+            BatchCostQuote(model=bad, input_per_mtok=10.0, output_per_mtok=40.0)  # type: ignore[arg-type]
+
+    def test_accepts_zero_and_positive_rates(self) -> None:
+        # Zero is a valid rate (e.g. a fully-discounted promotional tier).
+        q = BatchCostQuote(model="m", input_per_mtok=0.0, output_per_mtok=40.0)
+        assert q.input_per_mtok == 0.0
+        assert q.output_per_mtok == 40.0
+
+    def test_validated_quote_flows_through_compare(self) -> None:
+        # The clean path still computes a sane comparison end-to-end.
+        rows = [
+            BatchResultRow(
+                custom_id="a", response_text="x", prompt_tokens=1_000_000, completion_tokens=0
+            )
+        ]
+        quote = BatchCostQuote(model="m", input_per_mtok=15.0, output_per_mtok=75.0)
+        cmp = compare_realtime_vs_batch(rows, {"m": quote}, model_of={"a": "m"})
+        assert cmp.realtime_usd == pytest.approx(15.0)
+        assert cmp.savings_usd > 0.0
+        assert 0.0 < cmp.savings_pct <= 1.0

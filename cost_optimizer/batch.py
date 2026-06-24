@@ -34,6 +34,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import json
+import math
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol
@@ -506,6 +507,26 @@ class BatchCostQuote:
     model: str
     input_per_mtok: float
     output_per_mtok: float
+
+    def __post_init__(self) -> None:
+        # Mirror `ModelPricing.__post_init__` (#71) on the batch axis: a
+        # negative rate inverts the sign of the savings math in
+        # `compare_realtime_vs_batch`, and a non-finite rate (NaN/+/-Inf)
+        # poisons `realtime_total`/`batch_total` → the rounded NaN/Inf
+        # propagates into `CostComparison` and onto the savings dashboard.
+        # The `savings_pct … if realtime_total > 0 else 0.0` guard makes it
+        # worse by masking the percentage to a clean 0.0 while the dollar
+        # fields carry garbage. Sign-only checks miss non-finite values
+        # (`NaN < 0.0` and `inf < 0.0` are both False), so widen to finiteness
+        # like the portfolio-wide sweep already applied to `ModelPricing`.
+        if not isinstance(self.model, str) or not self.model:
+            raise ValueError(f"model must be a non-empty string; got {self.model!r}")
+        for name, value in (
+            ("input_per_mtok", self.input_per_mtok),
+            ("output_per_mtok", self.output_per_mtok),
+        ):
+            if not math.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
 
 
 @dataclass(frozen=True)
