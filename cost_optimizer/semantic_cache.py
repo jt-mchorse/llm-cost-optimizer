@@ -331,7 +331,17 @@ class RedisStorage:
 
 
 def cosine(a: list[float], b: list[float]) -> float:
-    """Cosine similarity. Returns 0.0 if either vector is zero."""
+    """Cosine similarity. Returns 0.0 if either vector is zero.
+
+    Non-finite *components* are rejected upstream at the `put`/`lookup` seam
+    (`_validate_embedding`), but `find_nearest` scans every stored record
+    through here in a loop, so this stays defensive: a non-finite *result*
+    (e.g. a vector whose huge-but-finite components overflow `sum(x*x)` to
+    `inf`) returns the same well-defined 0.0 fallback as the zero-vector
+    branch rather than poisoning `find_nearest`'s running best with `nan`
+    (`sim > best` is always False against `nan`, so a real match could never
+    overtake it).
+    """
     if len(a) != len(b):
         raise ValueError(f"vector length mismatch: {len(a)} vs {len(b)}")
     dot = sum(x * y for x, y in zip(a, b, strict=True))
@@ -339,7 +349,34 @@ def cosine(a: list[float], b: list[float]) -> float:
     nb = math.sqrt(sum(x * x for x in b))
     if na == 0 or nb == 0:
         return 0.0
-    return dot / (na * nb)
+    sim = dot / (na * nb)
+    if not math.isfinite(sim):
+        return 0.0
+    return sim
+
+
+def _validate_embedding(vector: list[float], *, where: str) -> None:
+    """Reject a non-finite embedding component at the BYO-embedder seam.
+
+    The `Embedder` is a BYO Protocol (the `HashEmbedder` docstring points
+    production callers at it): a normalization divide-by-zero, an Inf
+    overflow, or a NaN-poisoned model output can hand back a `NaN`/`±Inf`
+    component. Unvalidated, it flows into `cosine()` and makes every
+    similarity `nan`, so `nan >= threshold` is always False — an identical
+    prompt that must be a hit is silently reported as a miss, the cache goes
+    fully bypassed, and `nan` leaks into `similarity`/`hit_rate`. Reject it
+    loudly here rather than store/scan a poisoned vector, the same contract
+    the ttl guards apply (#36/#85) and the sibling prompt-regression-suite
+    #67 fix applies to candidate embeddings.
+    """
+    bad = next((i for i, v in enumerate(vector) if not math.isfinite(v)), None)
+    if bad is not None:
+        raise ValueError(
+            f"embedding from {where} has a non-finite component at index {bad}: "
+            f"{vector[bad]!r}. The embedder returned a corrupt vector — a NaN/Inf "
+            "component makes every cosine similarity NaN and silently disables the "
+            "cache (every lookup misses, hit_rate reads 0). Fix the embedder."
+        )
 
 
 # ----------------------------------------------------------------------
@@ -456,6 +493,7 @@ class SemanticCache:
         self.stats.expired_purged += self.storage.purge_expired(self.now_fn())
 
         vector = self.embedder.embed(self._scoped_prompt(prompt, model))
+        _validate_embedding(vector, where="lookup embedder")
         best = self.storage.find_nearest(vector)
         if best is None:
             self.stats.misses += 1
@@ -496,7 +534,9 @@ class SemanticCache:
             raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s}")
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s
         expires_at = (self.now_fn() + ttl) if ttl is not None else None
-        vector = tuple(self.embedder.embed(self._scoped_prompt(prompt, model)))
+        raw_vector = self.embedder.embed(self._scoped_prompt(prompt, model))
+        _validate_embedding(raw_vector, where="put embedder")
+        vector = tuple(raw_vector)
         key = self._make_key(prompt, model)
         record = CacheRecord(
             key=key,
