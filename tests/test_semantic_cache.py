@@ -337,6 +337,43 @@ def test_ttl_rejects_non_finite(bad: float):
         )
 
 
+# Issue #85: the per-call put(ttl_s=...) override takes precedence over
+# default_ttl_s but was unvalidated — a negative ttl stored expires_at in the
+# past (entry silently evicted on next lookup) and a non-finite ttl corrupted
+# expires_at. Apply the same guard as the constructor at this seam.
+def test_put_rejects_non_positive_ttl_s():
+    cache, _ = _cache()
+    with pytest.raises(ValueError, match="finite positive number"):
+        cache.put("p", "v", model="m", ttl_s=0)
+    with pytest.raises(ValueError, match="finite positive number"):
+        cache.put("p", "v", model="m", ttl_s=-10.0)
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_put_rejects_non_finite_ttl_s(bad: float):
+    cache, _ = _cache()
+    with pytest.raises(ValueError, match="finite positive number"):
+        cache.put("p", "v", model="m", ttl_s=bad)
+
+
+def test_put_ttl_s_none_falls_back_to_default():
+    # ttl_s=None must still defer to default_ttl_s (here: no expiry).
+    cache, _ = _cache(ttl=None)
+    cache.put("p", "v", model="m", ttl_s=None)
+    assert cache.lookup("p", model="m").hit is True
+
+
+def test_put_valid_positive_ttl_s_stores_and_retrieves():
+    cache, fake_now = _cache(ttl=None)
+    cache.put("p", "v", model="m", ttl_s=60.0)
+    assert cache.lookup("p", model="m").hit is True
+    # Still present just before expiry, gone after.
+    fake_now[0] += 59.0
+    assert cache.lookup("p", model="m").hit is True
+    fake_now[0] += 2.0
+    assert cache.lookup("p", model="m").hit is False
+
+
 def test_stats_track_hit_rate():
     cache, _ = _cache()
     cache.put("p", "v", model="m")

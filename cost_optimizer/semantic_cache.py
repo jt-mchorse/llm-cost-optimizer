@@ -487,6 +487,13 @@ class SemanticCache:
         ttl_s: float | None = None,
     ) -> str:
         """Store `payload` under the embedding of `prompt`. Returns the cache key."""
+        # The per-call override takes precedence over `default_ttl_s`, so it needs
+        # the same guard the constructor applies (#36/#85). An unchecked negative
+        # ttl stores `expires_at = now + ttl` in the past → the entry is evicted on
+        # the next lookup with no diagnostic; a non-finite ttl corrupts `expires_at`
+        # entirely. Reject at this seam rather than store a poisoned record.
+        if ttl_s is not None and (not math.isfinite(ttl_s) or ttl_s <= 0):
+            raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s}")
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s
         expires_at = (self.now_fn() + ttl) if ttl is not None else None
         vector = tuple(self.embedder.embed(self._scoped_prompt(prompt, model)))
