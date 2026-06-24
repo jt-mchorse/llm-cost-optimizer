@@ -49,6 +49,16 @@ def test_cosine_length_mismatch_raises():
         cosine([1.0], [1.0, 2.0])
 
 
+# Issue #87: defense-in-depth. find_nearest scans every record through cosine,
+# so a non-finite *result* (huge-but-finite components overflow sum(x*x) to inf)
+# must return a finite 0.0 fallback, not a nan that poisons find_nearest's best.
+def test_cosine_overflow_returns_finite_zero_not_nan():
+    huge = [1e200, 1e200]
+    sim = cosine(huge, huge)
+    assert math.isfinite(sim)
+    assert sim == 0.0
+
+
 # ----------------------------------------------------------------------
 # HashEmbedder
 # ----------------------------------------------------------------------
@@ -516,3 +526,67 @@ def test_semantic_cache_with_redis_backend_behaves_like_inmemory(fake_redis_clie
     assert cache.lookup("how do I refund a charge", model="m").hit is True
     assert cache.invalidate(tag="legal") == 1
     assert cache.lookup("how do I refund a charge", model="m").hit is False
+
+
+# ----------------------------------------------------------------------
+# Issue #87: reject a non-finite embedding component at the BYO-embedder
+# seam. Unvalidated, a NaN/Inf component makes every cosine similarity NaN
+# (nan >= threshold is always False), so an identical prompt is reported as a
+# miss — the cache silently goes fully bypassed and hit_rate reads 0.
+# ----------------------------------------------------------------------
+
+
+class _StubEmbedder:
+    """BYO embedder that returns a fixed vector (mimics a corrupt model output)."""
+
+    def __init__(self, vector: list[float]) -> None:
+        self._vector = vector
+
+    def embed(self, text: str) -> list[float]:
+        return list(self._vector)
+
+
+def _cache_with(embedder) -> SemanticCache:
+    return SemanticCache(embedder=embedder, storage=InMemoryStorage(), similarity_threshold=0.95)
+
+
+@pytest.mark.parametrize(
+    "bad_vec",
+    [
+        [0.6, float("nan"), 0.8],
+        [float("inf"), 0.2, 0.1],
+        [0.1, 0.2, float("-inf")],
+    ],
+    ids=["nan", "inf", "-inf"],
+)
+def test_put_rejects_non_finite_embedding(bad_vec: list[float]):
+    cache = _cache_with(_StubEmbedder(bad_vec))
+    with pytest.raises(ValueError, match="non-finite component"):
+        cache.put("p", "v", model="m")
+
+
+@pytest.mark.parametrize(
+    "bad_vec",
+    [
+        [0.6, float("nan"), 0.8],
+        [float("inf"), 0.2, 0.1],
+        [0.1, 0.2, float("-inf")],
+    ],
+    ids=["nan", "inf", "-inf"],
+)
+def test_lookup_rejects_non_finite_embedding(bad_vec: list[float]):
+    cache = _cache_with(_StubEmbedder(bad_vec))
+    with pytest.raises(ValueError, match="non-finite component"):
+        cache.lookup("p", model="m")
+
+
+def test_finite_byo_embedder_still_hits_on_identical_prompt():
+    # Regression guard: the seam validation must not break a legitimate finite
+    # embedder — an identical prompt must still be a hit with similarity 1.0.
+    cache = _cache_with(_StubEmbedder([0.6, 0.0, 0.8]))
+    cache.put("how do I refund a charge", "answer-A", model="m")
+    res = cache.lookup("how do I refund a charge", model="m")
+    assert res.hit is True
+    assert res.payload == "answer-A"
+    assert res.similarity == pytest.approx(1.0)
+    assert cache.stats.hit_rate == pytest.approx(1.0)
