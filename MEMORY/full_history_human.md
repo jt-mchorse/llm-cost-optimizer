@@ -648,3 +648,17 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** rescaling vectors by max-abs component for an exact `1.0` similarity on huge-but-finite vectors is a separate, lower-value concern (the `cosine` finiteness fallback is the minimal consistent fix).
+
+---
+## 2026-06-25 — Issue #89: add current-frontier model pricing (opus-4-8, fable-5)
+**Duration:** ~30 min · **Branch:** `session/2026-06-25-1513-issue-89`
+
+- The `_PRICING` table couldn't price `claude-opus-4-8` — the model new Anthropic SDK work defaults to — so `get_pricing` raised `UnknownModelError` for it, and `PromptCacheWrapper` callers on the default model couldn't compute `dollars_saved` without hand-wiring a `ModelPricing`. `claude-fable-5` was also absent.
+- Added both at their currently published input rates (`claude-opus-4-8` $5.00/MTok, `claude-fable-5` $10.00/MTok) with the documented ephemeral-cache multipliers (1.25× write / 0.10× read, the `ModelPricing` field defaults). Source cited in the commit (Anthropic published-pricing reference, current-models table dated 2026-06-04). Purely additive — no existing entry, README text, or benchmark output changed. 5 tests, red-without / green-with, 405 → 410 suite green, ruff clean.
+- Found while scoping: the existing `opus-4-7`/`opus-4-6` entries at $15.00 are stale (current family rate is $5.00). Left unchanged here because `opus-4-7` is the escalation target in `bench_savings.py`, so correcting it regenerates the savings benchmark and its README snapshot. Documented the staleness inline and filed #90 (priority:med) for that deliberate, benchmark-regenerating refresh.
+
+**Why this work, this session:** llm-cost-optimizer was the only priority-tier repo past the 18h freshness floor (D-009) this run; its sole open issue (#18, a human-blocked demo capture) wasn't autonomously completable, so a substantive, real, sourced pricing gap was the right scoped issue.
+
+**Open questions / blockers:** none — #90 tracks the stale-price refresh.
+
+**Next session:** #90 — refresh opus-4-7/4-6 to $5.00 and regenerate the savings benchmark deterministically.
