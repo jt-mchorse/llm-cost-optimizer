@@ -10,7 +10,7 @@ README quote to match (not the other way around).
 
 Pairings locked:
 
-1. README per-model pricing (`haiku @ $1/MTok`, `opus @ $15/MTok`) ↔
+1. README per-model pricing (`haiku @ $1/MTok`, `opus @ $5/MTok`) ↔
    `cost_optimizer.pricing.PRICING[<model>].input_per_mtok`.
 2. README `BATCH_DISCOUNT_FACTOR = 0.5` (verbatim in prose) ↔
    `cost_optimizer.batch.BATCH_DISCOUNT_FACTOR`.

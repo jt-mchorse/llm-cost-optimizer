@@ -219,7 +219,7 @@ while job.status not in {"ended_succeeded", "ended_failed", "ended_canceled"}:
     job = backend.poll(job.job_id)
 
 rows = backend.results(job.job_id)
-quote = BatchCostQuote("claude-opus-4-7", input_per_mtok=15.0, output_per_mtok=75.0)
+quote = BatchCostQuote("claude-opus-4-7", input_per_mtok=5.0, output_per_mtok=25.0)
 cmp_ = compare_realtime_vs_batch(rows, prices={"claude-opus-4-7": quote})
 print(f"realtime ${cmp_.realtime_usd:.2f} → batch ${cmp_.batch_usd:.2f} "
       f"({cmp_.savings_pct:.0%} savings on {cmp_.n_rows} rows)")
@@ -253,7 +253,7 @@ The workload is **hermetic synthetic** (D-012): 500 rows, deterministic,
 open-ended. All token counts and first-token logprobs are canned in
 the committed `docs/savings_workload.json` so the run is bit-for-bit
 reproducible; the pricing math is the real `cost_optimizer.pricing`
-table (`claude-haiku-4-5` @ $1/MTok input, `claude-opus-4-7` @ $15/MTok
+table (`claude-haiku-4-5` @ $1/MTok input, `claude-opus-4-7` @ $5/MTok
 input) and the real `BATCH_DISCOUNT_FACTOR`. No fabricated numbers.
 
 ```bash
@@ -275,7 +275,7 @@ strategies so each row of the table is like-for-like):
 | baseline (no optimization, cheap model) | 500 | $0.0577 | $0.0000 | 0.0% | 0.886 | — |
 | prompt caching (system prefix) | 500 | $0.0092 | $0.0485 | 84.0% | 0.886 | 1 write + 499 reads |
 | semantic cache (threshold 0.95) | 500 | $0.0253 | $0.0324 | 56.2% | 0.886 | 280 hits / 220 misses |
-| uncertainty router (entropy 1.5) | 500 | $0.1469 | $-0.0892 | -154.8% | 0.921 | 50 escalated (10%) |
+| uncertainty router (entropy 1.5) | 500 | $0.0874 | $-0.0297 | -51.6% | 0.921 | 50 escalated (10%) |
 | batch API (discount 0.50×) | 500 | $0.0288 | $0.0288 | 50.0% | 0.886 | — |
 
 A few honest notes the README leads with rather than buries:
@@ -286,7 +286,7 @@ A few honest notes the README leads with rather than buries:
 - **The uncertainty router shows a *negative* dollar saving** against the
   cheap-on-everything baseline — that's the design. The router *spends
   more* to buy higher quality on hard rows (mean quality 0.886 → 0.921).
-  The right way to read the row is "+3.5pp quality at +154% spend on
+  The right way to read the row is "+3.5pp quality at +51.6% spend on
   this workload's 10% hard slice"; the right pairing is router + a
   cache layer so the cache offsets the strong-model spend.
 - The Streamlit dashboard renders the bar chart of per-strategy
