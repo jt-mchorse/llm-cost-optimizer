@@ -69,7 +69,9 @@ class TestPricingTable:
     def test_get_known_model(self) -> None:
         p = get_pricing("claude-opus-4-7")
         assert p.model == "claude-opus-4-7"
-        assert p.input_per_mtok == 15.00
+        # Refreshed $15.00 -> $5.00 in #90 (Opus 4.6/4.7/4.8 family rate,
+        # current-models reference cached 2026-06-04).
+        assert p.input_per_mtok == 5.00
 
     def test_unknown_model_raises_with_known_list(self) -> None:
         with pytest.raises(UnknownModelError) as exc:

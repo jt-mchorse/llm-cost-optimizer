@@ -186,7 +186,7 @@ def test_readme_savings_table_matches_savings_json(keyword: str) -> None:
         f"README $ saved for {keyword!r} ({readme_saved}) doesn't match "
         f"savings.json saved_usd ({s['saved_usd']}).\n{REGEN_HINT}"
     )
-    # README percent rounding: 1 decimal (e.g. 84.0%, -154.8%). Worst-case
+    # README percent rounding: 1 decimal (e.g. 84.0%, -51.6%). Worst-case
     # round-half-to-even error is 5e-3 in fraction terms (0.5 percentage
     # points); pick that as the tolerance.
     assert readme_pct == pytest.approx(s["saved_pct"], abs=5e-3), (

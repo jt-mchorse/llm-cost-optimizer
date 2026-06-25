@@ -662,3 +662,17 @@ JSON` expander only.
 **Open questions / blockers:** none — #90 tracks the stale-price refresh.
 
 **Next session:** #90 — refresh opus-4-7/4-6 to $5.00 and regenerate the savings benchmark deterministically.
+
+---
+## 2026-06-25 — Issue #90: refresh stale opus-4-7/4-6 pricing + regenerate savings bench
+**Duration:** ~30 min · **Branch:** `session/2026-06-25-1915-issue-90`
+
+- `claude-opus-4-7` and `claude-opus-4-6` were still listed at $15.00/MTok input while `claude-opus-4-8` was added at $5.00 in #89 — internally inconsistent, since the whole Opus 4.6/4.7/4.8 family is $5 in / $25 out on the current Anthropic published-pricing reference (current-models table, cached 2026-06-04). Refreshed both to $5.00 and removed the stale-price note #89 had left inline.
+- `opus-4-7` is the `STRONG_MODEL` escalation target in `scripts/bench_savings.py`, so the price change regenerated the savings benchmark. Re-ran the hermetic dry bench (`python scripts/bench_savings.py --dry --out docs/savings`); only the uncertainty-router row moved (it is the sole strategy that escalates to the strong model): $0.1469 spent / -154.8% → $0.0874 spent / -51.6%, quality unchanged at 0.921. Output is deterministic and idempotent (two consecutive dry runs are byte-identical).
+- Updated the README in four places (benchmark table router row, the snapshot-locked opus-4-7 input-price quote, the "+spend" prose figure, and the illustrative `BatchCostQuote` example $15/$75 → $5/$25 for consistency) and the three snapshot/assertion tests to the regenerated truth. No fabricated numbers — every figure comes from the dry bench.
+
+**Why this work, this session:** documented next step from #89 (filed #90 in the same run that merged #89's pricing PR); llm-cost-optimizer was the next priority-tier repo in build sequence after llm-eval-harness this multi-issue day session.
+
+**Open questions / blockers:** none.
+
+**Next session:** the only open llm-cost-optimizer issue left is #18 (demo capture), which is human-blocked (needs a screen recording).
