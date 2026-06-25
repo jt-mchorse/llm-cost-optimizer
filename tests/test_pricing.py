@@ -81,3 +81,45 @@ class TestPricingTable:
         register_pricing(ModelPricing(model="custom-test-model", input_per_mtok=2.5))
         p = get_pricing("custom-test-model")
         assert p.input_per_mtok == 2.5
+
+
+class TestCurrentFrontierEntries:
+    """The current-flagship entries added 2026-06 (#89).
+
+    A cost-optimization toolkit must price the model new SDK work defaults
+    to (`claude-opus-4-8`). These rates are sourced from the Anthropic
+    published-pricing reference (current-models table, cached 2026-06-04):
+    Opus 4.8 $5.00/MTok input, Fable 5 $10.00/MTok input. They were
+    previously absent, so `get_pricing` raised `UnknownModelError`.
+    """
+
+    @pytest.mark.parametrize(
+        ("model", "expected_input"),
+        [
+            ("claude-opus-4-8", 5.00),
+            ("claude-fable-5", 10.00),
+        ],
+    )
+    def test_input_rate_matches_published(self, model: str, expected_input: float) -> None:
+        p = get_pricing(model)
+        assert p.model == model
+        assert p.input_per_mtok == expected_input
+
+    @pytest.mark.parametrize("model", ["claude-opus-4-8", "claude-fable-5"])
+    def test_cache_multipliers_use_documented_defaults(self, model: str) -> None:
+        # Anthropic's documented ephemeral-cache defaults: 1.25x write, 0.10x
+        # read. The added entries pass no override, so they inherit the
+        # ModelPricing field defaults -- locking that they weren't hand-set
+        # to some other (invented) multiplier.
+        p = get_pricing(model)
+        assert p.cache_write_multiplier == 1.25
+        assert p.cache_read_multiplier == 0.10
+
+    def test_unknown_model_error_now_lists_new_models(self) -> None:
+        # The known-models list in the error message is how a caller
+        # self-corrects; the new flagships must appear there.
+        with pytest.raises(UnknownModelError) as exc:
+            get_pricing("gpt-made-up")
+        msg = str(exc.value)
+        assert "claude-opus-4-8" in msg
+        assert "claude-fable-5" in msg

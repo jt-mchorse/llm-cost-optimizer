@@ -60,9 +60,25 @@ class ModelPricing:
                 raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
 
 
-# Input $/MTok as of 2026-05. Update when Anthropic publishes new pricing;
-# the rule is "cite the docs in the commit" rather than guess.
+# Input $/MTok. Update when Anthropic publishes new pricing; the rule is
+# "cite the docs in the commit" rather than guess. The cache-write (1.25x)
+# and cache-read (0.10x) multipliers are the documented Anthropic defaults
+# (5-minute-TTL ephemeral caching) and ride on ModelPricing's field defaults.
+#
+# claude-opus-4-8 and claude-fable-5 added 2026-06 from the Anthropic
+# published-pricing reference (current-models table, cached 2026-06-04):
+# Opus 4.8 $5.00 in / $25.00 out, Fable 5 $10.00 in / $50.00 out. Output
+# rates are intentionally not modeled here (the caching math is input-only).
+#
+# NOTE: the claude-opus-4-7 / claude-opus-4-6 entries below predate that
+# reference and are stale -- current published input pricing for the whole
+# Opus 4.6/4.7/4.8 family is $5.00/MTok, not $15.00. Correcting them is
+# deferred to a separate issue because claude-opus-4-7 is the escalation
+# target in scripts/bench_savings.py, so the change regenerates the savings
+# benchmark and its README snapshot rather than being a one-line edit.
 _PRICING: dict[str, ModelPricing] = {
+    "claude-fable-5": ModelPricing("claude-fable-5", 10.00),
+    "claude-opus-4-8": ModelPricing("claude-opus-4-8", 5.00),
     "claude-opus-4-7": ModelPricing("claude-opus-4-7", 15.00),
     "claude-opus-4-6": ModelPricing("claude-opus-4-6", 15.00),
     "claude-sonnet-4-6": ModelPricing("claude-sonnet-4-6", 3.00),
