@@ -317,6 +317,39 @@ def test_extract_logprobs_returns_none_for_object_without_attr_or_get() -> None:
     assert reading == SignalReading(value=None, trip=False)
 
 
+def test_extract_logprobs_returns_none_when_an_entry_lacks_logprob() -> None:
+    # A top_logprobs entry missing its `logprob` field is a malformed/truncated
+    # SDK node. Defaulting it to 0.0 fabricated a prob-1.0 token that skews the
+    # normalized entropy; per the defensive contract the whole extraction must
+    # abstain (None) so measure() yields value=None ⟹ not-trip (#82, #73),
+    # rather than measuring corrupt data.
+    class Block:
+        type = "text"
+        logprobs = [
+            {"top_logprobs": [{"logprob": math.log(0.5)}, {"token": "x"}]}  # 2nd lacks logprob
+        ]
+
+    class SdkResponse:
+        content = [Block()]
+
+    assert _extract_first_token_logprobs(SdkResponse()) is None
+    reading = EntropySignal().measure(SdkResponse())
+    assert reading == SignalReading(value=None, trip=False)
+
+
+def test_extract_logprobs_preserves_a_present_zero_logprob() -> None:
+    # The missing-field guard must not reject a *present* 0.0 logprob (a legit
+    # prob-1.0 token). 0.0 entries are kept; only an absent field abstains.
+    class Block:
+        type = "text"
+        logprobs = [{"top_logprobs": [{"logprob": 0.0}, {"logprob": math.log(0.5)}]}]
+
+    class SdkResponse:
+        content = [Block()]
+
+    assert _extract_first_token_logprobs(SdkResponse()) == [0.0, pytest.approx(math.log(0.5))]
+
+
 def test_entropy_signal_falls_through_to_next_signal_on_bare_response() -> None:
     # End-to-end (#69): EntropySignal can't measure a logprob-less response,
     # so a second signal that trips must still drive escalation — the entropy

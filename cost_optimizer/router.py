@@ -221,7 +221,18 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
             top = logprobs[0]
             top_logprobs = _read_field(top, "top_logprobs")
             if isinstance(top_logprobs, list):
-                return [float(_read_field(v, "logprob", 0.0)) for v in top_logprobs]
+                # A `top_logprobs` entry without a `logprob` field is a malformed
+                # or truncated SDK node. Defaulting it to 0.0 fabricated a token
+                # with probability exp(0)=1.0, which `_shannon_entropy_nats`
+                # normalizes into the distribution and skews the entropy (and the
+                # `trip` decision built on it). Per this function's defensive
+                # contract — and `EntropySignal.measure`'s value=None ⟹ not-trip
+                # rule (#82, #73) — abstain (return None) on a missing logprob
+                # rather than measuring corrupt data. A present 0.0 is preserved.
+                values = [_read_field(v, "logprob") for v in top_logprobs]
+                if any(lp is None for lp in values):
+                    return None
+                return [float(lp) for lp in values]
     return None
 
 
