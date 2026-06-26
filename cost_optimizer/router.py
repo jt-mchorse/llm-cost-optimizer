@@ -212,7 +212,16 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
     """
     direct = getattr(response, "first_token_logprobs", None)
     if isinstance(direct, list):
-        return [float(v) for v in direct]
+        floats = [float(v) for v in direct]
+        # A non-finite (NaN/±Inf) logprob — a numerically unstable or malformed
+        # SDK distribution — slips `_shannon_entropy_nats`'s `total <= 0` guard
+        # (`NaN <= 0` is False), so the entropy silently reads 0.0 and the
+        # request never escalates. Abstain on it, exactly as the nested path
+        # abstains on a missing logprob (#94) and per `measure`'s value=None ⟹
+        # not-trip rule (#82, #73). A finite 0.0 logprob is preserved. (#95)
+        if any(not math.isfinite(f) for f in floats):
+            return None
+        return floats
     content = getattr(response, "content", None)
     if isinstance(content, list) and content:
         first = content[0]
@@ -232,7 +241,13 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
                 values = [_read_field(v, "logprob") for v in top_logprobs]
                 if any(lp is None for lp in values):
                     return None
-                return [float(lp) for lp in values]
+                floats = [float(lp) for lp in values]
+                # Same finiteness abstain as the direct path above (#95): a
+                # present-but-non-finite logprob would read entropy 0.0 and
+                # suppress escalation, so abstain rather than measure corrupt data.
+                if any(not math.isfinite(f) for f in floats):
+                    return None
+                return floats
     return None
 
 
