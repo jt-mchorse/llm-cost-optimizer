@@ -276,6 +276,55 @@ def test_model_scoped_keys_isolate_per_model():
     assert result.hit is False
 
 
+# Issue #98: the degenerate-input branch of HashEmbedder (fewer tokens than the
+# n-gram width) returned a *constant* vector, so every empty/whitespace prompt —
+# and at ngram>=3 every single-word prompt — collided at cosine 1.0 regardless
+# of model id or content. That silently defeated model-scoping (D-005) and
+# served a false-positive cache hit (D-006/D-007). The slot is now seeded from a
+# hash of the full scoped text, so only a genuinely identical degenerate input
+# collides.
+def test_degenerate_empty_prompt_does_not_hit_across_models():
+    cache, _ = _cache()
+    cache.put("", "response-for-empty", model="m")
+    # Whitespace-only prompt under a DIFFERENT model must miss, not return
+    # model "m"'s cached response.
+    result = cache.lookup("   ", model="other")
+    assert result.hit is False
+
+
+def test_degenerate_empty_prompt_same_model_still_hits():
+    # Determinism preserved: an identical degenerate input under the same model
+    # is still a legitimate hit (the same empty prompt should reuse its entry).
+    cache, _ = _cache()
+    cache.put("", "response-for-empty", model="m")
+    result = cache.lookup("", model="m")
+    assert result.hit is True
+    assert result.payload == "response-for-empty"
+
+
+def test_degenerate_single_word_does_not_hit_across_models_at_ngram3():
+    # At ngram=3 a single-word prompt is degenerate (2 tokens incl. the model
+    # prefix < 3). Pre-fix this returned model A's "hello" response for a
+    # model-B "world" lookup — wrong model AND wrong content.
+    cache = SemanticCache(embedder=HashEmbedder(ngram=3), storage=InMemoryStorage())
+    cache.put("hello", "resp-hello-modelA", model="A")
+    assert cache.lookup("world", model="B").hit is False
+    # Same word + same model still hits.
+    assert cache.lookup("hello", model="A").hit is True
+
+
+def test_hash_embedder_degenerate_vectors_differ_by_model_and_content():
+    # Embedder-level: distinct degenerate (scoped) inputs are no longer the
+    # same constant vector, while identical inputs still match.
+    e = HashEmbedder()
+    v_m = e.embed("[model=m] ")
+    v_other = e.embed("[model=other] ")
+    assert cosine(v_m, v_other) < 0.95  # distinct model → not a hit
+    assert cosine(v_m, e.embed("[model=m] ")) == pytest.approx(1.0)  # identical → match
+    # Still a well-defined unit vector.
+    assert math.sqrt(sum(x * x for x in v_m)) == pytest.approx(1.0)
+
+
 def test_default_ttl_expires_entries():
     cache, fake_now = _cache(ttl=60.0, now=1000.0)
     cache.put("p", "v", model="m")

@@ -83,9 +83,18 @@ class HashEmbedder:
         # Slot is taken from the first 8 bytes of SHA-256.
         ngrams = _ngrams(tokens, self.ngram)
         if not ngrams:
-            # Degenerate input: empty string or no tokens. Return a constant
-            # non-zero vector so similarity comparisons stay well-defined.
-            vec[0] = 1.0
+            # Degenerate input: fewer tokens than the n-gram width (an empty or
+            # whitespace-only prompt at ngram=2; any single-word prompt at
+            # ngram>=3). A *constant* vector here makes ALL such inputs collide
+            # at cosine 1.0 regardless of model id or content — silently
+            # defeating model-scoping (D-005) and serving a false-positive
+            # cache hit (D-006/D-007), e.g. model A's response returned to a
+            # model B caller (#98). Seed the single non-zero slot from a hash
+            # of the full (model-scoped) text instead: still unit-length and
+            # well-defined, two identical degenerate inputs still collide (a
+            # correct hit), but distinct model/content lands in distinct slots.
+            h = hashlib.sha256(text.encode("utf-8")).digest()
+            vec[int.from_bytes(h[:4], "big") % HASH_EMBEDDING_DIM] = 1.0
             return vec
         for ng in ngrams:
             h = hashlib.sha256(ng.encode("utf-8")).digest()
