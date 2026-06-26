@@ -1024,3 +1024,22 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-06-26T03:48Z
+duration_min: 15
+issue: 95
+focus: extract_first_token_logprobs_abstain_on_non_finite_logprob_escalation_decision_corruption
+phase: night_session_phase_b_issue_9
+delta:
+  files_changed: 2 # cost_optimizer/router.py + tests/test_router.py
+  tests_added: 3   # nan/+inf/-inf direct + nan nested sdk + finite 0.0 preserved
+context_for_next_session:
+  - found_via_night_phase_a_dogfood_explore_agent_hand_verified_against_post_94_code_94_handled_missing_field_this_handles_present_but_non_finite
+  - root_cause_extract_first_token_logprobs_both_paths_direct_215_nested_236_did_float_v_with_no_finiteness_check_non_finite_logprob_reaches_shannon_entropy_nats_total_le_0_guard_cant_catch_nan_nan_le_0_false
+  - harm_entropy_silently_reads_0_0_measure_returns_trip_0_0_ge_threshold_false_request_never_escalates_silent_quality_gap_d_009_dashboard_reports_cheap_path_on_corrupt_data
+  - fix_abstain_return_none_on_any_non_finite_extracted_logprob_both_paths_mirrors_94_missing_field_abstain_and_82_73_value_none_not_trip_rule_finite_0_0_preserved
+  - tests_nan_inf_neg_inf_direct_plus_nan_nested_sdk_shape_both_value_none_trip_false_plus_finite_0_0_preserved_full_suite_green_ruff_clean
+  - completes_94_sweep_missing_field_abstain_now_plus_non_finite_value_abstain_at_same_seam
+decisions_made: []
+followups: []
