@@ -676,3 +676,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** the only open llm-cost-optimizer issue left is #18 (demo capture), which is human-blocked (needs a screen recording).
+
+---
+## 2026-06-25 — Issue #93: abstain when a top_logprobs entry lacks its logprob
+**Duration:** ~20 min · **Branch:** `session/2026-06-25-2329-issue-93`
+
+- `_extract_first_token_logprobs` defaulted a missing per-entry `logprob` to `0.0` — but `0.0 == log(1.0)` is a fabricated probability-1.0 (maximal-certainty) token, not a neutral sentinel. That phantom entry flows into `_shannon_entropy_nats`, which normalizes `exp(lp)` across the distribution, so it skews the entropy and the `trip = entropy >= threshold` escalation decision built on it. The function's docstring promises a defensive `None` for malformed shapes, and `EntropySignal.measure` already maps `None ⟹ value=None, trip=False`.
+- Fix: read each entry's `logprob` with no default and return `None` (abstain) if any entry lacks the field; a *present* `0.0` is preserved. Two tests (missing-field abstains, present-0.0 preserved); red-green verified (without the fix the malformed case returns `[-0.693, 0.0]`). Full suite green, ruff clean. Same defensive class as #82 (value=None⟹not-trip), #73 (missing judge score), #69 (defensive `_read_field`).
+
+**Why this work, this session:** second issue of a multi-issue DAY session; after llm-eval-harness #98 the priority-tier loop returned to llm-cost-optimizer. A strict dogfood audit of the router surfaced the one remaining signal-extraction path that fabricates rather than abstains.
+
+**Open questions / blockers:** none.
+
+**Next session:** the entropy/judge signal paths now uniformly abstain on missing/malformed data; future router work is more likely on routing policy than signal extraction.
