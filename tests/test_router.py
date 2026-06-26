@@ -258,6 +258,44 @@ def test_entropy_helper_zero_for_empty_input() -> None:
     assert _shannon_entropy_nats([]) == 0.0
 
 
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_extract_logprobs_abstains_on_non_finite_direct(bad: float) -> None:
+    # A non-finite logprob slips _shannon_entropy_nats's `total <= 0` guard
+    # (NaN <= 0 is False) → entropy silently reads 0.0 → request never escalates.
+    # Abstain at the extraction seam like the missing-field guard (#94, #95).
+    assert (
+        _extract_first_token_logprobs(FakeResponse(first_token_logprobs=[math.log(0.5), bad]))
+        is None
+    )
+    reading = EntropySignal(threshold=0.5).measure(
+        FakeResponse(first_token_logprobs=[math.log(0.5), bad])
+    )
+    assert reading.value is None
+    assert reading.trip is False
+
+
+def test_extract_logprobs_preserves_finite_zero_logprob() -> None:
+    # The finiteness abstain must not reject a finite 0.0 logprob (a legit
+    # prob-1.0 token); only NaN/±Inf abstain.
+    out = _extract_first_token_logprobs(FakeResponse(first_token_logprobs=[0.0, math.log(0.5)]))
+    assert out == [0.0, pytest.approx(math.log(0.5))]
+
+
+def test_extract_logprobs_abstains_on_non_finite_nested_sdk_shape() -> None:
+    # Same abstain on the nested SDK shape: a present-but-NaN logprob node.
+    class Block:
+        type = "text"
+        logprobs = [{"top_logprobs": [{"logprob": math.log(0.5)}, {"logprob": float("nan")}]}]
+
+    class SdkResponse:
+        content = [Block()]
+
+    assert _extract_first_token_logprobs(SdkResponse()) is None
+    reading = EntropySignal(threshold=0.5).measure(SdkResponse())
+    assert reading.value is None
+    assert reading.trip is False
+
+
 def test_entropy_handles_sdk_shape_with_content_blocks() -> None:
     # Mimic the SDK-style nested logprobs payload: response.content[0]
     # is a block; block.logprobs[0].top_logprobs is a list of dicts
