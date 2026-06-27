@@ -141,3 +141,46 @@ def test_capture_demo_exposes_main_callable() -> None:
 
     sig = inspect.signature(capture_demo.main)
     assert "argv" in sig.parameters, f"main() must accept argv; got: {sig}"
+
+
+def test_capture_demo_opens_dashboard_url_by_default(tmp_path: Path, monkeypatch) -> None:
+    # #100: the --no-open help documents "default is to open the URL once STAGE 2
+    # begins", but the open was nested inside the --launch-streamlit branch, so on
+    # the default path (no --launch-streamlit) it never fired and --no-open
+    # controlled nothing. A default run must open DASHBOARD_URL.
+    capture_demo = _load_capture_module()
+    opened: list[str] = []
+    monkeypatch.setattr(capture_demo.webbrowser, "open", lambda url: opened.append(url))
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = capture_demo.main(
+            ["--pause-seconds", "0", "--output-dir", str(tmp_path), "--skip-dashboard-cheatsheet"]
+        )
+    assert rc == 0, buf.getvalue()
+    assert opened == [capture_demo.DASHBOARD_URL], (
+        "a default capture run must open the dashboard URL (the documented --no-open default); "
+        f"webbrowser.open calls: {opened}"
+    )
+
+
+def test_capture_demo_no_open_suppresses_browser(tmp_path: Path, monkeypatch) -> None:
+    # The flip side: --no-open must actually suppress the open (and not double-open).
+    capture_demo = _load_capture_module()
+    opened: list[str] = []
+    monkeypatch.setattr(capture_demo.webbrowser, "open", lambda url: opened.append(url))
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = capture_demo.main(
+            [
+                "--pause-seconds",
+                "0",
+                "--no-open",
+                "--output-dir",
+                str(tmp_path),
+                "--skip-dashboard-cheatsheet",
+            ]
+        )
+    assert rc == 0, buf.getvalue()
+    assert opened == [], f"--no-open must not open a browser; got: {opened}"
