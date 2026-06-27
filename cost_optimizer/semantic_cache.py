@@ -100,6 +100,27 @@ class HashEmbedder:
             h = hashlib.sha256(ng.encode("utf-8")).digest()
             slot = int.from_bytes(h[:4], "big") % HASH_EMBEDDING_DIM
             vec[slot] += 1.0
+        # A vector with a *single* occupied slot is a unit basis vector: any two
+        # such vectors that share that slot collide at cosine 1.0 regardless of
+        # content, serving a false-positive hit (D-006/D-007). #98 fixed the
+        # zero-ngram form of this (lines above); the adjacent one-ngram form is
+        # just as exposed — a single-word prompt becomes the 2-token string
+        # "[model=m] word", which yields exactly one bigram, hence one slot, so
+        # distinct one-word prompts collide at the 128-slot birthday rate. Blend
+        # in several *independent* content slots derived from the full
+        # (model-scoped) text so two distinct single-bigram inputs differ in at
+        # least one slot. With only 128 slots a single discriminator collides at
+        # the birthday rate, and a one-word prompt's single bigram string equals
+        # its scoped text — so the slots must come from DISJOINT byte windows of
+        # the text's SHA-256, each an independent slot. A false hit then needs
+        # every window to collide simultaneously (~(1/128)^k), not just one.
+        # Identical inputs map to identical slots (cosine 1.0 preserved);
+        # multi-slot vectors are untouched, so near-identical multi-word prompts
+        # keep their similarity.
+        if sum(1 for v in vec if v) == 1:
+            h = hashlib.sha256(text.encode("utf-8")).digest()
+            for i in range(0, 16, 4):  # 4 independent slots from 16 of the 32 bytes
+                vec[int.from_bytes(h[i : i + 4], "big") % HASH_EMBEDDING_DIM] += 1.0
         # L2-normalize.
         norm = math.sqrt(sum(v * v for v in vec))
         if norm > 0:
