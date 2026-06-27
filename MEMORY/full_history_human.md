@@ -689,3 +689,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** the entropy/judge signal paths now uniformly abstain on missing/malformed data; future router work is more likely on routing policy than signal extraction.
+
+## 2026-06-26 — Issue #98: Semantic-cache degenerate-input false positives across model/content
+**Duration:** ~25 min · **Branch:** `session/2026-06-26-2318-issue-98`
+
+- `HashEmbedder.embed` returned a *constant* vector (`vec[0] = 1.0`) whenever the input produced zero n-grams. Since `_scoped_prompt` prepends `[model=X] `, that degenerate branch fires for an empty/whitespace prompt at the default `ngram=2`, and for *any single-word prompt* at `ngram>=3`. The constant vector ignored both model id and content, so every such input collided at cosine 1.0 — a silent false-positive cache hit that returned one model's response to a different model's caller (and one prompt's response to a different prompt). Reproduced both cases on main.
+- This defeats D-005 (model-scoped entries) and D-006/D-007 (false positives are user-visible bugs; the 0.95 default exists to avoid them). The existing D-005 test only used a multi-word prompt, so it never exercised the degenerate branch.
+- Fixed by seeding the single non-zero slot from a SHA-256 hash of the full scoped text. The vector stays unit-length, two identical degenerate inputs still collide (a correct hit), but different model/content land in different slots and miss. 4 regression tests; suite 417 → 421, ruff clean.
+
+**Why this work, this session:** second issue of a multi-issue DAY run. After closing llm-eval-harness #105 I rotated to the next priority-tier repo in build sequence (llm-cost-optimizer), which had no open backlog, so I dogfooded it with an Explore agent and filed #98 from a reproduced finding.
+
+**Open questions / blockers:** none.
+
+**Next session:** two dogfood runners-up remain unfiled — `compare_realtime_vs_batch` rounds the three dollar figures independently (sub-cent `savings_usd != round(realtime - batch)`), and `_shannon_entropy_nats` raises `OverflowError` on a finite-but-large positive logprob. Both are low value (cosmetic / logprobs are realistically <= 0); file if a session needs small work here.
