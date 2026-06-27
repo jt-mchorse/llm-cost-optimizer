@@ -702,3 +702,15 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** two dogfood runners-up remain unfiled — `compare_realtime_vs_batch` rounds the three dollar figures independently (sub-cent `savings_usd != round(realtime - batch)`), and `_shannon_entropy_nats` raises `OverflowError` on a finite-but-large positive logprob. Both are low value (cosmetic / logprobs are realistically <= 0); file if a session needs small work here.
+
+## 2026-06-27 — Issue #100: capture_demo --no-open was dead on the default path
+**Duration:** ~20 min · **Branch:** `session/2026-06-27-0413-issue-100`
+
+- `--no-open`'s help documents "default is to open the URL once STAGE 2 begins", but the only `webbrowser.open(DASHBOARD_URL)` call was nested inside the `--launch-streamlit` success branch. So on the default invocation (no `--launch-streamlit`) the browser was never opened and `--no-open` controlled nothing — the documented default was unreachable. Reproduced: a default `main(...)` run never called `webbrowser.open`.
+- Hoisted the open to STAGE 2 top-level (guarded by `--no-open`), keeping the `time.sleep(2.0)` grace period inside the auto-launch branch and removing the now-duplicate open (no double-open). Chose code-matches-docs because the help text unambiguously documents open-by-default and the demo flow assumes a running dashboard. Added 2 tests (default opens; `--no-open` suppresses) via monkeypatched `webbrowser.open`; the existing smoke tests pass `--no-open` so they're unaffected. Suite 421 → 423, ruff clean.
+
+**Why this work, this session:** eleventh issue of a multi-issue NIGHT run; surfaced by a second-pass dogfood of priority-tier llm-cost-optimizer (first pass clean) on the demo orchestrator.
+
+**Open questions / blockers:** none.
+
+**Next session:** the demo capture honors `--no-open` on every path; a minor cheat-sheet wording nit (STAGE 1 "regenerated docs/savings.json" vs the actual demo-artifacts path) remains unfiled, low value.

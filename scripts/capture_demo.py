@@ -253,8 +253,15 @@ def main(argv: list[str] | None = None) -> int:
             )
             # Small grace period so the server is up before the browser opens.
             time.sleep(2.0)
-            if not args.no_open:
-                webbrowser.open(DASHBOARD_URL)
+
+    # Open the dashboard URL by default so the recording captures the rendered
+    # page (suppress with --no-open). The demo flow assumes the dashboard is
+    # running — whether auto-launched above or started by the operator per the
+    # cheat-sheet. This open used to be nested inside the --launch-streamlit
+    # success branch, so on the default path --no-open controlled nothing and
+    # the URL was never opened despite the documented default (#100).
+    if not args.no_open:
+        webbrowser.open(DASHBOARD_URL)
 
     if not args.skip_dashboard_cheatsheet:
         print(_dashboard_cheatsheet())
