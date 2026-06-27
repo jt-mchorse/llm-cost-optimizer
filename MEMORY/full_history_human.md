@@ -714,3 +714,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** the demo capture honors `--no-open` on every path; a minor cheat-sheet wording nit (STAGE 1 "regenerated docs/savings.json" vs the actual demo-artifacts path) remains unfiled, low value.
+
+## 2026-06-27 — Issue #102: Semantic-cache single-bigram collision serves wrong content
+**Duration:** ~30 min · **Branch:** `session/2026-06-27-1917-issue-102`
+
+- A Phase A dogfood of the priority-tier repos surfaced a real correctness bug: `HashEmbedder.embed` turns a one-word prompt into the 2-token scoped string `[model=m] word`, which yields a single-slot unit vector over only 128 slots. Distinct one-word prompts collided at cosine 1.0, so the cache served the wrong prompt's cached response — the same D-006/D-007 false-positive class that #98 fixed for the zero-ngram branch, in the adjacent one-ngram branch.
+- Fixed by blending several independent content slots (from disjoint 4-byte windows of the scoped text's SHA-256) into any single-occupied-slot vector, so a false hit now needs every window to collide at once. Identical inputs keep cosine 1.0; multi-slot vectors are untouched. A first single-extra-slot attempt failed (for a one-word prompt the bigram string equals the scoped text, so reusing the same hash bytes reproduces the colliding slot) — the disjoint-window approach is what drove false hits to zero across a 500-prompt stress test.
+- 3 lock tests, all verified to fail on the pre-fix code; full suite green (419), ruff clean.
+
+**Why this work, this session:** first issue of a multi-issue DAY run; the only actionable priority/med issues were decision-revisit JT-blockers (mcp #54/#55, llm-cost-optimizer #97), so the saturated-state dogfood pattern surfaced this real correctness bug in a priority-tier repo.
+
+**Open questions / blockers:** none.
+
+**Next session:** rag-production-kit has a low-severity rewriter double-terminator bug (`Who is the CEO.?`) found in the same sweep — candidate next issue this run.

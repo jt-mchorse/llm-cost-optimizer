@@ -325,6 +325,47 @@ def test_hash_embedder_degenerate_vectors_differ_by_model_and_content():
     assert math.sqrt(sum(x * x for x in v_m)) == pytest.approx(1.0)
 
 
+# Issue #102: the adjacent *one*-ngram form of #98. A single-word prompt becomes
+# the 2-token string "[model=m] word", which yields exactly one bigram, hence a
+# single-slot unit vector. With only 128 slots, distinct one-word prompts collide
+# at the birthday rate at cosine 1.0 — a false-positive hit serving the wrong
+# prompt's response (D-006/D-007). The single-occupied-slot case now blends in
+# several independent content slots from the scoped text's hash.
+def test_single_word_distinct_prompts_do_not_false_hit():
+    # Reproduces the exact #102 collision: pre-fix `true`/`happy` both landed on
+    # slot 114 (cosine 1.0), so a `happy` lookup returned `true`'s payload.
+    cache = _cache_with(HashEmbedder())
+    cache.put("true", {"label": "boolean-true response"}, model="claude-haiku-4-5")
+    assert cache.lookup("happy", model="claude-haiku-4-5").hit is False
+    # Same one-word prompt under the same model is still a legitimate hit.
+    hit = cache.lookup("true", model="claude-haiku-4-5")
+    assert hit.hit is True
+    assert hit.payload == {"label": "boolean-true response"}
+
+
+def test_single_word_prompts_do_not_collide_in_bulk():
+    # Birthday-rate stress: 500 distinct one-word prompts, none may false-hit.
+    cache = _cache_with(HashEmbedder())
+    for i in range(500):
+        word = f"word{i}xyz"
+        assert cache.lookup(word, model="claude-haiku-4-5").hit is False
+        cache.put(word, word, model="claude-haiku-4-5")
+
+
+def test_hash_embedder_single_bigram_vectors_differ_by_content():
+    # Embedder-level: distinct single-bigram (one-word) scoped inputs are no
+    # longer a single-slot unit vector colliding at cosine 1.0, while identical
+    # inputs still match and the result stays a well-defined unit vector.
+    e = HashEmbedder()
+    for a, b in [("true", "happy"), ("cat", "banana"), ("fish", "red")]:
+        va = e.embed(f"[model=claude-haiku-4-5] {a}")
+        vb = e.embed(f"[model=claude-haiku-4-5] {b}")
+        assert cosine(va, vb) < 0.95, (a, b)
+    v = e.embed("[model=claude-haiku-4-5] true")
+    assert cosine(v, e.embed("[model=claude-haiku-4-5] true")) == pytest.approx(1.0)
+    assert math.sqrt(sum(x * x for x in v)) == pytest.approx(1.0)
+
+
 def test_default_ttl_expires_entries():
     cache, fake_now = _cache(ttl=60.0, now=1000.0)
     cache.put("p", "v", model="m")
