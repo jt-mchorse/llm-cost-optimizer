@@ -1135,3 +1135,25 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-06-28T23:24Z
+duration_min: 18
+issue: 106
+focus: extract_first_token_logprobs_direct_path_crashes_typeerror_on_none_logprob_instead_of_abstaining_nested_path_already_guards
+phase: day_session_phase_b_iteration_2
+delta:
+  files_changed: 2  # cost_optimizer/router.py + tests/test_router.py
+  tests_added: 1    # direct-path abstain-on-None mirror of nested #94 test, asserts measure value=None trip=False
+context_for_next_session:
+  - second_substantive_issue_of_this_day_run_after_rag_production_kit_98_rotating_repos_each_iteration
+  - root_cause_direct_first_token_logprobs_branch_ran_float_v_over_every_element_line_215_before_any_validation_so_present_but_none_logprob_raised_raw_typeerror_escaping_measure_and_route_aborting_request
+  - asymmetry_was_the_tell_nested_path_94_guards_if_any_lp_is_none_return_none_before_float_direct_path_omitted_it_even_though_both_handle_identical_bad_input_present_but_unusable_logprob
+  - fix_added_if_any_v_is_none_for_v_in_direct_return_none_before_float_conversion_mirrors_nested_94_per_docstring_returns_none_for_anything_else_and_measure_value_none_implies_not_trip_82_73
+  - chose_tight_mirror_of_94_over_broad_try_except_non_numeric_strings_nested_path_does_not_guard_those_either_verified_threat_is_present_none
+  - dogfood_agent_also_noted_all_other_arithmetic_paths_clean_pricing_scaling_dollars_saved_batch_discount_router_stats_bench_savings_covered
+  - full_suite_429_to_430_passed_ruff_check_and_format_clean
+  - still_untouched_97_decision_revisit_batch_idempotency_order_sensitive_hash_filed_for_jt_confirmation_18_demo_capture_priority_low_jt_bound
+decisions_made: []
+followups: []
+---
