@@ -727,3 +727,15 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** rag-production-kit has a low-severity rewriter double-terminator bug (`Who is the CEO.?`) found in the same sweep — candidate next issue this run.
+
+## 2026-06-28 — Issue #104: `_make_key`'s space-delimited concatenation collided distinct (model,prompt) pairs
+**Duration:** ~25 min · **Branch:** `session/2026-06-28-1922-issue-104`
+
+- `SemanticCache._make_key` hashed a bare `f"{model} {prompt}"`. The space delimiter lets the model/prompt boundary slide, so distinct pairs like `("b c","a")` and `("c","a b")` produced the same key. Storage keys records by `record.key`, so the second `put` silently overwrote the first — a lost cache entry and a D-005 model-scoping violation. Reproduced firsthand: both keys `0e9f64031fcb2bc7`, store size 1 instead of 2.
+- The embedding layer already used the unambiguous `_scoped_prompt` form (`[model=...] prompt`, hardened in #98/#102); the key layer was the remaining inconsistency. Fixed by hashing `self._scoped_prompt(prompt, model)` in `_make_key` so only a genuinely identical `(model, prompt)` collides; D-005 isolation preserved and keys stay opaque (no on-disk migration). Added 3 regression tests; suite 429 passed, ruff clean.
+
+**Why this work, this session:** second substantive issue of a multi-issue DAY run. Rotated off llm-eval-harness (where #116 landed) to the next priority-tier repo in build sequence to avoid same-repo append-only MEMORY conflicts. Phase A found no mergeable PRs and a clean audit, so a dogfood sweep on cost_optimizer surfaced this. Two weaker dogfood findings deferred (negative `CacheTelemetry` token counts; `scripts/tune_threshold.sweep([])` ZeroDivisionError — not CLI-reachable). Left #97 (batch-idempotency decision-revisit) for JT.
+
+**Open questions / blockers:** none.
+
+**Next session:** continue the loop — rotate to another repo.
