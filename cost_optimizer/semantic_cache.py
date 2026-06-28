@@ -506,8 +506,15 @@ class SemanticCache:
 
     def _make_key(self, prompt: str, model: str) -> str:
         # Keys include the model so the same prompt → two different models
-        # are two cache entries (D-005).
-        h = hashlib.sha256(f"{model} {prompt}".encode()).hexdigest()
+        # are two cache entries (D-005). Hash the same unambiguous
+        # `_scoped_prompt` form the embedder uses (`[model=...] prompt`), NOT a
+        # bare `f"{model} {prompt}"`: with a space-delimited concatenation the
+        # field boundary can slide, so distinct pairs like ("b c", "a") and
+        # ("c", "a b") hashed to the same key and the second `put` silently
+        # overwrote the first in storage (which keys records by `record.key`).
+        # The `[model=...]` delimiter can't be produced by any other split, so
+        # only a genuinely identical (model, prompt) collides — D-005 preserved.
+        h = hashlib.sha256(self._scoped_prompt(prompt, model).encode()).hexdigest()
         return h[:16]
 
     def lookup(self, prompt: str, *, model: str) -> CacheLookupResult:

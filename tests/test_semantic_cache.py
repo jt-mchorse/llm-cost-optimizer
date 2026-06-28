@@ -276,6 +276,36 @@ def test_model_scoped_keys_isolate_per_model():
     assert result.hit is False
 
 
+# Issue #104: `_make_key` hashed a bare `f"{model} {prompt}"`, whose space
+# delimiter lets the model/prompt boundary slide — so distinct pairs like
+# ("b c", "a") and ("c", "a b") collided on one key. Since storage keys records
+# by `record.key`, the second put silently overwrote the first (data loss). The
+# key now hashes the same unambiguous `_scoped_prompt` form (`[model=...] prompt`)
+# the embedder uses, so only a genuinely identical (model, prompt) collides.
+def test_make_key_does_not_collide_across_model_prompt_boundary():
+    cache, _ = _cache()
+    assert cache._make_key("b c", "a") != cache._make_key("c", "a b")
+    # Trailing/leading prompt space hits the same sliding boundary pre-fix.
+    assert cache._make_key("x ", "m") != cache._make_key("", "m x")
+
+
+def test_space_containing_model_id_does_not_overwrite_other_entry():
+    cache, _ = _cache()
+    cache.put("b c", "PAYLOAD_A", model="a")
+    cache.put("c", "PAYLOAD_B", model="a b")
+    # Pre-fix both keyed to one record → store size 1, model "a"'s entry lost.
+    assert len(cache.storage._records) == 2
+
+
+def test_make_key_stable_for_same_model_and_prompt():
+    # D-005 isolation must not regress: identical (model, prompt) → one key,
+    # distinct prompts under the same model → distinct keys.
+    cache, _ = _cache()
+    assert cache._make_key("hello", "m") == cache._make_key("hello", "m")
+    assert cache._make_key("hello", "m") != cache._make_key("world", "m")
+    assert cache._make_key("hello", "m1") != cache._make_key("hello", "m2")
+
+
 # Issue #98: the degenerate-input branch of HashEmbedder (fewer tokens than the
 # n-gram width) returned a *constant* vector, so every empty/whitespace prompt —
 # and at ngram>=3 every single-word prompt — collided at cosine 1.0 regardless
