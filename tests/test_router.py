@@ -274,6 +274,22 @@ def test_extract_logprobs_abstains_on_non_finite_direct(bad: float) -> None:
     assert reading.trip is False
 
 
+def test_extract_logprobs_abstains_on_none_in_direct_list() -> None:
+    # #106: the direct path ran `float(v)` over every element before validating,
+    # so a present-but-None logprob raised a raw TypeError that escaped measure()
+    # and route() — aborting the request instead of abstaining. The nested path
+    # already returns None on a missing logprob (#94); the direct path must match.
+    assert (
+        _extract_first_token_logprobs(FakeResponse(first_token_logprobs=[math.log(0.5), None]))
+        is None
+    )
+    reading = EntropySignal(threshold=0.5).measure(
+        FakeResponse(first_token_logprobs=[math.log(0.5), None])
+    )
+    assert reading.value is None
+    assert reading.trip is False
+
+
 def test_extract_logprobs_preserves_finite_zero_logprob() -> None:
     # The finiteness abstain must not reject a finite 0.0 logprob (a legit
     # prob-1.0 token); only NaN/±Inf abstain.
