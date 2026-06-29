@@ -739,3 +739,15 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** continue the loop — rotate to another repo.
+
+## 2026-06-28 — Issue #106: direct logprob path crashed on a None logprob instead of abstaining
+**Duration:** ~18 min · **Branch:** `session/2026-06-28-2320-issue-106`
+
+- `_extract_first_token_logprobs` documents "returns None for anything else so signals can stay defensive," and the nested SDK path was hardened (#94) to abstain on a missing logprob. But the direct `first_token_logprobs` path ran `float(v)` over every element before any validation, so a present-but-`None` logprob raised a raw `TypeError` that escaped `EntropySignal.measure` and `UncertaintyRouter.route()` — aborting the request rather than abstaining.
+- Added a `None`-guard before the `float()` conversion, a tight mirror of the nested path's #94 fix, so both paths handle identical bad input the same way (`value=None ⟹ trip=False`). One regression test mirroring the nested-path test for the direct path. Suite 429 → 430, ruff check + format clean.
+
+**Why this work, this session:** second issue of a multi-issue DAY run, rotating off rag-production-kit (#98) to another priority-tier repo. Surfaced by a Phase A dogfood sweep as the direct-path completion of the #94 nested-path abstain fix.
+
+**Open questions / blockers:** none.
+
+**Next session:** continue the loop — rotate to another repo. Still untouched and JT-bound: #97 (batch-idempotency decision-revisit) and #18 (demo capture).

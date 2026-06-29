@@ -212,6 +212,15 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
     """
     direct = getattr(response, "first_token_logprobs", None)
     if isinstance(direct, list):
+        # A present-but-None element (a malformed/truncated SDK distribution) hit
+        # `float(None)` and raised a raw TypeError that escaped `measure` and
+        # `route()` — aborting the request instead of abstaining. The nested path
+        # below already returns None on a missing logprob (#94); mirror that here
+        # so both paths handle identical bad input the same way, per this
+        # function's "returns None for anything else" defensive contract and
+        # `measure`'s value=None ⟹ not-trip rule (#82, #73). (#106)
+        if any(v is None for v in direct):
+            return None
         floats = [float(v) for v in direct]
         # A non-finite (NaN/±Inf) logprob — a numerically unstable or malformed
         # SDK distribution — slips `_shannon_entropy_nats`'s `total <= 0` guard
