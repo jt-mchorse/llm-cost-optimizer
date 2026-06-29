@@ -1157,3 +1157,21 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-06-29T04:06Z
+issue: 108
+focus: architecture_md_nonexistent_batchapibackend_real_anthropicbatchbackend_plus_escalationsignal_evaluate_real_measure
+phase: night_session_phase_b_iteration_12
+duration_min: 9
+delta:
+  files_changed: 1 # docs/architecture.md
+  tests_added: 0   # doc-only symbol-name correction
+context_for_next_session:
+  - architecture_md_29_named_batchapibackend_no_such_class_offline_backend_is_anthropicbatchbackend_batch_py_360_grep_finds_batchapibackend_only_this_line_readme_and_test_public_surface_58_use_anthropicbatchbackend
+  - architecture_md_172_mermaid_named_escalationsignal_evaluate_but_protocol_method_is_measure_router_py_151_162_called_sig_measure_at_429_no_evaluate_method
+  - test_architecture_doc_py_resolves_backtick_path_tokens_resolvable_prefixes_decisions_banned_phrases_not_class_method_symbol_names_so_both_slipped_same_gap_class_as_emb_shootout_71_but_doc_uses_bare_class_names_not_fully_qualified_so_clean_dotted_symbol_lock_test_does_not_fit_here
+  - fix_doc_only_both_corrected_independent_of_jt_blocked_97_batch_idempotency_twelfth_issue_this_night_run
+decisions_made: []
+followups: []
+---

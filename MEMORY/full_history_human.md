@@ -751,3 +751,14 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** continue the loop — rotate to another repo. Still untouched and JT-bound: #97 (batch-idempotency decision-revisit) and #18 (demo capture).
+
+## 2026-06-29 — Issue #108: architecture.md named nonexistent symbols
+**Duration:** ~9 min · **Branch:** `session/2026-06-29-0406-arch-symbol-names`
+
+- `docs/architecture.md` named `BatchAPIBackend` (no such class; the offline backend is `AnthropicBatchBackend`) and `EscalationSignal.evaluate` (the Protocol method is `measure`). Both corrected. Independent of the JT-blocked #97.
+
+**Why this work, this session:** twelfth issue of the night run, from the second parallel doc-contract subagent batch. Same arch-doc-test gap class as embedding-model-shootout #71, but the doc uses bare class names (not fully-qualified), so the dotted-symbol lock test from #71 doesn't transfer cleanly here.
+
+**Open questions / blockers:** none.
+
+**Next session:** architecture.md references only real `cost_optimizer` symbols.
