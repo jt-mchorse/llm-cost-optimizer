@@ -762,3 +762,16 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** architecture.md references only real `cost_optimizer` symbols.
+
+## 2026-06-29 — Issue #110: semantic cache's zero-ngram path emitted a single-slot vector — empty/degenerate prompts false-hit across models
+**Duration:** ~30 min · **Branch:** `session/2026-06-29-1921-issue-110`
+
+- `HashEmbedder.embed` has two degenerate paths. The single-bigram path was hardened in #102 to blend 4 independent slots from disjoint SHA-256 windows (+ L2-normalize), escaping the single-slot 1/128 birthday collision. The zero-ngram path (`if not ngrams:`, semantic_cache.py:96-98) — empty/whitespace prompts at the default ngram=2, single-word prompts at ngram≥3 — was left returning the original #98 single-slot basis vector early, bypassing both the blend and the normalization. So distinct degenerate inputs collided at cosine 1.0 and returned the wrong model's / wrong prompt's cached response, violating model scoping (D-005) and the false-positives-are-bugs contract (D-006/D-007). The branch's own comment even acknowledged the single-slot collision risk, but the #98 fix it described still used one slot.
+- Reproduced firsthand: an empty-prompt `put` under model `m2` then a `lookup` under a never-inserted model `m55` returned `m2`'s response at similarity 1.0; a 500-model birthday stress gave **488/500** cross-model false-positive hits.
+- Fixed by applying the same 4-disjoint-window blend the single-bigram path uses to the zero-ngram branch and removing the early single-slot return so flow falls through to the existing L2-normalize. Identical degenerate inputs still map to identical slots (correct hit preserved); a false hit now needs all 4 windows to collide (~`(1/128)^4`). Post-fix the birthday stress is 0/500, the same-model empty prompt still hits at 1.0, and ngram=3 single-word wrong-content hits are 0/300. 2 lock tests added (a 500-entry empty-prompt bulk stress mirroring the #102 lock + an embedder-level multi-slot structural assertion), both confirmed failing on pre-fix code. Suite 430 → 432, ruff check + format clean.
+
+**Why this work, this session:** second substantive issue of a multi-issue DAY run, after #120 in `llm-eval-harness`. Rotated to priority-tier `llm-cost-optimizer` (build-sequence pos 2); its only open issues are #97 (batch-idempotency decision-revisit, deliberately left for JT) and #18 (priority:low demo capture), so a dogfood hunter — steered clear of the #97 area — surfaced this latent embedder collision, the zero-ngram sibling of the #98/#102 family.
+
+**Open questions / blockers:** none. #97 still awaits JT.
+
+**Next session:** continue the loop on another repo to avoid same-repo append-only MEMORY conflicts.
