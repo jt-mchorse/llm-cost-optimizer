@@ -396,6 +396,36 @@ def test_hash_embedder_single_bigram_vectors_differ_by_content():
     assert math.sqrt(sum(x * x for x in v)) == pytest.approx(1.0)
 
 
+# Issue #110: the *zero*-ngram form of #98/#102. The single-bigram path (#102)
+# blends several independent slots to escape the single-slot 1/128 birthday
+# collision, but the zero-ngram degenerate branch (empty/whitespace prompts at
+# ngram=2; single-word prompts at ngram>=3) was left returning a single-slot
+# basis vector — so distinct degenerate inputs still false-hit at the birthday
+# rate, serving the wrong model's / wrong prompt's response (D-005/D-006/D-007).
+def test_empty_prompt_prompts_do_not_collide_in_bulk():
+    # Birthday-rate stress on the zero-ngram path: 500 empty-prompt entries across
+    # distinct models, none may false-hit. Pre-fix the single-slot vector made
+    # ~488/500 cross-model lookups collide at cosine 1.0. Mirrors the single-bigram
+    # bulk lock `test_single_word_prompts_do_not_collide_in_bulk`.
+    cache = _cache_with(HashEmbedder())
+    for i in range(500):
+        model = f"model{i}xyz"
+        assert cache.lookup("", model=model).hit is False
+        cache.put("", f"resp{i}", model=model)
+
+
+def test_hash_embedder_empty_prompt_blends_multiple_slots():
+    # Embedder-level structural lock: the zero-ngram (empty/whitespace) vector now
+    # occupies more than one slot — pre-fix it was a single-slot basis vector, the
+    # root of the birthday collision. Identical inputs still match; result is a
+    # well-defined unit vector.
+    e = HashEmbedder()
+    v = e.embed("[model=m] ")
+    assert sum(1 for x in v if x) > 1, "zero-ngram vector must not be a single-slot basis vector"
+    assert math.sqrt(sum(x * x for x in v)) == pytest.approx(1.0)
+    assert cosine(v, e.embed("[model=m] ")) == pytest.approx(1.0)
+
+
 def test_default_ttl_expires_entries():
     cache, fake_now = _cache(ttl=60.0, now=1000.0)
     cache.put("p", "v", model="m")
