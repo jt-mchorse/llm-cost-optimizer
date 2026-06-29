@@ -26,7 +26,7 @@ flowchart LR
     BENCH --> DASH[dashboard/app.py<br/>Streamlit]
 ```
 
-`BatchAPIBackend` is the offline sibling — for workloads tolerant of
+`AnthropicBatchBackend` is the offline sibling — for workloads tolerant of
 ~24h latency it replaces the realtime path entirely (see §4). The
 realtime stack and the batch stack don't mix in a single request; they
 mix in the same *workload* by routing some rows to one and some to the
@@ -169,7 +169,7 @@ not dollars. Mean quality on that workload went from 0.886 → 0.921.
 ```mermaid
 flowchart LR
     REQ[Request] --> CHEAP[CheapAdapter<br/>cheap model call]
-    CHEAP --> SIG["EscalationSignal.evaluate<br/>(entropy, judge, ...)"]
+    CHEAP --> SIG["EscalationSignal.measure<br/>(entropy, judge, ...)"]
     SIG -- below threshold --> RET[Return cheap response<br/>+ RouterDecision]
     SIG -- above threshold --> ESC[Strong model call]
     ESC --> RET2[Return strong response<br/>+ RouterDecision]
