@@ -89,13 +89,19 @@ class HashEmbedder:
             # at cosine 1.0 regardless of model id or content — silently
             # defeating model-scoping (D-005) and serving a false-positive
             # cache hit (D-006/D-007), e.g. model A's response returned to a
-            # model B caller (#98). Seed the single non-zero slot from a hash
-            # of the full (model-scoped) text instead: still unit-length and
-            # well-defined, two identical degenerate inputs still collide (a
-            # correct hit), but distinct model/content lands in distinct slots.
+            # model B caller (#98). Seeding a *single* slot from a hash of the
+            # full (model-scoped) text — the original #98 fix — still leaves a
+            # unit basis vector: two degenerate inputs whose one slot collides
+            # are cosine 1.0 at the 128-slot birthday rate, the exact failure
+            # #102 closed on the single-bigram path below (#110). Blend the same
+            # 4 *independent* slots from disjoint SHA-256 windows the one-ngram
+            # path uses, then fall through to L2-normalize (don't return early):
+            # identical degenerate inputs still map to identical slots (correct
+            # hit preserved), but a false hit now needs all 4 windows to collide
+            # simultaneously (~(1/128)^4), not just one.
             h = hashlib.sha256(text.encode("utf-8")).digest()
-            vec[int.from_bytes(h[:4], "big") % HASH_EMBEDDING_DIM] = 1.0
-            return vec
+            for i in range(0, 16, 4):  # 4 independent slots from 16 of the 32 bytes
+                vec[int.from_bytes(h[i : i + 4], "big") % HASH_EMBEDDING_DIM] += 1.0
         for ng in ngrams:
             h = hashlib.sha256(ng.encode("utf-8")).digest()
             slot = int.from_bytes(h[:4], "big") % HASH_EMBEDDING_DIM
