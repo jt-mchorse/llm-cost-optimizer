@@ -801,3 +801,15 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review. Unrelated to the JT-blocked #97.
 
 **Next session:** continue the loop on another repo.
+
+## 2026-06-30 — Issue #116: cost-comparison report columns didn't reconcile (independent rounding)
+**Duration:** ~25 min · **Branch:** `session/2026-06-30-2329-issue-116`
+
+- `compare_realtime_vs_batch` (`batch.py:588`) computed `savings` from the **unrounded** running totals, then rounded `realtime_usd`, `batch_usd`, and `savings_usd` independently to 6 dp. Since `round(a) - round(b) != round(a - b)` at odd half-cents, the three published dollar figures could fail to reconcile — `realtime_usd - batch_usd != savings_usd` — which reads as a math error in a savings report. Reproduced firsthand: 1111 prompt tokens @ \$15/MTok (default 0.5 discount) gives `realtime 0.016665`, `batch 0.008332`, `savings 0.008332`, but `0.016665 - 0.008332 = 0.008333`; a sweep of `1..3999` tokens mismatched on `2000/3999`. Fixed by rounding `realtime_usd`/`batch_usd` first and deriving `savings_usd` and `savings_pct` from those published figures. Per-row math and discount semantics unchanged.
+- +2 tests: an odd-half-cent lock and a property check over `prompt_tokens 1..1999` that the columns reconcile; both fail pre-fix. The round-number `known_math` test stays green. Suite 454 → 456, ruff + format clean.
+
+**Why this work, this session:** first issue of a DAY multi-issue run after shipping chunking-strategies-lab #95. The portfolio is in a saturated state (no open priority:high/med code issues), so I dogfood-hunted three priority-tier repos in parallel; two yielded only unreachable findings (a judge-histogram `int(s*10)` that is actually exact for clean decimals, and a `HashEmbedder` zero-norm branch that is dead code), and this one — found by empirical verification — was real. Filed **#116** then fixed it in-session.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** continue the loop on another repo.
