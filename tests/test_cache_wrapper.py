@@ -16,6 +16,7 @@ import pytest
 
 from cost_optimizer import CacheTelemetry, PromptCacheWrapper
 from cost_optimizer.cache_wrapper import (
+    _coerce_token_count,
     _mark_messages_prefix,
     _mark_system,
     _mark_tools,
@@ -329,3 +330,56 @@ def test_model_pricing_builtin_table_loads_under_new_validator():
         p = get_pricing(model)
         assert p.model == model
         assert p.input_per_mtok >= 0.0
+
+
+# ---------- #114: malformed usage token abstains, never crashes create() ----------
+#
+# `_read_telemetry` gathers cache token counts AFTER `messages.create` has
+# already returned a valid response. The old bare `int(value or 0)` crashed on a
+# present-but-malformed value — `int(NaN)`→ValueError, `int(inf)`→OverflowError,
+# `int("abc")`→ValueError — so a telemetry-accounting hiccup destroyed a
+# successful API call. Telemetry is best-effort observability, so a malformed
+# field must abstain (→0), the same "abstain, don't crash on malformed SDK
+# shapes" contract #94/#106/#112 set for _extract_text / the logprob extractor.
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [float("nan"), float("inf"), float("-inf"), "abc", -5, None, object()],
+)
+def test_coerce_token_count_abstains_on_malformed(bad):
+    # Inverse safety net: pre-fix, the NaN/inf/'abc' cases raised out of the
+    # bare int(); now every malformed shape abstains to 0.
+    assert _coerce_token_count(bad) == 0
+
+
+@pytest.mark.parametrize(
+    ("good", "expected"),
+    [(0, 0), (1000, 1000), (12.7, 12), ("5", 5), (True, 1)],
+)
+def test_coerce_token_count_preserves_finite_nonnegative(good, expected):
+    # Over-rejection guard: a finite, non-negative numeric (incl. a numeric
+    # string) still coerces to int unchanged — the abstain must not swallow the
+    # happy path.
+    assert _coerce_token_count(good) == expected
+
+
+@pytest.mark.parametrize("field", ["cache_read_input_tokens", "cache_creation_input_tokens"])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), "abc", -7])
+def test_create_survives_malformed_usage_token(field, bad):
+    # End-to-end: a successful response whose usage carries a malformed token
+    # count must still return its response with the count abstained to 0 — NOT
+    # crash create() and lose the (valid) response. Pre-fix this raised
+    # ValueError/OverflowError out of create() for NaN/inf/'abc'.
+    client = _FakeClient()
+    client.messages.queue(_Usage(**{field: bad}))
+    w = PromptCacheWrapper(client, model="claude-haiku-4-5")
+    result = w.create(system="sys", messages=[{"role": "user", "content": "x"}])
+    assert result.response is not None
+    if field == "cache_read_input_tokens":
+        assert result.telemetry.tokens_cached == 0
+        assert result.telemetry.hits == 0
+        assert result.telemetry.dollars_saved == 0.0
+    else:
+        assert result.telemetry.tokens_written == 0
+        assert result.telemetry.misses == 0

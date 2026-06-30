@@ -186,8 +186,8 @@ class PromptCacheWrapper:
 
     def _read_telemetry(self, response: Any) -> CacheTelemetry:
         usage = _get_usage(response)
-        write = int(getattr(usage, "cache_creation_input_tokens", 0) or 0)
-        read = int(getattr(usage, "cache_read_input_tokens", 0) or 0)
+        write = _coerce_token_count(getattr(usage, "cache_creation_input_tokens", 0))
+        read = _coerce_token_count(getattr(usage, "cache_read_input_tokens", 0))
         # Cache hit ⇔ at least one token was served from cache on this call.
         # Cache miss ⇔ at least one token was written into the cache this call.
         # A single call may be both (cold path: warming a new suffix segment).
@@ -268,6 +268,31 @@ def _mark_messages_prefix(messages: list[Any]) -> list[Any]:
         target["content"] = new_content
     new[-1] = target
     return new
+
+
+def _coerce_token_count(value: Any) -> int:
+    """Best-effort non-negative ``int`` token count from a usage field.
+
+    Cache telemetry is best-effort observability accounting, gathered *after*
+    ``messages.create`` has already returned a valid response. A malformed
+    usage field must therefore **abstain** (→ ``0``) rather than crash and
+    destroy that successful response — the same "abstain, don't crash on
+    malformed SDK shapes" contract #94/#106/#112 set for ``_extract_text`` and
+    the logprob extractor.
+
+    The bare ``int(value or 0)`` this replaces crashed on a present-but-
+    malformed value: ``int(NaN)`` → ``ValueError``, ``int(inf)`` →
+    ``OverflowError``, ``int("abc")`` → ``ValueError``. A finite, non-negative
+    numeric (including a numeric string like ``"5"``) still coerces to ``int``
+    unchanged; ``None``/falsy → ``0``; anything non-coercible or negative
+    abstains to ``0`` (a negative token count is malformed and would otherwise
+    poison ``tokens_cached`` / ``dollars_saved``).
+    """
+    try:
+        n = int(value or 0)
+    except (TypeError, ValueError, OverflowError):
+        return 0
+    return n if n >= 0 else 0
 
 
 def _get_usage(response: Any) -> Any:
