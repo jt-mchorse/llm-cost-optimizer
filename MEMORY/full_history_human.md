@@ -788,3 +788,16 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** continue the loop.
+
+## 2026-06-30 — Issue #114: a malformed usage token crashed `create()` and destroyed a successful response
+**Duration:** ~20 min · **Branch:** `session/2026-06-30-1521-issue-114`
+
+- `_read_telemetry` (`cache_wrapper.py:189-190`) read the cache token counts with a bare `int(getattr(usage, …, 0) or 0)` — *after* `messages.create` had already returned a valid response. The `or 0` tolerated `None`/missing, but a present-but-malformed value crashed the `int(...)`: `int(NaN)` → `ValueError`, `int(inf)` → `OverflowError`, `int("abc")` → `ValueError`. So a telemetry-accounting hiccup destroyed a successful API call — the valid `response` was lost to a raw traceback. Reproduced all three firsthand before acting.
+- Fixed by extracting `_coerce_token_count(value)` (used for both `write` and `read`): a single `try/except (TypeError, ValueError, OverflowError)` around `int(value or 0)` plus a `>= 0` clamp. A finite, non-negative numeric (incl. a numeric string like `"5"`) still coerces to `int` unchanged; `None`/`NaN`/`inf`/`-inf`/negative/non-numeric abstain to `0`. `create()` now always returns its response; a bad usage field just yields zero telemetry for that call — the same "abstain, don't crash on malformed SDK shapes" contract as #94/#106/#112.
+- 20 tests: the `_coerce_token_count` abstain/over-rejection table plus an end-to-end `test_create_survives_malformed_usage_token` over both fields × {NaN, inf, "abc", −7}. Inverse safety net: reverted only the `_read_telemetry` body (keeping the helper) and the malformed cases failed pre-fix, then passed restored. Suite 434 → 454, ruff clean.
+
+**Why this work, this session:** second issue of a DAY multi-issue run. Switched from `llm-eval-harness` (#126, also shipped this run) to priority-tier `llm-cost-optimizer` per the build sequence to avoid same-repo append-only MEMORY conflicts. Both pre-filed issues are blocked (#97 JT decision-revisit; #18 operator-blocked demo capture), so dogfood→issue→PR: read `cache_wrapper.py` and found the telemetry `int()` seam.
+
+**Open questions / blockers:** none — ready for review. Unrelated to the JT-blocked #97.
+
+**Next session:** continue the loop on another repo.
