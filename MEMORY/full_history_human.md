@@ -775,3 +775,16 @@ JSON` expander only.
 **Open questions / blockers:** none. #97 still awaits JT.
 
 **Next session:** continue the loop on another repo to avoid same-repo append-only MEMORY conflicts.
+
+## 2026-06-30 — Issue #112: _extract_text crashed on an SDK text block with text=None
+**Duration:** ~18 min · **Branch:** `session/2026-06-30-0321-issue-112`
+
+- `_extract_text` (`router.py:357`) guarded its direct path with `isinstance(direct, str)` but the SDK-shape branch did not: `parts = [getattr(b, "text", "") for b in content if getattr(b, "type", "") == "text"]`. A truncated/malformed SDK `type="text"` block carrying `text=None` put `None` into `parts`, so `"".join(...)` raised a raw `TypeError` that escaped `JudgeConfidenceSignal.measure` and `UncertaintyRouter.route()`, aborting the whole request instead of abstaining.
+- Fixed by filtering non-`str` `.text` values in the SDK branch, mirroring the direct-path guard. A `text=None` block now contributes nothing → empty text → `measure` abstains via its existing empty-text guard (`SignalReading(value=None, trip=False)`); a `None` between two valid blocks is dropped, not fatal (`["a", None, "b"]` → `"ab"`). Extends the "abstain, don't crash on malformed SDK shapes" contract already applied to the logprob extractor (#94/#106).
+- Two lock tests (abstain on None-only; over-rejection guard on None-between-valid), both confirmed failing pre-fix via `git stash` (raw `TypeError`). Suite 432 → 434, ruff clean.
+
+**Why this work, this session:** third issue of a NIGHT multi-issue run; a dogfood hunter surfaced this in priority-tier `llm-cost-optimizer`, reproduced firsthand before acting. Unrelated to the JT-blocked #97.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** continue the loop.

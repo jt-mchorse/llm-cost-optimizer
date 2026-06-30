@@ -365,7 +365,20 @@ def _extract_text(response: Any) -> str:
         return direct
     content = getattr(response, "content", None)
     if isinstance(content, list):
-        parts = [getattr(b, "text", "") for b in content if getattr(b, "type", "") == "text"]
+        # Keep only str `.text` values, mirroring the `isinstance(direct, str)`
+        # guard on the direct path above. A truncated/malformed SDK block can
+        # carry `text=None`; without this filter that None reached `"".join(...)`
+        # and raised a raw TypeError that escaped `measure`/`route()` instead of
+        # abstaining — the empty-text guard in `measure` (value=None, trip=False)
+        # is the intended outcome, same "abstain, don't crash on malformed SDK
+        # shapes" contract the logprob extractor already honors (#94/#106).
+        parts = [
+            t
+            for b in content
+            if getattr(b, "type", "") == "text"
+            for t in (getattr(b, "text", ""),)
+            if isinstance(t, str)
+        ]
         return "".join(parts)
     return ""
 
