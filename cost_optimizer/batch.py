@@ -585,13 +585,22 @@ def compare_realtime_vs_batch(
         batch_total += (prompt_usd + completion_usd) * discount
         counted_rows += 1
 
-    savings = realtime_total - batch_total
-    savings_pct = (savings / realtime_total) if realtime_total > 0 else 0.0
+    # Round the two published totals first, then derive savings_usd and
+    # savings_pct from those rounded values. Rounding savings independently
+    # from the unrounded difference let round(a) - round(b) != round(a - b)
+    # (true ~half the time at odd half-cents), so the report's columns could
+    # fail to reconcile — realtime_usd - batch_usd != savings_usd — which
+    # reads as a math error in a savings report. Deriving from the published
+    # figures keeps the report internally consistent.
+    realtime_usd = round(realtime_total, 6)
+    batch_usd = round(batch_total, 6)
+    savings_usd = round(realtime_usd - batch_usd, 6)
+    savings_pct = round(savings_usd / realtime_usd, 4) if realtime_usd > 0 else 0.0
     return CostComparison(
-        realtime_usd=round(realtime_total, 6),
-        batch_usd=round(batch_total, 6),
-        savings_usd=round(savings, 6),
-        savings_pct=round(savings_pct, 4),
+        realtime_usd=realtime_usd,
+        batch_usd=batch_usd,
+        savings_usd=savings_usd,
+        savings_pct=savings_pct,
         n_rows=counted_rows,
     )
 
