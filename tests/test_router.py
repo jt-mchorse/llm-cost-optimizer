@@ -483,6 +483,52 @@ def test_judge_signal_extracts_text_from_sdk_shape() -> None:
     assert judge.last_call == ("q", "answer from sdk", "r")
 
 
+def test_judge_signal_sdk_block_with_none_text_abstains() -> None:
+    # Issue #112: a truncated/malformed SDK `type="text"` block can carry
+    # `text=None`. Pre-fix it reached `"".join([None])` in `_extract_text` and
+    # raised a raw TypeError that escaped `measure`/`route()` — instead of the
+    # `value=None, trip=False` abstain the empty-text guard intends. The judge
+    # must never even be consulted (no usable text). Inverse safety net: pre-fix
+    # this raised TypeError rather than returning a SignalReading.
+    class Block:
+        type = "text"
+        text = None
+
+    class SdkResponse:
+        content = [Block()]
+        prompt = "q"
+
+    judge = StubJudge(canned_score=0.4)
+    reading = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7).measure(SdkResponse())
+    assert reading == SignalReading(value=None, trip=False)
+    assert judge.last_call is None
+
+
+def test_judge_signal_sdk_skips_none_text_block_keeps_str_blocks() -> None:
+    # A None block between two valid text blocks is dropped, not fatal: the
+    # surviving text is still joined and scored (over-rejection guard).
+    class Good1:
+        type = "text"
+        text = "a"
+
+    class Bad:
+        type = "text"
+        text = None
+
+    class Good2:
+        type = "text"
+        text = "b"
+
+    class SdkResponse:
+        content = [Good1(), Bad(), Good2()]
+        prompt = "q"
+
+    judge = StubJudge(canned_score=0.4)
+    reading = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7).measure(SdkResponse())
+    assert reading.value == 0.4
+    assert judge.last_call == ("q", "ab", "r")
+
+
 # Issue #73: a judge that returns a verdict without a usable `.score` means
 # "couldn't measure" — not "scored zero". The old `float(... or 0.0)` collapsed
 # a missing score to 0.0, which then tripped (`0.0 < threshold`) and silently
