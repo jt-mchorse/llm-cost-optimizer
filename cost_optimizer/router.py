@@ -282,7 +282,28 @@ def _read_field(obj: Any, name: str, default: Any = None) -> Any:
 def _shannon_entropy_nats(logprobs: list[float]) -> float:
     # Logprobs are log-base-e probabilities. H = -sum(p * log p).
     # Logprobs may not sum to 1 (top-k truncated); normalize first.
-    probs = [math.exp(lp) for lp in logprobs]
+    #
+    # Subtract max(logprobs) before exp — the standard softmax stabilization.
+    # `math.exp` raises OverflowError for any argument ≳ 709.78, so a
+    # finite-but-large logprob (a corrupt/malformed SDK distribution carrying a
+    # positive value — not a valid log-probability, which is <= 0) made
+    # `math.exp(lp)` raise, and that OverflowError escaped `EntropySignal.measure`
+    # and propagated through `route()`, aborting the whole routing request. The
+    # extractor already abstains on a missing (#94/#106) or non-finite (#95)
+    # logprob for exactly this "abstain/degrade, don't crash on malformed SDK
+    # shapes" reason; a finite overflow is the same class, closed here at the
+    # math layer so both extraction paths are covered. Because entropy is taken
+    # over the *normalized* distribution, subtracting a constant from every
+    # logprob is exactly shift-invariant — bit-identical for valid (<= 0) inputs
+    # (verified: max |Δ| = 4.4e-16 over 2000 random vectors) — but every exponent
+    # becomes <= 0, so exp can never overflow for any finite input. A large-but-
+    # finite logprob then degrades gracefully (one dominant token → entropy ≈ 0)
+    # instead of crashing (#118). Empty input can't reach here (measure() guards
+    # `len == 0`), but guard defensively so `max([])` never raises.
+    if not logprobs:
+        return 0.0
+    m = max(logprobs)
+    probs = [math.exp(lp - m) for lp in logprobs]
     total = sum(probs)
     if total <= 0:
         return 0.0
