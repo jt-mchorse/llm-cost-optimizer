@@ -813,3 +813,15 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** continue the loop on another repo.
+
+## 2026-07-01 — Issue #118: a finite-but-large logprob crashed route() with OverflowError
+**Duration:** ~25 min · **Branch:** `session/2026-07-01-2317-issue-118`
+
+- `_shannon_entropy_nats` (router.py) did `math.exp(lp)` per logprob. `math.exp` raises `OverflowError` above ~709.78, so a finite-but-large logprob (a corrupt SDK distribution carrying a positive value — not a valid log-probability) crashed the entropy math, and that `OverflowError` escaped `EntropySignal.measure` and propagated through `UncertaintyRouter.route()`, aborting the entire routing request. That's the exact "abstain/degrade, don't crash on malformed SDK shapes" failure the extractor's #94/#95/#106 guards exist to prevent — reached via a finite value that slips the finiteness guard. Reproduced firsthand (`[710.0, -1.0]` and a stub adapter returning `[800.0]` both raised).
+- Fixed by subtracting `max(logprobs)` before `exp` — the standard softmax stabilization. Entropy is taken over the normalized distribution, so subtracting a constant is exactly shift-invariant: bit-identical for valid (≤0) inputs (max |Δ| = 4.4e-16 over 2000 random vectors), but every exponent becomes ≤0 so `exp` never overflows for any finite input. A large-but-finite logprob degrades gracefully (one dominant token → entropy ≈ 0; `[1000,1000]` → ln2). Non-finite logprobs still abstain via the existing #95 guard. +7 test cases (reference-lock, no-overflow parametrized ×4, signal degrades gracefully, route doesn't propagate). Suite 456 → 463, ruff + format clean.
+
+**Why this work, this session:** second issue of a DAY run; `llm-cost-optimizer` was the next stalest priority-tier repo (~24h, build order 2) with only a JT-blocked `decision-revisit` (#97) and a non-headless `[demo]` (#18) open → dogfood hunt. Read the full core surface (router/pricing/semantic_cache/cache_wrapper/batch); this overflow gap was the single reproducible bug found via execution probe.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** continue the loop. #97 (batch idempotency order-sensitivity) remains a JT one-way `decision-revisit`.
