@@ -199,6 +199,38 @@ def test_compare_realtime_vs_batch_known_math():
     assert cmp_.n_rows == 1
 
 
+def test_compare_realtime_vs_batch_report_reconciles_at_odd_half_cents():
+    # #116: savings_usd was rounded independently from the unrounded difference,
+    # so round(realtime) - round(batch) != round(savings) (~half the time at
+    # odd half-cents). The published columns must reconcile. This input lands
+    # realtime_total on 0.0166650 → realtime_usd 0.016665, batch_usd 0.008332,
+    # and pre-fix savings_usd was 0.008332 while 0.016665 - 0.008332 = 0.008333.
+    rows = [
+        BatchResultRow(custom_id="a", response_text="x", prompt_tokens=1111, completion_tokens=0)
+    ]
+    prices = {"m": BatchCostQuote(model="m", input_per_mtok=15.0, output_per_mtok=15.0)}
+    cmp_ = compare_realtime_vs_batch(rows, prices)
+    # The dollar columns reconcile exactly at the published precision.
+    assert round(cmp_.realtime_usd - cmp_.batch_usd, 6) == cmp_.savings_usd
+    # And the published percentage matches the published dollar figures.
+    assert cmp_.savings_pct == round(cmp_.savings_usd / cmp_.realtime_usd, 4)
+
+
+def test_compare_realtime_vs_batch_report_reconciles_across_many_inputs():
+    # Property check over the odd-half-cent regime that exposed #116: for every
+    # prompt-token count in a wide range, the published realtime/batch/savings
+    # columns reconcile. Pre-fix this failed on ~half of them.
+    prices = {"m": BatchCostQuote(model="m", input_per_mtok=15.0, output_per_mtok=15.0)}
+    for t in range(1, 2000):
+        rows = [
+            BatchResultRow(custom_id="a", response_text="x", prompt_tokens=t, completion_tokens=0)
+        ]
+        cmp_ = compare_realtime_vs_batch(rows, prices)
+        assert round(cmp_.realtime_usd - cmp_.batch_usd, 6) == cmp_.savings_usd, (
+            f"columns do not reconcile at prompt_tokens={t}"
+        )
+
+
 def test_compare_realtime_vs_batch_uses_documented_discount_constant():
     """The default discount must match the documented BATCH_DISCOUNT_FACTOR."""
     rows = [
