@@ -258,6 +258,52 @@ def test_entropy_helper_zero_for_empty_input() -> None:
     assert _shannon_entropy_nats([]) == 0.0
 
 
+def test_entropy_helper_matches_reference_for_valid_logprobs() -> None:
+    # Regression-lock: the softmax stabilization (#118) must be bit-identical
+    # to the pre-fix formula for valid (<= 0) logprobs — subtracting a constant
+    # from every logprob is exactly shift-invariant over the normalized
+    # distribution. `[0.0, -1.0]` normalizes to (e^0, e^-1)/(1+e^-1); its
+    # entropy is a fixed reference value the fix must not perturb.
+    assert _shannon_entropy_nats([0.0, -1.0]) == pytest.approx(0.5822031088882179)
+
+
+@pytest.mark.parametrize("logprobs", [[710.0, -1.0], [800.0], [1e6, -1.0], [1000.0, 1000.0]])
+def test_entropy_helper_no_overflow_on_large_finite_logprob(logprobs: list[float]) -> None:
+    # `math.exp` raises OverflowError for arguments ≳ 709.78, so a finite-but-
+    # large logprob (a corrupt SDK distribution — a positive value is not a valid
+    # log-probability) crashed `_shannon_entropy_nats` pre-#118. The softmax
+    # max-subtraction makes every exponent <= 0, so it computes a finite entropy
+    # for any finite input instead of raising. `[1000, 1000]` (two equal masses)
+    # must give ln(2); a single dominant token gives ≈ 0.
+    value = _shannon_entropy_nats(logprobs)
+    assert math.isfinite(value)
+    assert value >= 0.0
+    if logprobs == [1000.0, 1000.0]:
+        assert value == pytest.approx(math.log(2))
+
+
+def test_entropy_signal_abstains_gracefully_on_large_finite_logprob() -> None:
+    # End-to-end at the signal layer: a large finite logprob must not raise out
+    # of measure() — it degrades to a finite reading (one dominant token →
+    # entropy ≈ 0, below threshold → no trip), not an OverflowError (#118).
+    reading = EntropySignal(threshold=1.5).measure(FakeResponse(first_token_logprobs=[800.0, -1.0]))
+    assert reading.value is not None
+    assert math.isfinite(reading.value)
+    assert reading.trip is False
+
+
+def test_route_does_not_propagate_overflow_on_large_finite_logprob() -> None:
+    # The whole point: pre-#118 a corrupt logprob crashed the entire routing
+    # request with OverflowError. route() must complete and return a decision.
+    adapter = StubAdapter(response=FakeResponse(first_token_logprobs=[1000.0, -1.0]))
+    router = _make_router(adapter, signals=[EntropySignal(threshold=1.5)])
+    decision = router.route({"prompt": "anything"})
+    assert isinstance(decision, RouterDecision)
+    # Dominant-token distribution → entropy ≈ 0 → below threshold → cheap wins.
+    assert decision.model_id == "claude-haiku-4-5"
+    assert decision.signal_values["entropy"] is not None
+
+
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
 def test_extract_logprobs_abstains_on_non_finite_direct(bad: float) -> None:
     # A non-finite logprob slips _shannon_entropy_nats's `total <= 0` guard
