@@ -604,6 +604,57 @@ def test_false_positive_rate_supports_custom_equality():
     assert rate == 0.0
 
 
+def test_false_positive_rate_does_not_pollute_cache_telemetry():
+    # #120: `measure_false_positive_rate` is the sanctioned OFFLINE diagnostic
+    # (D-007) — it must not bleed into production telemetry. It drives
+    # `cache.lookup`, which increments `stats.hits`/`misses`, so running it
+    # against a populated cache would otherwise inflate the very `hit_rate`
+    # the savings dashboard reports (optimistically: offline hits push
+    # hit_rate up). Pre-fix, `hits` went 1 -> 3 and `hit_rate` 0.5 -> 0.75
+    # here purely from the offline measurement. The helper now snapshots and
+    # restores the stats, so the reported telemetry is byte-identical.
+    cache, _ = _cache()
+    cache.put("p1", "old", model="m")
+    cache.put("p2", "old", model="m")
+    cache.lookup("p1", model="m")  # a real hit
+    cache.lookup("never-seen-xyz", model="m")  # a real miss
+    before = cache.stats.to_dict()
+
+    rate, samples = measure_false_positive_rate(
+        cache,
+        held_out=[("p1", ""), ("p2", "")],
+        model="m",
+        call_model=lambda p: "new",  # disagrees -> both are FPs; drives real hits
+    )
+
+    # The measurement still works (both cached entries hit and disagree).
+    assert rate == 1.0
+    assert len(samples) == 2
+    # ...but the cache's reported telemetry is untouched by the offline pass.
+    assert cache.stats.to_dict() == before
+
+
+def test_false_positive_rate_restores_telemetry_even_if_call_model_raises():
+    # The stats restore is in a `finally`, so a caller-supplied `call_model`
+    # (or `equality`) that raises mid-measurement can't leak partial
+    # measurement counts into production telemetry either (#120).
+    cache, _ = _cache()
+    cache.put("p1", "old", model="m")
+    before = cache.stats.to_dict()
+
+    def boom(_prompt):
+        raise RuntimeError("model call failed")
+
+    with pytest.raises(RuntimeError, match="model call failed"):
+        measure_false_positive_rate(
+            cache,
+            held_out=[("p1", "")],
+            model="m",
+            call_model=boom,
+        )
+    assert cache.stats.to_dict() == before
+
+
 # ----------------------------------------------------------------------
 # RedisStorage parity (uses fakeredis if installed, else skipped)
 # ----------------------------------------------------------------------
