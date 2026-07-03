@@ -148,6 +148,64 @@ def _resolves_on_disk(token: str) -> bool:
     return (REPO_ROOT / token).exists()
 
 
+# CamelCase symbols the doc legitimately names that are NOT part of the
+# `cost_optimizer` importable surface. `StrategyResult` is a dataclass in
+# `scripts/bench_savings.py` (a benchmark script, not package API); the doc
+# describes its `router_stats` field in the savings-JSON section (#64).
+# Excluded from the symbol-resolution check so a real script-owned symbol isn't
+# a false positive. Hard-pinned by `test_external_symbols_hard_pin_set`, and a
+# shadow test fails if one ever enters the package surface (stale exemption).
+EXTERNAL_SYMBOLS = ("StrategyResult",)
+
+_PKG = "cost_optimizer"
+_PKG_DIR = REPO_ROOT / _PKG
+
+
+def _package_symbol_resolves(name: str) -> bool:
+    """True if `name` is an attribute of the `cost_optimizer` package OR any of
+    its submodules.
+
+    Checking submodules (not just the top-level `__all__`) is load-bearing here:
+    the doc names `UnknownModelError`, which is a real class in
+    `cost_optimizer.pricing` but isn't re-exported at package level. A
+    surface-only check would false-positive on it.
+    """
+    import importlib
+
+    pkg = importlib.import_module(_PKG)
+    if hasattr(pkg, name):
+        return True
+    for path in _PKG_DIR.glob("*.py"):
+        if path.stem == "__init__":
+            continue
+        try:
+            module = importlib.import_module(f"{_PKG}.{path.stem}")
+        except ModuleNotFoundError:
+            continue
+        if hasattr(module, name):
+            return True
+    return False
+
+
+def _extract_camel_symbols(text: str) -> set[str]:
+    """Backtick-quoted multi-word CamelCase identifiers (an internal
+    lowercase->uppercase boundary, e.g. `PromptCacheWrapper`,
+    `IdempotencyConflict`). Single-word capitalized tokens and all-caps tokens
+    are excluded; bare snake_case is not locked (collides with field names).
+    """
+    found: set[str] = set()
+    for match in re.finditer(r"`([^`\n]+)`", text):
+        token = match.group(1).strip()
+        token = re.sub(r"\(\)$", "", token)
+        while token and token[-1] in ".,;:":
+            token = token[:-1]
+        if re.fullmatch(r"[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*", token) and re.search(
+            r"[a-z][A-Z]", token
+        ):
+            found.add(token)
+    return found
+
+
 def test_doc_exists() -> None:
     assert DOC.exists(), f"missing {DOC}"
 
@@ -166,6 +224,48 @@ def test_backtick_paths_resolve_on_disk(doc_text: str) -> None:
         + "\n(regenerate the doc to match the current layout, fix the typo, "
         "or — if this is an operator-supplied future artifact — add it to "
         "OPERATOR_SUPPLIED_PATHS in tests/test_architecture_doc.py)"
+    )
+
+
+def test_doc_symbol_refs_resolve(doc_text: str) -> None:
+    """Every CamelCase public type the doc names resolves to a real symbol.
+
+    ``test_backtick_paths_resolve_on_disk`` validates slash-path tokens only; a
+    *symbol* reference was unguarded — the drift class portfolio-ops #55
+    catalogued, and the same class this repo's own #108 fixed by hand (the doc
+    naming a nonexistent ``BatchAPIBackend``). Propagates the embedding-model-
+    shootout #71 / llm-eval-harness #140 / rag-production-kit #118 lock, adapted
+    to this doc's bare-CamelCase style with submodule-aware resolution and an
+    ``EXTERNAL_SYMBOLS`` allowlist for the script-owned ``StrategyResult`` (#122).
+    """
+    camel = _extract_camel_symbols(doc_text) - set(EXTERNAL_SYMBOLS)
+    assert camel, (
+        "expected at least one CamelCase public-type reference in "
+        "docs/architecture.md — the resolver would otherwise be vacuously green"
+    )
+    unresolved = sorted(s for s in camel if not _package_symbol_resolves(s))
+    assert not unresolved, (
+        "docs/architecture.md names symbols that don't exist in the cost_optimizer "
+        "package (surface or any submodule):\n"
+        + "\n".join(f"  - {s}" for s in unresolved)
+        + "\n(fix the doc to match the shipped symbol, update the rename that "
+        "orphaned it, or — if it's a script-owned / external symbol — add it to "
+        "EXTERNAL_SYMBOLS in tests/test_architecture_doc.py)"
+    )
+
+
+def test_external_symbols_hard_pin_set() -> None:
+    assert EXTERNAL_SYMBOLS == ("StrategyResult",)
+
+
+def test_external_symbols_absent_from_package_surface() -> None:
+    # An allow-listed symbol that now resolves in the package is a stale
+    # exemption hiding real coverage — drop it from EXTERNAL_SYMBOLS then.
+    shadowed = [s for s in EXTERNAL_SYMBOLS if _package_symbol_resolves(s)]
+    assert not shadowed, (
+        "these EXTERNAL_SYMBOLS now resolve in the cost_optimizer package; drop "
+        "them from the allowlist so the symbol check covers them:\n"
+        + "\n".join(f"  - {s}" for s in shadowed)
     )
 
 

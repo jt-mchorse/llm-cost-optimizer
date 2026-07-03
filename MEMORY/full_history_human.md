@@ -840,3 +840,13 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** continue the loop. #97 (batch idempotency order-sensitivity) remains a JT one-way `decision-revisit`.
+
+## 2026-07-03 — Issue #122: symbol-resolution doc-lock (propagates portfolio-ops #55) (~20 min)
+
+**What got done.** Third per-repo propagation of the portfolio-ops #55 symbol-resolution lock (after llm-eval-harness #140 and rag-production-kit #118). Added `test_doc_symbol_refs_resolve` to `tests/test_architecture_doc.py`: multi-word CamelCase public types the doc names must resolve against the `cost_optimizer` surface **or any submodule**. Two firsthand-verified wrinkles, neither drift: `UnknownModelError` is a real class in `cost_optimizer.pricing` (not `__all__`), so resolution is submodule-aware; `StrategyResult` is a `scripts/bench_savings.py` dataclass (script-owned), exempted via a hard-pinned `EXTERNAL_SYMBOLS` allowlist with a hard-pin test + shadow test. Inverse-verified drift is flagged. Suite 465 → 468, ruff clean.
+
+**Why this work, this session:** fifth issue of the DAY run, continuing the systemic #55 effort. This repo is the clearest demonstration that the propagation is genuinely per-repo: three repos, three distinct resolution schemes so far (fully-qualified only; bare-submodule + surface-only; submodule-aware + external allowlist).
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** continue #55 propagation (chunking, prompt-regression-suite, vector-search-at-scale, agent-orchestration-platform, mcp-server-cookbook; TS: nextjs, ai-app — exported-name check).
