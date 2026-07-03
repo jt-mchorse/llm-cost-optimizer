@@ -825,3 +825,18 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** continue the loop. #97 (batch idempotency order-sensitivity) remains a JT one-way `decision-revisit`.
+
+## 2026-07-02 — Issue #120: offline FP-rate audit silently polluted cache telemetry
+**Duration:** ~30 min · **Branch:** `session/2026-07-02-2315-issue-120`
+
+- `measure_false_positive_rate` (semantic_cache.py) is the sanctioned **offline** false-positive audit (D-007). Its loop calls `cache.lookup`, which increments `cache.stats` (hits/misses/hit_rate). Run against a *populated* cache — the only useful way to measure a real FP rate — it inflated the very `hit_rate` the savings dashboard reports, and optimistically: offline lookups that hit push `hit_rate` up. Reproduced firsthand: a cache with real `hits=1, hit_rate=0.5` became `hits=3, hit_rate=0.75` purely from running the offline diagnostic over two held-out prompts.
+- **Why a bug, not a tradeoff:** D-007's stated rationale is that FP measurement is offline *specifically so it doesn't bleed into production* ("online sampling silently bleeds savings; offline helper runs by operator explicit cost"). `hit_rate` is a production economic signal feeding the dashboard (#5); silently inflating it is exactly the bleed D-007 exists to prevent, and it matches this repo's consistent anti-silent-signal-corruption fix class (SignalReading trip invariant, judge missing-score, cosine non-finite, NaN ttl). No existing test locked the current behavior.
+- **Fix:** snapshot the `CacheStats` via `dataclasses.replace` on entry, restore it in a `finally` — so the diagnostic reports the FP rate without touching reported telemetry. The `finally` also covers a caller-supplied `call_model`/`equality` that raises mid-measurement. Public signature and return value unchanged. +2 regression tests (stats byte-identical before/after a real hitting measurement; stats restored on a raising `call_model`), both fail pre-fix. Suite 463 → 465, ruff + format clean.
+
+**Why this work, this session:** first issue of a DAY run. `llm-cost-optimizer` was the stalest priority-tier repo (~20h, build order 2) with only a JT-blocked `decision-revisit` (#97) and a non-headless `[demo]` (#18) open → dogfood hunt. Read all six core modules + the bench/tune scripts and ran a parallel adversarial hunt subagent; the repo is exceptionally hardened and this telemetry bleed was the single reproducible defect.
+
+**Note for JT:** an independent hunt agent flagged the same mutation but read it as a *design choice* ("a lookup is a lookup"). I overrode that: D-007 plus the repo's own anti-silent-corruption pattern make it a defect. The fix is reversible/cheap — revert if you disagree.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** continue the loop. #97 (batch idempotency order-sensitivity) remains a JT one-way `decision-revisit`.

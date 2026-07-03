@@ -27,7 +27,7 @@ import json
 import math
 import time
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -649,26 +649,44 @@ def measure_false_positive_rate(
 
     Done OFFLINE on a held-out set, not online — online sampling would slowly
     bleed the cost savings the cache exists to deliver (D-007).
+
+    The measurement is telemetry-neutral: it drives `cache.lookup`, which
+    increments `cache.stats` (hits/misses/hit_rate), but D-007's whole point
+    is that the offline helper must not bleed into production signals. Running
+    it against a *populated* cache — the only useful way to measure a real FP
+    rate — would otherwise inflate the very `hit_rate` the savings dashboard
+    reports (and in the optimistic direction: offline lookups that hit make
+    the reported hit_rate read higher than reality). Snapshot the stats
+    counters up front and restore them in a `finally`, so the diagnostic
+    reports the FP rate without touching the cache's reported telemetry.
     """
+    stats_snapshot = replace(cache.stats)
     samples: list[FalsePositiveSample] = []
     fp_count = 0
     hit_count = 0
-    for prompt, _ in held_out:
-        result = cache.lookup(prompt, model=model)
-        if not result.hit:
-            continue
-        hit_count += 1
-        actual = call_model(prompt)
-        is_fp = not equality(result.payload, actual)
-        samples.append(
-            FalsePositiveSample(
-                prompt=prompt,
-                cached_response=result.payload,
-                actual_response=actual,
-                is_false_positive=is_fp,
+    try:
+        for prompt, _ in held_out:
+            result = cache.lookup(prompt, model=model)
+            if not result.hit:
+                continue
+            hit_count += 1
+            actual = call_model(prompt)
+            is_fp = not equality(result.payload, actual)
+            samples.append(
+                FalsePositiveSample(
+                    prompt=prompt,
+                    cached_response=result.payload,
+                    actual_response=actual,
+                    is_false_positive=is_fp,
+                )
             )
-        )
-        if is_fp:
-            fp_count += 1
+            if is_fp:
+                fp_count += 1
+    finally:
+        # Restore the pre-measurement telemetry: the offline diagnostic is
+        # side-effect-free on `cache.stats` (D-007). `finally` so an exception
+        # from a caller-supplied `call_model`/`equality` can't leak partial
+        # measurement counts into production either.
+        cache.stats = stats_snapshot
     rate = (fp_count / hit_count) if hit_count > 0 else 0.0
     return rate, samples
