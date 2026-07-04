@@ -20,7 +20,11 @@ same key* returns the same ``job_id``; resubmitting *a different
 payload* with *the same key* raises ``IdempotencyConflict``. The
 payload hash is content-only (request count, custom_ids, model,
 prompts, max_tokens) so a duplicate retry from a flaky caller
-doesn't double-charge.
+doesn't double-charge. It is also **order-independent** (D-013): the
+Batch API correlates results back to the caller by ``custom_id``, not
+by row position, so a batch resubmitted with the same
+``custom_id``->content set in a different order is the same logical
+workload and must not raise a spurious conflict.
 
 Cost reporting: ``compare_realtime_vs_batch(rows, prices)`` applies
 ``BATCH_DISCOUNT_FACTOR = 0.5`` to both prompt and completion tokens
@@ -185,22 +189,37 @@ class BatchBackend(Protocol):
 
 
 def _canonical_payload_hash(requests: Sequence[BatchRequest]) -> str:
-    """Stable SHA-256 hash of the canonical batch payload.
+    """Stable, order-independent SHA-256 hash of the canonical batch payload.
 
     Used by the in-memory backend to detect "same key, different
     payload" so a caller who reuses an idempotency key by accident
     gets a loud failure rather than silent overwrite.
+
+    The per-request entries are sorted before hashing (D-013) so the
+    hash is over the ``custom_id``->content *set*, not the caller's row
+    order. The Batch API correlates results by ``custom_id`` (see
+    ``BatchResultRow``), not by position, so a batch resubmitted in a
+    different order — e.g. built from a ``set``/``dict``/concurrent
+    collection with non-deterministic iteration — is the same logical
+    workload and must not raise a spurious ``IdempotencyConflict``.
+    Sorting is unambiguous because ``custom_id`` is unique within a
+    batch (enforced at ``submit``), and it is strictly more lenient:
+    any change to the ``custom_id``->content set still changes the
+    hash, so a genuine conflict can never be masked.
     """
-    canonical = [
-        {
-            "custom_id": r.custom_id,
-            "user": r.user,
-            "system": r.system,
-            "model": r.model,
-            "max_tokens": r.max_tokens,
-        }
-        for r in requests
-    ]
+    canonical = sorted(
+        (
+            {
+                "custom_id": r.custom_id,
+                "user": r.user,
+                "system": r.system,
+                "model": r.model,
+                "max_tokens": r.max_tokens,
+            }
+            for r in requests
+        ),
+        key=lambda entry: entry["custom_id"],
+    )
     blob = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()
 
