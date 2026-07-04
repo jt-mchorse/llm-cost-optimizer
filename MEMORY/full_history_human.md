@@ -850,3 +850,13 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** continue #55 propagation (chunking, prompt-regression-suite, vector-search-at-scale, agent-orchestration-platform, mcp-server-cookbook; TS: nextjs, ai-app — exported-name check).
+
+## 2026-07-04 — Issue #97: order-independent batch idempotency hash (DAY, ~45 min)
+
+**What got done:** Resolved the #97 decision-revisit. `_canonical_payload_hash` now sorts requests by `custom_id` before hashing, so resubmitting the same batch in a different order (same key) returns the original job instead of a spurious `IdempotencyConflict`. Reproduced the false conflict live before the change, and confirmed the premise that results correlate by `custom_id` (not row position). Rewrote the lock test whose name (`…ignores_request_ordering…`) had always contradicted its body, and added regression tests for the non-deterministic-iteration retry and for a genuine content change that must still conflict. Recorded D-013. 468→470 tests green, ruff clean.
+
+**Why this work, this session:** picked up after an exhausted bug-hunt — six parallel hunter agents swept every non-batch module of `llm-eval-harness` and this repo and found nothing real (both codebases are saturated). #97 was the one repo-local issue with a concrete, verifiable correctness fix.
+
+**Open questions / blockers:** #97 is a decision-revisit the filing session escalated to JT, so this shipped as a **draft** PR — JT should confirm the order-independent semantics before it merges (a future Phase A won't auto-merge a draft). D-013 revisits an implementation detail of D-010, not D-010's contract.
+
+**Next session:** #18 (demo GIF) is the only other open issue here and needs a screen capture, not headless work.

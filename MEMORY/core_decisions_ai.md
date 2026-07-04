@@ -108,3 +108,13 @@
   reversibility: cheap
   related_issues: [5]
   superseded_by: null
+
+- id: D-013
+  date: 2026-07-04
+  decision: batch_idempotency_payload_hash_is_order_independent
+  rationale: batch_api_correlates_results_by_custom_id_not_row_position_batchresultrow_carries_custom_id_so_a_resubmit_of_the_same_custom_id_to_content_set_in_a_different_order_e_g_built_by_iterating_a_dict_or_set_is_the_same_logical_workload_and_must_not_raise_spurious_idempotencyconflict_canonical_payload_hash_now_sorts_per_request_entries_by_custom_id_before_hashing_custom_ids_unique_per_batch_enforced_at_submit_strictly_more_lenient_any_change_to_the_custom_id_to_content_set_still_changes_the_hash_so_a_genuine_conflict_can_never_be_masked
+  alternatives_rejected: [keep_order_sensitive_hash_the_prior_deliberate_choice_surfaced_as_97_but_its_custom_id_position_mapping_rationale_does_not_hold_for_a_position_independent_api, canonicalize_by_dropping_custom_id_from_the_hash_would_wrongly_collapse_distinct_workloads_that_differ_only_in_id_assignment]
+  reversibility: cheap
+  related_issues: [97]
+  revisits: D-010   # D-010 mandates caller-key + content-hash + raise-on-conflict; it did NOT mandate order-sensitivity — that lived only in a test docstring. D-013 changes the hash implementation detail, not D-010's contract, so D-010 is NOT superseded.
+  superseded_by: null
