@@ -161,3 +161,14 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. Swapping the workload generator is one function (`_build_workload`); the strategy runners and the JSON schema are workload-agnostic. The operator can add a real-API mode by replacing the stub adapters with real ones — the script's flag is already there, it just refuses to run today.
 
 **Related issues:** #5
+
+## D-013 — Batch idempotency payload hash is order-independent (2026-07-04)
+**Decision:** `_canonical_payload_hash` (`batch.py`) sorts the per-request canonical entries by `custom_id` before hashing, so the payload hash is over the `custom_id`→content *set* rather than the caller's row order. A batch resubmitted under the same `idempotency_key` with the same requests in a different order now returns the original job instead of raising `IdempotencyConflict`.
+
+**Why:** The Anthropic Messages-Batch API correlates results back to the caller by `custom_id` (which is exactly how `BatchResultRow` maps results here), not by row position. So a reordered batch is *not* a different workload — the previous order-sensitive hash produced a spurious `IdempotencyConflict` for the exact case idempotency exists to protect: a flaky caller retrying a batch built from a `set`/`dict`/concurrent collection with non-deterministic iteration order. This resolves the decision-revisit filed as #97. It revisits an *implementation detail* of D-010, not D-010 itself: D-010 records "caller-key + content hash, conflict raises not overwrites," and never mandated order-sensitivity — that rationale existed only in a test docstring, which was itself mislabeled (`…ignores_request_ordering…`) while asserting the opposite. The change is strictly more lenient and cannot mask a real conflict: any difference in the `custom_id`→content set still changes the hash.
+
+**Alternatives considered:** (1) Keep the order-sensitive hash — rejected, its `custom_id ↔ position` rationale doesn't hold for a position-independent API. (2) Drop `custom_id` from the hash entirely — rejected, it would wrongly collapse workloads that differ only in id assignment.
+
+**Reversibility:** Cheap. One `sorted(...)` in a single function; reverting restores the prior behavior. Escalated as a decision-revisit, so shipped as a **draft** PR for JT to confirm the semantics before merge.
+
+**Related issues:** #97

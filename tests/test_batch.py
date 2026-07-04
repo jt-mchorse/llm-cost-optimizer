@@ -129,19 +129,66 @@ def test_idempotency_different_keys_produce_different_jobs():
 
 
 def test_idempotency_payload_hash_ignores_request_ordering_inside_batch():
-    """Two batches with the same requests in a different order are semantically distinct.
+    """Reordering the same requests is the SAME logical batch — no conflict (D-013).
 
-    The payload hash is content-only and order-sensitive — we don't try
-    to canonicalize across orderings. That's a deliberate choice: a
-    caller who reorders their batch is materially submitting a
-    different workload (different custom_id ↔ position mapping).
+    The Batch API correlates results back to the caller by ``custom_id``
+    (see ``BatchResultRow``), not by row position, so a batch resubmitted
+    with the same ``custom_id``->content set in a different order is the
+    same workload. The payload hash is order-independent, so the reorder
+    returns the original job rather than raising a spurious
+    ``IdempotencyConflict``. (Revised from the prior order-sensitive
+    behavior; see issue #97 / D-013.)
     """
     backend = InMemoryBatchBackend()
     reqs = _make_requests(3)
-    backend.submit(reqs, idempotency_key="k-order")
+    j1 = backend.submit(reqs, idempotency_key="k-order")
     reordered = list(reversed(reqs))
+    j2 = backend.submit(reordered, idempotency_key="k-order")
+    assert j2.job_id == j1.job_id
+
+
+def test_idempotency_accepts_nondeterministic_iteration_order_retry():
+    """A retry of a batch built from a dict/set (non-deterministic order) is idempotent.
+
+    This is the exact false-conflict D-013 closes: the same
+    ``custom_id``->content mapping materialized in a different order (as
+    happens when a caller builds requests by iterating a ``dict``) must
+    return the original job, not fail the pipeline with a spurious
+    ``IdempotencyConflict``.
+    """
+    backend = InMemoryBatchBackend()
+    mapping = {
+        "a": "alpha content",
+        "b": "beta content",
+        "c": "gamma content",
+    }
+    first = [BatchRequest(custom_id=k, user=v, model="m") for k, v in mapping.items()]
+    # Simulate a different iteration order on retry.
+    second = [BatchRequest(custom_id=k, user=mapping[k], model="m") for k in ("c", "a", "b")]
+    j1 = backend.submit(first, idempotency_key="k-nondet")
+    j2 = backend.submit(second, idempotency_key="k-nondet")
+    assert j2.job_id == j1.job_id
+
+
+def test_idempotency_still_conflicts_on_changed_content():
+    """Order-independence must not mask a genuine payload change (D-013).
+
+    Sorting is strictly more lenient: any change to the
+    ``custom_id``->content set — here one request's content — still
+    changes the hash and must still raise ``IdempotencyConflict``.
+    """
+    backend = InMemoryBatchBackend()
+    reqs = [
+        BatchRequest(custom_id="a", user="original", model="m"),
+        BatchRequest(custom_id="b", user="unchanged", model="m"),
+    ]
+    backend.submit(reqs, idempotency_key="k-change")
+    mutated = [
+        BatchRequest(custom_id="a", user="EDITED", model="m"),
+        BatchRequest(custom_id="b", user="unchanged", model="m"),
+    ]
     with pytest.raises(IdempotencyConflict):
-        backend.submit(reordered, idempotency_key="k-order")
+        backend.submit(mutated, idempotency_key="k-change")
 
 
 # ----------------------------------------------------------------------

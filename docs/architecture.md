@@ -251,10 +251,18 @@ as separate workload modes — they don't mix in a single request.
   pre-constructed Anthropic client; the layer never imports the SDK.
   Surface is duck-typed against `client.messages.batches.*`.
 - **D-010.** Idempotency = caller key **plus** content hash (request
-  count, custom ids, prompts, model, max_tokens, system, order-sensitive).
+  count, custom ids, prompts, model, max_tokens, system).
   Same payload + same key → returns the existing job id (retry-safe).
   Different payload + same key → raises `IdempotencyConflict` (loud
   failure beats silent double-charging).
+- **D-013.** The content hash is **order-independent**: per-request
+  canonical entries are sorted by `custom_id` before hashing. The Batch
+  API correlates results by `custom_id`, not row position, so a batch
+  resubmitted in a different order (e.g. built by iterating a
+  `set`/`dict`) is the same logical workload and must not raise a
+  spurious conflict. Strictly more lenient — any change to the
+  `custom_id`→content set still changes the hash (revisits D-010's
+  implementation detail; D-010's contract is unchanged).
 - **D-003 (extended).** `compare_realtime_vs_batch` requires caller
   to supply prices — no defaults shipped. Multi-model workloads
   pass `model_of=lambda req: req.model`.
