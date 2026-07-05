@@ -850,3 +850,15 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** continue #55 propagation (chunking, prompt-regression-suite, vector-search-at-scale, agent-orchestration-platform, mcp-server-cookbook; TS: nextjs, ai-app — exported-name check).
+
+## 2026-07-05 — Issue #125: semantic cache served cross-model responses for long prompts (D-005 violation)
+**Duration:** ~35 min · **Branch:** `session/2026-07-05-1539-issue-125` · **PR:** #126
+
+- D-005 requires model-scoped cache entries so a Haiku response is never served to an Opus caller. But isolation was enforced only through the embedding: `_scoped_prompt` prepends `[model=<id>] ` before embedding, and `lookup` matched via `find_nearest` (pure vector NN, no model filter); `CacheRecord` had no `model` field. For an `n`-token prompt the two scoped vectors have cosine `(n-1)/n`, which crosses the 0.95 threshold at `n ≥ 20` — so a 32-token prompt cached under Haiku was served to an Opus caller (reproduced firsthand, sim 0.9773). The existing model-scoping test only used a 5-token prompt (cosine 0.80), so the long-prompt regime was uncovered.
+- Fixed by making model isolation a hard filter: added a `model` field to `CacheRecord` (set in `put`, round-tripped through Redis, default `""` for backward-compat) and gated the lookup hit on `record.model == model`. An identical same-model prompt embeds to ~1.0 and always wins `find_nearest` when present, so rejecting a cross-model nearest is a conservative miss (D-006-aligned), never a wrong-model hit. This fixes the implementation to honor the already-decided D-005 — it does not revisit it; benchmark-neutral. 468 → 469 passing, ruff clean.
+
+**Why this work, this session:** third issue of the DAY loop, and the strongest. Portfolio is deeply saturated (8 empty dogfood hunts across two waves), but a targeted "key/collision" lens — the same lens that surfaced the prompt-regression #107 anchor collision and chunking #108 loader-parity this run — found a real D-005 quality bug in the semantic cache. All three shipped fixes came from that lens or from re-examining hunter-dismissed "design choice" leads against objective invariants.
+
+**Open questions / blockers:** none — ready for review. Optional future enhancement noted in the PR (Protocol-level model filter in `find_nearest`).
+
+**Next session:** correctness surface is saturated; the productive vein is the key/collision + parity lens. The remaining open items are JT-gated decision-revisits (#71 vsas, #97 lco) and display-blocked demo captures.
