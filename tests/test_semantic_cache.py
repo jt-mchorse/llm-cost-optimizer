@@ -276,6 +276,33 @@ def test_model_scoped_keys_isolate_per_model():
     assert result.hit is False
 
 
+def test_long_prompt_does_not_hit_across_models():
+    # Issue #125: model isolation (D-005) must not rely on embedding separation.
+    # `_scoped_prompt` prepends `[model=...] `, but for an n-token prompt the two
+    # scoped vectors have cosine (n-1)/n, which crosses the 0.95 threshold at
+    # n >= 20 — so a long prompt cached under one model was served to a caller on
+    # a different model (a Haiku answer to an Opus caller). The lookup now
+    # hard-filters on the stored record's model, so a cross-model lookup misses
+    # regardless of prompt length, while the same-model lookup still hits.
+    long_prompt = (
+        "I placed an order last week for two items but only one arrived in the box "
+        "and I would like to know how to get a refund for the missing product please"
+    )
+    assert len(long_prompt.split()) >= 20  # in the regime where scoping washed out
+    cache, _ = _cache()
+    cache.put(long_prompt, "answer-haiku", model="claude-haiku-4-5")
+
+    cross = cache.lookup(long_prompt, model="claude-opus-4-7")
+    assert cross.hit is False  # D-005: no cross-model serve
+    assert cross.payload is None
+    # Similarity is reported (it was above threshold) but the result is a miss.
+    assert cross.similarity >= 0.95
+
+    same = cache.lookup(long_prompt, model="claude-haiku-4-5")
+    assert same.hit is True
+    assert same.payload == "answer-haiku"
+
+
 # Issue #104: `_make_key` hashed a bare `f"{model} {prompt}"`, whose space
 # delimiter lets the model/prompt boundary slide — so distinct pairs like
 # ("b c", "a") and ("c", "a b") collided on one key. Since storage keys records
