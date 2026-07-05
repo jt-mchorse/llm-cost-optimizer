@@ -158,6 +158,12 @@ class CacheRecord:
     payload: Any
     tags: frozenset[str]
     expires_at: float | None  # unix epoch; None = no expiry
+    # The model this entry was stored under. Lookup hard-filters on it (D-005)
+    # so model isolation does not depend on embedding separation, which washes
+    # out for long prompts (#125). Defaults to "" so Storage-level constructions
+    # and pre-#125 Redis blobs (which lack the field) stay backward-compatible —
+    # such a record only ever matches a lookup that also passes model="".
+    model: str = ""
 
 
 class Storage(Protocol):
@@ -286,6 +292,7 @@ class RedisStorage:
                 "payload": record.payload,
                 "tags": sorted(record.tags),
                 "expires_at": record.expires_at,
+                "model": record.model,
             }
         ).encode("utf-8")
         # b2a_base64 to keep bytes safe for any Redis-client encoding mode.
@@ -314,6 +321,9 @@ class RedisStorage:
             payload=data["payload"],
             tags=frozenset(data["tags"]),
             expires_at=data["expires_at"],
+            # `.get` for pre-#125 blobs written before the field existed; they
+            # decode with model="" and only match a lookup passing model="".
+            model=data.get("model", ""),
         )
 
     def find_nearest(self, vector: list[float]) -> tuple[CacheRecord, float] | None:
@@ -545,7 +555,18 @@ class SemanticCache:
             )
 
         record, similarity = best
-        if similarity >= self.similarity_threshold:
+        # D-005 hard guard: model isolation must not depend on embedding
+        # separation. `_scoped_prompt` prepends `[model=<id>] `, but for a prompt
+        # of ~20+ tokens that single differing bigram washes out below the 0.95
+        # threshold — cosine of the two scoped vectors is (n-1)/n — so `find_nearest`
+        # (pure vector NN, no model filter) could return a record stored under a
+        # *different* model and serve e.g. a Haiku response to an Opus caller, the
+        # exact quality bug D-005 forbids (#125). Require the matched record's model
+        # to equal the query model. An identical same-model prompt embeds to ~1.0
+        # and so always wins find_nearest when present, so rejecting a cross-model
+        # nearest is a *miss* (conservative, aligned with D-006 "false negatives are
+        # just cache misses"), never a wrong-model hit.
+        if similarity >= self.similarity_threshold and record.model == model:
             self.stats.hits += 1
             return CacheLookupResult(
                 hit=True,
@@ -587,6 +608,7 @@ class SemanticCache:
             payload=payload,
             tags=frozenset(tags),
             expires_at=expires_at,
+            model=model,
         )
         self.storage.put(record)
         return key
