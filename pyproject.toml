@@ -17,6 +17,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries",
+  "Typing :: Typed",
 ]
 
 # The cache-wrapper layer is intentionally dependency-free: the Anthropic
