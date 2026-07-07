@@ -862,3 +862,14 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review. Optional future enhancement noted in the PR (Protocol-level model filter in `find_nearest`).
 
 **Next session:** correctness surface is saturated; the productive vein is the key/collision + parity lens. The remaining open items are JT-gated decision-revisits (#71 vsas, #97 lco) and display-blocked demo captures.
+
+## 2026-07-06 — Issue #127: ship a PEP 561 `py.typed` marker for `cost_optimizer`
+**Duration:** ~20 min · **Branch:** `session/2026-07-06-2317-issue-127` · **PR:** #128
+
+- `cost_optimizer` is heavily type-hinted (6 of 7 modules) and the README markets it as embeddable inside sibling portfolio repos, but it shipped no PEP 561 `py.typed` marker — so any downstream `pip install` + mypy/pyright treated `import cost_optimizer` as untyped and lost every annotation. Added an empty `cost_optimizer/py.typed`, the `Typing :: Typed` trove classifier, and a two-axis regression test (marker is a packaged resource + classifier present). Verified firsthand that `python -m build --wheel` includes the marker (hatchling ships tracked package files by default). 471 passing, ruff clean.
+
+**Why this work, this session:** the correctness surface is saturated — five fresh-lens dogfood hunts this run all came back empty (nextjs config-parity, chunking boundaries, lco cost-arithmetic, prs+aop artifact-drift, ems+vsas artifact-drift, all firsthand-verified). Pivoted to an objective packaging-correctness sweep and found a real distribution defect: all six Python library packages lack a `py.typed` marker despite being heavily typed.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** apply the same `py.typed` fix to `llm-eval-harness` (the flagship imported-by-everything repo — rag-production-kit has a real committed git dep on `eval-harness`, so the gap bites a consumer today). Do NOT PR the marker for ems/vsas/prs/chunking — those aren't imported as libraries by siblings, so it would be sibling-churn.
