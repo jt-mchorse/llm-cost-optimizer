@@ -34,6 +34,9 @@ dev = [
   # Powers tests/test_workflows_yaml_parseable.py (#56), the inverse
   # safety net for the 21-day silent CI outage closed in portfolio-ops#27.
   "pyyaml>=6.0",
+  # Type-checks the annotations shipped via py.typed (#127) so they can't
+  # silently drift from the code; gated in CI and tests/test_mypy_clean.py (#129).
+  "mypy>=1.10",
 ]
 # Bring your own SDK at the call site; not required to import this package.
 anthropic = ["anthropic>=0.39"]
@@ -59,6 +62,22 @@ addopts   = "-ra -q"
 # real budget. The integration workflow targets the directory directly
 # via `pytest tests/integration`.
 norecursedirs = ["tests/integration"]
+
+[tool.mypy]
+# Non-strict baseline gate (#129, D-014; mirrors llm-eval-harness D-016).
+# Keeps the shipped py.typed annotations (#127) honest against the code
+# without full strictness — tightening is a follow-up. No blanket
+# ignore_missing_imports, so a mistyped import still surfaces; the only
+# external import is the optional `redis` SDK, handled by the override
+# below (so it stays clean whether or not the `redis` extra is installed).
+python_version = "3.11"
+files = ["cost_optimizer"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = "redis.*"
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
