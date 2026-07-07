@@ -108,3 +108,13 @@
   reversibility: cheap
   related_issues: [5]
   superseded_by: null
+
+- id: D-014
+  date: 2026-07-07
+  decision: non_strict_mypy_gate_as_baseline_strictness_bar
+  rationale: py_typed_127_ships_annotations_downstream_but_nothing_machine_checked_them_here_so_they_could_silently_drift_non_strict_baseline_keeps_them_honest_without_full_strict_churn_no_blanket_ignore_missing_imports_so_typod_imports_surface_per_module_override_only_for_optional_redis_sdk_5_semantic_cache_errors_were_redis_response_t_awaitable_union_stub_noise_resolved_with_narrow_casts_at_storage_boundary_sync_client_never_takes_async_arm_mirrors_llm_eval_harness_d_016
+  alternatives_rejected: [full_strict_mode_now, blanket_ignore_missing_imports, blanket_type_ignore_on_redis_calls_instead_of_casts, pyright_instead_of_mypy]
+  reversibility: cheap
+  related_issues: [#127, #129]
+  superseded_by: null
+  # note: D-013 intentionally reserved for the in-flight #97 batch-idempotency decision-revisit (draft PR #124); used next free id D-014 to avoid collision

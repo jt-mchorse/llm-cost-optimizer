@@ -873,3 +873,16 @@ JSON` expander only.
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** apply the same `py.typed` fix to `llm-eval-harness` (the flagship imported-by-everything repo — rag-production-kit has a real committed git dep on `eval-harness`, so the gap bites a consumer today). Do NOT PR the marker for ems/vsas/prs/chunking — those aren't imported as libraries by siblings, so it would be sibling-churn.
+
+## 2026-07-07 — Issue #129: Non-strict mypy gate for cost_optimizer
+**Duration:** ~40 min · **Branch:** `session/2026-07-07-0315-issue-129`
+
+- Added a non-strict `mypy` gate (`[tool.mypy]` in `pyproject.toml`, `mypy` in the `dev` extra, a step in the `ci.yml` lint job, and `tests/test_mypy_clean.py` locking it) so the annotations shipped via the #127 `py.typed` marker can't silently drift.
+- Resolved all 5 `semantic_cache.py` errors — redis-py's `ResponseT = Awaitable[Any] | Any` command-return stub noise — with narrow `cast()`s at each storage-boundary call (the sync `redis.Redis` client never takes the async arm), plus dropped a now-redundant import ignore. Casts stay non-redundant even against the real redis stubs.
+- Config declines a blanket `ignore_missing_imports` (typo'd imports still surface) and scopes a per-module override to the optional `redis` SDK — verified clean both with and without it installed. Full suite: 472 passed.
+
+**Why this work, this session:** Objective, pre-filed follow-up (#129), sibling to `llm-eval-harness#148`; the gate is the machine-checked half of the "annotations are honest" contract.
+
+**Open questions / blockers:** none.
+
+**Next session:** Both priority-tier mypy-gate siblings shipped this run; the other 4 Python library packages' py.typed gaps remain cosmetic per the py.typed lens.

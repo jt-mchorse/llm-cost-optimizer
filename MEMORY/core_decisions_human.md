@@ -161,3 +161,18 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. Swapping the workload generator is one function (`_build_workload`); the strategy runners and the JSON schema are workload-agnostic. The operator can add a real-API mode by replacing the stub adapters with real ones — the script's flag is already there, it just refuses to run today.
 
 **Related issues:** #5
+
+## D-014 — Non-strict mypy gate as the baseline strictness bar (2026-07-07)
+**Decision:** Adopt a non-strict `mypy` gate for `cost_optimizer` as the baseline strictness bar, wired into CI (`ci.yml` lint job) and locked by `tests/test_mypy_clean.py`. Config in `pyproject.toml` `[tool.mypy]`: no blanket `ignore_missing_imports`, a per-module override for the optional `redis` SDK only, and `warn_unused_ignores` + `warn_redundant_casts` on. (Note: D-013 is intentionally reserved for the in-flight #97 batch-idempotency decision-revisit on draft PR #124, so this took the next free id, D-014.)
+
+**Why:** #127 shipped a `py.typed` marker so `cost_optimizer`'s annotations are visible to downstream type-checkers, but nothing machine-checked them in this repo — they could silently drift. A gate keeps them honest. Non-strict is the right starting bar: the 5 pre-existing errors were all redis-py `ResponseT` (`Awaitable[Any] | Any`) stub-noise in `semantic_cache.py`, resolved with narrow `cast()`s at the storage boundary (the sync `redis.Redis` client never takes the async arm) — no correctness bugs needing strict-mode machinery. Declining the blanket `ignore_missing_imports` keeps a mistyped import surfacing; the per-module override scoped to `redis.*` handles the one genuinely-optional dependency and, being config rather than an inline ignore, stays clean whether or not the `redis` extra is installed (verified both ways). Mirrors the sibling gate landed the same session in `llm-eval-harness` (D-016).
+
+**Alternatives considered:**
+- Full strict mode now — rejected; churn without correctness value. Tightening is a follow-up.
+- Blanket `ignore_missing_imports = true` — rejected; would silently swallow a typo'd import. Only `redis` needs the escape hatch, so a per-module override is more precise.
+- Blanket `# type: ignore` on the redis calls instead of casts — rejected; the issue explicitly preferred narrow `cast()`s, which assert the real sync-client return contract rather than suppressing the error.
+- pyright instead of mypy — rejected; mypy is the portfolio convention and installs cleanly into the existing `dev` extra.
+
+**Reversibility:** Cheap. The strictness bar is a few config lines; tighten or swap the checker in a follow-up.
+
+**Related issues:** #127, #129
