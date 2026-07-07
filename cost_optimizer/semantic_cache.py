@@ -29,7 +29,7 @@ import time
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 from cost_optimizer.io_utils import atomic_write_text
 
@@ -250,7 +250,7 @@ class RedisStorage:
     ) -> None:
         if client is None:
             try:
-                import redis  # type: ignore[import-not-found]
+                import redis
             except ImportError as e:
                 raise ImportError(
                     "RedisStorage requires the optional 'redis' extra. "
@@ -307,7 +307,10 @@ class RedisStorage:
         import json
         from binascii import a2b_base64
 
-        raw = self.client.get(redis_key)
+        # `self.client` is a *sync* redis.Redis; redis-py's type stubs give
+        # every command a `ResponseT = Awaitable[Any] | Any` return, so the
+        # never-taken async arm is cast away at each storage-boundary call.
+        raw = cast("bytes | str | None", self.client.get(redis_key))
         if raw is None:
             return None
         # Decode; Redis client may return bytes or str depending on `decode_responses`.
@@ -331,7 +334,9 @@ class RedisStorage:
         cursor = 0
         match = f"{self.key_prefix}:*"
         while True:
-            cursor, keys = self.client.scan(cursor=cursor, match=match)
+            cursor, keys = cast(
+                "tuple[int, list[bytes]]", self.client.scan(cursor=cursor, match=match)
+            )
             for k in keys:
                 record = self._load(k.decode("utf-8") if isinstance(k, bytes) else k)
                 if record is None:
@@ -344,11 +349,11 @@ class RedisStorage:
         return best
 
     def invalidate_by_tag(self, tag: str) -> int:
-        members = self.client.smembers(self._tag_key(tag)) or set()
+        members = cast("set[bytes]", self.client.smembers(self._tag_key(tag))) or set()
         count = 0
         for member in members:
             key = member.decode("utf-8") if isinstance(member, bytes) else member
-            if self.client.delete(self._record_key(key)) > 0:
+            if cast("int", self.client.delete(self._record_key(key))) > 0:
                 count += 1
         self.client.delete(self._tag_key(tag))
         return count
@@ -364,7 +369,9 @@ class RedisStorage:
         match = f"{self.key_prefix}:*"
         count = 0
         while True:
-            cursor, keys = self.client.scan(cursor=cursor, match=match)
+            cursor, keys = cast(
+                "tuple[int, list[bytes]]", self.client.scan(cursor=cursor, match=match)
+            )
             count += len(keys)
             if cursor == 0:
                 break

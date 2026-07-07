@@ -298,6 +298,13 @@ drift apart.
   proves the plumbing and the math; an operator runs against real
   data and commits `docs/savings_real.md`. Same posture as
   `tune_threshold.py` — no fabricated benchmarks (handoff §10).
+- **D-014.** The annotations shipped via the `py.typed` marker (#127)
+  are machine-checked by a non-strict `mypy` gate run in CI's lint job
+  and locked by `tests/test_mypy_clean.py`, so they can't silently
+  drift from the code. The `semantic_cache.py` redis calls use narrow
+  `cast()`s at the storage boundary (redis-py's `Awaitable | T` sync/async
+  union); the optional `redis` SDK is the one per-module override.
+  (D-013 is reserved for the in-flight #97 batch-idempotency revisit.)
 
 ---
 
