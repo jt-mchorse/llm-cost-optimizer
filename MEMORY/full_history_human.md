@@ -886,3 +886,13 @@ JSON` expander only.
 **Open questions / blockers:** none.
 
 **Next session:** Both priority-tier mypy-gate siblings shipped this run; the other 4 Python library packages' py.typed gaps remain cosmetic per the py.typed lens.
+
+## 2026-07-07 — Issue #131: isolate InMemoryStorage payloads (cache poisoning) (~35 min)
+
+**What got done.** `SemanticCache.lookup(...)` returned the cached payload by reference on the default `InMemoryStorage` backend, so a consumer mutating a returned payload (a natural pattern — appending to a citations/`refs` list, tagging) poisoned the committed cache entry served to every later hit, including semantically-similar prompts that match the same record (`r2.payload is r1.payload` was `True`). `RedisStorage` was immune because it json.dumps the payload on `put` and reconstructs a fresh object per read, isolating both seams; only the dep-free in-memory default leaked the live reference. Fixed by making `InMemoryStorage` deep-copy the payload on `put` (ingress) and `find_nearest` (egress), mirroring Redis's serialize/deserialize isolation — `vector`/`tags` are already immutable, so only `payload` needs copying. Added storage-level and public-API lock tests for both seams (incl. the semantically-similar-hit poisoning path) and an over-rejection guard. Full suite green, ruff clean. PR #132.
+
+**Why prioritized.** Second issue of a DAY multi-issue loop; the static queue was exhausted so work came from parallel fresh-lens dogfood hunts. Five lens families were empty across the run (metric/ratio formulas, sort/ordering, threshold operators, CLI/config-default drift, error-contract on the TS/API repos) before the shared-mutable-state-aliasing lens surfaced this on the highest-value target (the semantic cache). The tell: a repo with two storage backends where the serializing one (Redis) hides the aliasing bug and implicitly documents the expected isolation — the by-reference in-memory default breaks parity. Reproduced firsthand before filing and fixing.
+
+**Open questions / blockers.** None — ready for review.
+
+**Next session:** lco semantic-cache payload isolation is now at Redis parity. The async-pipelines `attach_speedup extra` alias is a known below-bar defensive-copy gap (to_dict already copies, no consumer mutates) — don't churn it.
