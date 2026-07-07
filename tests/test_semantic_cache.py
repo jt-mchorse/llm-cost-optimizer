@@ -209,6 +209,38 @@ def test_inmemory_purge_expired():
 
 
 # ----------------------------------------------------------------------
+# #131: InMemoryStorage must isolate payloads from caller-held references at
+# both seams, mirroring the json.dumps/json.loads isolation RedisStorage already
+# provides. Otherwise a caller mutating a payload it put — or a payload it got
+# back from find_nearest — corrupts the committed entry served to later reads.
+# ----------------------------------------------------------------------
+
+
+def test_inmemory_put_isolates_payload_from_caller_ingress():
+    s = InMemoryStorage()
+    payload = {"answer": "orig", "refs": [1]}
+    s.put(_record("a", [1.0, 0.0], payload=payload))
+    payload["answer"] = "MUT"
+    payload["refs"].append(2)
+    best = s.find_nearest([1.0, 0.0])
+    assert best is not None
+    assert best[0].payload == {"answer": "orig", "refs": [1]}
+
+
+def test_inmemory_find_nearest_isolates_payload_on_egress():
+    s = InMemoryStorage()
+    s.put(_record("a", [1.0, 0.0], payload={"answer": "orig", "refs": [1]}))
+    first = s.find_nearest([1.0, 0.0])
+    assert first is not None
+    first[0].payload["answer"] = "POISONED"
+    first[0].payload["refs"].append(999)
+    second = s.find_nearest([1.0, 0.0])
+    assert second is not None
+    assert second[0].payload == {"answer": "orig", "refs": [1]}
+    assert second[0].payload is not first[0].payload
+
+
+# ----------------------------------------------------------------------
 # SemanticCache orchestration
 # ----------------------------------------------------------------------
 
@@ -266,6 +298,40 @@ def test_clearly_different_lookup_misses():
     assert result.payload is None
     # Similarity returned in the result for telemetry, even on miss.
     assert 0.0 <= result.similarity < 0.5
+
+
+# #131: the reported bug end-to-end through the public API — mutating a payload
+# returned by `lookup` must not poison a later cache hit, including a
+# semantically-similar prompt that matches the same record.
+def test_lookup_payload_mutation_does_not_poison_later_hit():
+    cache, _ = _cache(threshold=0.7)
+    cache.put("how do I refund a charge", {"answer": "A", "refs": [1]}, model="claude-haiku-4-5")
+
+    first = cache.lookup("how do I refund a charge", model="claude-haiku-4-5")
+    assert first.hit is True
+    first.payload["answer"] = "POISONED"
+    first.payload["refs"].append(999)
+
+    # A later exact hit, and a semantically-similar hit, both see the pristine value.
+    exact = cache.lookup("how do I refund a charge", model="claude-haiku-4-5")
+    similar = cache.lookup("how do I refund a purchase", model="claude-haiku-4-5")
+    assert exact.hit is True
+    assert similar.hit is True
+    assert exact.payload == {"answer": "A", "refs": [1]}
+    assert similar.payload == {"answer": "A", "refs": [1]}
+
+
+# #131: symmetric ingress — mutating a payload after `put` must not corrupt the
+# stored entry a later lookup returns.
+def test_put_payload_mutation_does_not_corrupt_stored_entry():
+    cache, _ = _cache()
+    payload = {"answer": "A", "refs": [1]}
+    cache.put("how do I refund a charge", payload, model="claude-haiku-4-5")
+    payload["answer"] = "MUT"
+    payload["refs"].append(2)
+    result = cache.lookup("how do I refund a charge", model="claude-haiku-4-5")
+    assert result.hit is True
+    assert result.payload == {"answer": "A", "refs": [1]}
 
 
 def test_model_scoped_keys_isolate_per_model():

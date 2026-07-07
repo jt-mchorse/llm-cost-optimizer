@@ -22,6 +22,7 @@ entries it touches without forcing a full flush.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import math
@@ -194,7 +195,14 @@ class InMemoryStorage:
         self._records: dict[str, CacheRecord] = {}
 
     def put(self, record: CacheRecord) -> None:
-        self._records[record.key] = record
+        # Isolate the payload from the caller's live reference on ingress, so a
+        # caller that mutates the object it passed to `SemanticCache.put` can't
+        # retroactively corrupt the stored entry. `RedisStorage.put` gets this
+        # for free by json.dumps-ing the payload; the dep-free in-memory backend
+        # (the default) otherwise held the exact object by reference (#131).
+        # vector (tuple) / tags (frozenset) are already immutable — only the
+        # arbitrary payload needs the copy.
+        self._records[record.key] = replace(record, payload=copy.deepcopy(record.payload))
 
     def find_nearest(self, vector: list[float]) -> tuple[CacheRecord, float] | None:
         if not self._records:
@@ -204,7 +212,15 @@ class InMemoryStorage:
             sim = cosine(vector, list(r.vector))
             if best is None or sim > best[1]:
                 best = (r, sim)
-        return best
+        if best is None:
+            return None
+        # Isolate on egress too, mirroring RedisStorage._load which reconstructs
+        # a fresh object from JSON on every read. Without this a caller mutating
+        # `lookup(...).payload` (e.g. appending to a citations list) would poison
+        # the committed cache entry served to every later hit, including
+        # semantically-similar prompts that match the same record (#131).
+        record, sim = best
+        return replace(record, payload=copy.deepcopy(record.payload)), sim
 
     def invalidate_by_tag(self, tag: str) -> int:
         to_drop = [k for k, r in self._records.items() if tag in r.tags]
