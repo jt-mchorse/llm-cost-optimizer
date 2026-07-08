@@ -171,8 +171,19 @@ class Storage(Protocol):
     """Persistence + nearest-vector + tag-membership operations."""
 
     def put(self, record: CacheRecord) -> None: ...
-    def find_nearest(self, vector: list[float]) -> tuple[CacheRecord, float] | None:
-        """Return (best_record, best_similarity) or None if store is empty."""
+    def find_nearest(
+        self, vector: list[float], *, model: str | None = None
+    ) -> tuple[CacheRecord, float] | None:
+        """Return (best_record, best_similarity) or None if no record matches.
+
+        When ``model`` is given, records stored under a *different* model are
+        excluded from the search entirely (D-005). This must be a
+        selection-time filter, not a post-filter on the single global best:
+        a higher-cosine cross-model record would otherwise mask a valid,
+        above-threshold same-model record and turn a legitimate hit into a
+        miss (#133). ``model=None`` (the default) scans every record, so
+        direct callers and pre-#133 code keep their behavior.
+        """
 
     def invalidate_by_tag(self, tag: str) -> int:
         """Drop every record tagged `tag`. Return count dropped."""
@@ -204,11 +215,18 @@ class InMemoryStorage:
         # arbitrary payload needs the copy.
         self._records[record.key] = replace(record, payload=copy.deepcopy(record.payload))
 
-    def find_nearest(self, vector: list[float]) -> tuple[CacheRecord, float] | None:
+    def find_nearest(
+        self, vector: list[float], *, model: str | None = None
+    ) -> tuple[CacheRecord, float] | None:
         if not self._records:
             return None
         best: tuple[CacheRecord, float] | None = None
         for r in self._records.values():
+            # Selection-time model filter (D-005/#133): a cross-model record
+            # must never be *considered*, so it can't outscore and mask a
+            # valid same-model candidate.
+            if model is not None and r.model != model:
+                continue
             sim = cosine(vector, list(r.vector))
             if best is None or sim > best[1]:
                 best = (r, sim)
@@ -345,7 +363,9 @@ class RedisStorage:
             model=data.get("model", ""),
         )
 
-    def find_nearest(self, vector: list[float]) -> tuple[CacheRecord, float] | None:
+    def find_nearest(
+        self, vector: list[float], *, model: str | None = None
+    ) -> tuple[CacheRecord, float] | None:
         best: tuple[CacheRecord, float] | None = None
         cursor = 0
         match = f"{self.key_prefix}:*"
@@ -356,6 +376,13 @@ class RedisStorage:
             for k in keys:
                 record = self._load(k.decode("utf-8") if isinstance(k, bytes) else k)
                 if record is None:
+                    continue
+                # Selection-time model filter (D-005/#133), mirroring
+                # InMemoryStorage: skip cross-model records so they can't mask
+                # a valid same-model candidate. Client-side over SCAN — a
+                # server-side pre-filter would need a RediSearch index (out of
+                # scope, per the class docstring).
+                if model is not None and record.model != model:
                     continue
                 sim = cosine(vector, list(record.vector))
                 if best is None or sim > best[1]:
@@ -570,7 +597,24 @@ class SemanticCache:
 
         vector = self.embedder.embed(self._scoped_prompt(prompt, model))
         _validate_embedding(vector, where="lookup embedder")
-        best = self.storage.find_nearest(vector)
+        # D-005 hard guard: model isolation must not depend on embedding
+        # separation. `_scoped_prompt` prepends `[model=<id>] `, but for a prompt
+        # of ~20+ tokens that single differing bigram washes out below the 0.95
+        # threshold — cosine of the two scoped vectors is (n-1)/n — so an
+        # unfiltered vector NN could return a record stored under a *different*
+        # model and serve e.g. a Haiku response to an Opus caller (#125).
+        #
+        # Scope the search to the query model (#133): the filter must run at
+        # *selection* time, inside `find_nearest`, not as a post-filter on the
+        # single global best. Post-filtering (the pre-#133 approach) failed when
+        # a higher-cosine cross-model record outscored a valid, above-threshold
+        # same-model record — `find_nearest` returned the cross-model record, the
+        # `record.model == model` post-check rejected it, and a legitimate hit
+        # was silently reported as a miss, masking the same-model runner-up. With
+        # a selection-time filter the cross-model record is never considered, so
+        # a same-model record above the threshold always wins when present. The
+        # `record.model == model` assertion below is now belt-and-suspenders.
+        best = self.storage.find_nearest(vector, model=model)
         if best is None:
             self.stats.misses += 1
             return CacheLookupResult(
@@ -578,17 +622,6 @@ class SemanticCache:
             )
 
         record, similarity = best
-        # D-005 hard guard: model isolation must not depend on embedding
-        # separation. `_scoped_prompt` prepends `[model=<id>] `, but for a prompt
-        # of ~20+ tokens that single differing bigram washes out below the 0.95
-        # threshold — cosine of the two scoped vectors is (n-1)/n — so `find_nearest`
-        # (pure vector NN, no model filter) could return a record stored under a
-        # *different* model and serve e.g. a Haiku response to an Opus caller, the
-        # exact quality bug D-005 forbids (#125). Require the matched record's model
-        # to equal the query model. An identical same-model prompt embeds to ~1.0
-        # and so always wins find_nearest when present, so rejecting a cross-model
-        # nearest is a *miss* (conservative, aligned with D-006 "false negatives are
-        # just cache misses"), never a wrong-model hit.
         if similarity >= self.similarity_threshold and record.model == model:
             self.stats.hits += 1
             return CacheLookupResult(
