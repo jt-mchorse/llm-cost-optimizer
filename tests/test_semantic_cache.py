@@ -361,12 +361,73 @@ def test_long_prompt_does_not_hit_across_models():
     cross = cache.lookup(long_prompt, model="claude-opus-4-7")
     assert cross.hit is False  # D-005: no cross-model serve
     assert cross.payload is None
-    # Similarity is reported (it was above threshold) but the result is a miss.
-    assert cross.similarity >= 0.95
+    # Since #133 the model filter runs at *selection* time inside find_nearest,
+    # so the cross-model record is excluded from the search entirely and the
+    # reported similarity reflects the best *same-model* candidate — here none,
+    # so a clean 0.0. (Pre-#133 this reported the rejected cross-model record's
+    # >= 0.95 similarity, which was misleading telemetry.)
+    assert cross.similarity == 0.0
 
     same = cache.lookup(long_prompt, model="claude-haiku-4-5")
     assert same.hit is True
     assert same.payload == "answer-haiku"
+
+
+def test_cross_model_record_does_not_mask_same_model_hit():
+    # Issue #133 (follow-up to #125): the #125 fix post-filtered the single
+    # global-best from find_nearest on `record.model == model`. That fails when
+    # a higher-cosine record stored under a DIFFERENT model outscores a valid,
+    # above-threshold record stored under the QUERY's model: find_nearest
+    # returned the cross-model record, the post-check rejected it, and a
+    # legitimate same-model hit was silently reported as a miss. The model
+    # filter now runs at *selection* time inside find_nearest, so a cross-model
+    # record can never mask a same-model candidate.
+    emb = HashEmbedder(ngram=2)
+    store = InMemoryStorage()
+    cache = SemanticCache(embedder=emb, storage=store, similarity_threshold=0.95)
+
+    # Long prompt so the single model-prefix bigram washes out: the cross-model
+    # exact-match record scores higher than the same-model near-match record,
+    # yet both are above the 0.95 threshold.
+    base = " ".join(f"w{i}" for i in range(60))
+    near_same_model = base + " extra tail token"
+    cache.put(base, "HAIKU-ANSWER", model="claude-haiku-4-5")  # higher cosine, wrong model
+    cache.put(near_same_model, "OPUS-ANSWER", model="claude-opus-4-8")  # valid same-model hit
+
+    res = cache.lookup(base, model="claude-opus-4-8")
+    assert res.hit is True  # pre-#133 this was a spurious miss
+    assert res.payload == "OPUS-ANSWER"
+    assert res.similarity >= 0.95
+
+    # The cross-model record is still never served to the wrong model (D-005):
+    # a haiku caller for a prompt only cached under opus must still miss.
+    only_opus = " ".join(f"z{i}" for i in range(60))
+    cache.put(only_opus, "OPUS-ONLY", model="claude-opus-4-8")
+    assert cache.lookup(only_opus, model="claude-haiku-4-5").hit is False
+
+
+def test_find_nearest_model_filter_excludes_cross_model_records():
+    # Unit-level guard on the selection-time filter added in #133: a record
+    # stored under a different model is not even a candidate.
+    store = InMemoryStorage()
+    store.put(
+        CacheRecord(
+            key="k-haiku",
+            vector=(1.0, 0.0),
+            payload="haiku",
+            tags=frozenset(),
+            expires_at=None,
+            model="claude-haiku-4-5",
+        )
+    )
+    # No model filter → the record is the nearest.
+    assert store.find_nearest([1.0, 0.0]) is not None
+    # Filtering on a different model → excluded → no candidate.
+    assert store.find_nearest([1.0, 0.0], model="claude-opus-4-8") is None
+    # Filtering on the matching model → returned.
+    matched = store.find_nearest([1.0, 0.0], model="claude-haiku-4-5")
+    assert matched is not None
+    assert matched[0].key == "k-haiku"
 
 
 # Issue #104: `_make_key` hashed a bare `f"{model} {prompt}"`, whose space
