@@ -21,6 +21,37 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
+
+
+def _coerce_token_count(value: Any) -> int:
+    """Best-effort non-negative ``int`` token count from a usage field.
+
+    Token usage is best-effort observability accounting, gathered *after* a
+    request (``messages.create`` in the cache wrapper, a completed batch row in
+    ``batch.py``) has already produced a valid response. A malformed usage
+    field must therefore **abstain** (→ ``0``) rather than crash and destroy
+    that successful response — the same "abstain, don't crash on malformed SDK
+    shapes" contract #94/#106/#112 set for ``_extract_text`` and the logprob
+    extractor, and #114 set for the cache-wrapper usage tokens.
+
+    The bare ``int(value or 0)`` this replaces crashed on a present-but-
+    malformed value: ``int(NaN)`` → ``ValueError``, ``int(inf)`` →
+    ``OverflowError``, ``int("abc")`` → ``ValueError``. A finite, non-negative
+    numeric (including a numeric string like ``"5"``) still coerces to ``int``
+    unchanged; ``None``/falsy → ``0``; anything non-coercible or negative
+    abstains to ``0`` (a negative token count is malformed and would otherwise
+    poison ``tokens_cached`` / ``dollars_saved`` and the batch token totals).
+
+    Lives here in the shared token-domain module so the cache wrapper (#114)
+    and the batch-result parser (#136) share one implementation rather than
+    diverging.
+    """
+    try:
+        n = int(value or 0)
+    except (TypeError, ValueError, OverflowError):
+        return 0
+    return n if n >= 0 else 0
 
 
 @dataclass(frozen=True)
