@@ -358,6 +358,61 @@ def test_extract_logprobs_abstains_on_non_finite_nested_sdk_shape() -> None:
     assert reading.trip is False
 
 
+@pytest.mark.parametrize("bad", ["high", "n/a", object()])
+def test_extract_logprobs_abstains_on_non_numeric_direct(bad: object) -> None:
+    # #140: a present-but-non-numeric element off an adapter-set / BYO distribution
+    # (a string label, a JSON-decoded string, any object float() can't accept)
+    # raised ValueError/TypeError straight out of measure()/route(). Abstain like
+    # the None (#106) and non-finite (#95) branches — sibling of the judge-score
+    # coercion guard (#138/#139). A numeric string still parses (below).
+    assert (
+        _extract_first_token_logprobs(FakeResponse(first_token_logprobs=[math.log(0.5), bad]))
+        is None
+    )
+    reading = EntropySignal(threshold=0.5).measure(
+        FakeResponse(first_token_logprobs=[math.log(0.5), bad])
+    )
+    assert reading.value is None
+    assert reading.trip is False
+
+
+def test_extract_logprobs_parses_numeric_string_direct() -> None:
+    # The non-numeric abstain must not reject a numeric string — float("0.9")
+    # still parses, mirroring the judge-score guard's numeric-string case (#139).
+    out = _extract_first_token_logprobs(
+        FakeResponse(first_token_logprobs=["-0.6931471805599453", math.log(0.5)])
+    )
+    assert out == [pytest.approx(math.log(0.5)), pytest.approx(math.log(0.5))]
+
+
+def test_extract_logprobs_abstains_on_non_numeric_nested_sdk_shape() -> None:
+    # Same present-but-non-numeric abstain on the nested SDK path (#140): a
+    # string logprob field off a malformed node must not crash the extraction.
+    class Block:
+        type = "text"
+        logprobs = [{"top_logprobs": [{"logprob": math.log(0.5)}, {"logprob": "n/a"}]}]
+
+    class SdkResponse:
+        content = [Block()]
+
+    assert _extract_first_token_logprobs(SdkResponse()) is None
+    reading = EntropySignal(threshold=0.5).measure(SdkResponse())
+    assert reading.value is None
+    assert reading.trip is False
+
+
+def test_route_survives_non_numeric_logprob_and_stays_cheap() -> None:
+    # The whole point: a non-numeric logprob element must not abort the routing
+    # decision. route() completes, abstains on the malformed entropy signal, and
+    # keeps the completed cheap-model call (#140).
+    adapter = StubAdapter(response=FakeResponse(first_token_logprobs=[math.log(0.5), "high"]))
+    router = _make_router(adapter, signals=[EntropySignal(threshold=0.5)])
+    decision = router.route({"prompt": "anything"})
+    assert isinstance(decision, RouterDecision)
+    assert decision.model_id == "claude-haiku-4-5"
+    assert decision.signal_values["entropy"] is None
+
+
 def test_entropy_handles_sdk_shape_with_content_blocks() -> None:
     # Mimic the SDK-style nested logprobs payload: response.content[0]
     # is a block; block.logprobs[0].top_logprobs is a list of dicts

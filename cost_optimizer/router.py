@@ -221,7 +221,18 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
         # `measure`'s value=None ⟹ not-trip rule (#82, #73). (#106)
         if any(v is None for v in direct):
             return None
-        floats = [float(v) for v in direct]
+        # A present-but-non-numeric element — a string label, a JSON-decoded
+        # string, or any object float() can't accept — off an adapter-set or
+        # BYO distribution raised ValueError/TypeError straight out of measure()
+        # and route(), aborting the whole routing decision for a completed
+        # cheap-model call. Abstain instead, the same "no usable value" posture
+        # as the None (#106) and non-finite (#95) branches — the exact sibling of
+        # the judge-score coercion guard (#138/#139). A numeric string ("0.9")
+        # still parses. (#140)
+        try:
+            floats = [float(v) for v in direct]
+        except (TypeError, ValueError):
+            return None
         # A non-finite (NaN/±Inf) logprob — a numerically unstable or malformed
         # SDK distribution — slips `_shannon_entropy_nats`'s `total <= 0` guard
         # (`NaN <= 0` is False), so the entropy silently reads 0.0 and the
@@ -250,7 +261,13 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
                 values = [_read_field(v, "logprob") for v in top_logprobs]
                 if any(lp is None for lp in values):
                     return None
-                floats = [float(lp) for lp in values]
+                # Same present-but-non-numeric abstain as the direct path above
+                # (#140): a string/object logprob field off a malformed SDK node
+                # would crash float() and abort route(); abstain instead.
+                try:
+                    floats = [float(lp) for lp in values]
+                except (TypeError, ValueError):
+                    return None
                 # Same finiteness abstain as the direct path above (#95): a
                 # present-but-non-finite logprob would read entropy 0.0 and
                 # suppress escalation, so abstain rather than measure corrupt data.
