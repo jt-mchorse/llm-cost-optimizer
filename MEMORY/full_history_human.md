@@ -906,3 +906,15 @@ JSON` expander only.
 **Open questions / blockers.** None — ready for review. No core decision: this completes D-005 (hard model isolation), it doesn't change it.
 
 **Next session:** Also spotted (not yet filed) — `batch.py::_from_sdk_batch` sums `n_requests` over only processing/succeeded/errored/canceled and omits Anthropic's `request_counts.expired` field, an undercount on the operator-only Anthropic-backed path. Low severity; file priority:low if it holds up. New lens: when a hardening fix uses a *post-filter* on a single "best" candidate, check whether a higher-ranked *rejected* candidate can mask a valid lower-ranked one (selection-time vs post-filter gap).
+
+## 2026-07-10 — Issue #136: batch usage-token abstain parity with #114 (~30 min, night)
+
+**What got done.** `_from_sdk_result_row` (`batch.py:483`) read batch-result usage tokens with the bare `int(getattr(usage, ..., 0) or 0)` pattern that #114 replaced with `_coerce_token_count` in the cache wrapper — the unfixed sibling of that class. A present-but-malformed usage token on one succeeded row (NaN→ValueError, inf→OverflowError, "abc"→ValueError, negative→poisoned totals) raised out of the parse and, because `results()` maps every row through `_from_sdk_result_row`, destroyed retrieval of the whole completed batch — a worse shape than the single-call #114 crash. Verified firsthand.
+
+Relocated the canonical `_coerce_token_count` to the shared token-domain module `pricing.py` (already imports `math`, already imported by `cache_wrapper`) and re-imported it into `cache_wrapper`'s namespace so its existing call sites and tests are unaffected; `batch.py` imports it too and routes both token reads through it. Relocating rather than duplicating prevents this exact divergence from recurring. Added a parametrized malformed-usage abstain test, an over-abstention guard, and a `results()`-level test proving one bad row no longer sinks the batch — all fail pre-fix. Full suite, ruff, and mypy (D-014 gate) all green.
+
+**Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix meta-lens. The SDK-projection seams in lco (router text/logprob extractors #94/#106/#112, cache-wrapper usage #114, now batch-result usage #136) are now all hardened on the abstain-don't-crash contract.
+
+**Deferred.** `request_counts` sum (`batch.py:441`) — `BatchJobMeta.__post_init__` treats a malformed count as a backend-shape bug, so a loud failure is arguably intended; left as-is to avoid churn.
+
+**Open questions / blockers.** None — PR ready for review.
