@@ -928,3 +928,13 @@ Wrapped the coercion in `try/except (TypeError, ValueError)` → `SignalReading(
 **Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix / abstain-on-malformed-SDK-shape lens. Unrelated to the JT-gated #135/#97.
 
 **Open questions / blockers.** None — PR ready for review.
+
+## 2026-07-10 — Issue #140: abstain on a non-numeric logprob element (~20 min, night)
+
+**What got done.** `_extract_first_token_logprobs` already guarded `None` elements (#106) and non-finite floats (#95), but both `float()` coercion sites (the direct `first_token_logprobs` path and the nested SDK-shape path) were bare list comprehensions. A present-but-non-numeric element — a string label, a JSON-decoded string, or any object `float()` can't accept — off an adapter-set / BYO distribution raised `ValueError`/`TypeError` straight out of `measure()` and `UncertaintyRouter.route()`, aborting the whole routing decision for a completed cheap-model call. This is the exact sibling of the just-merged #138/#139 (a non-numeric judge `.score` off the BYO `eval_harness.Judge` seam) — same "present-but-non-numeric value off a duck-typed seam" class, left unguarded on the entropy path.
+
+Wrapped both coercions in `try/except (TypeError, ValueError)` → `return None` (abstain), consistent with the None/non-finite branches and `measure`'s value=None ⟹ not-trip rule. A numeric string (`"0.9"`) still parses; a finite `0.0` logprob is preserved. 6 tests (non-numeric direct + nested abstain, numeric-string still parses, end-to-end `route()` survives and stays cheap). Full suite + ruff green. Reproduced both paths firsthand before/after.
+
+**Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix meta-lens on the 7 PRs merged in this run's Phase A. Unrelated to the JT-gated #135/#97.
+
+**Open questions / blockers.** None — PR ready for review.
