@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from cost_optimizer.batch import (
@@ -20,6 +22,7 @@ from cost_optimizer.batch import (
     InMemoryBatchBackend,
     JobNotComplete,
     JobNotFound,
+    _from_sdk_result_row,
     compare_realtime_vs_batch,
 )
 
@@ -429,6 +432,93 @@ def test_anthropic_backend_maps_status_and_results():
     assert rows[0].error is None
     assert rows[1].response_text is None
     assert rows[1].error == "rate_limit"
+
+
+class _MalformedUsage:
+    """A succeeded row whose usage tokens are a present-but-malformed value."""
+
+    def __init__(self, input_tokens: object, output_tokens: object) -> None:
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+
+
+class _MalformedMessage:
+    def __init__(self, text: str, usage: _MalformedUsage) -> None:
+        self.content = [_FakeBlock(text)]
+        self.usage = usage
+
+
+@pytest.mark.parametrize("bad", [math.nan, math.inf, -math.inf, "abc", -3, object()])
+def test_from_sdk_result_row_abstains_on_malformed_usage_token(bad):
+    # #136: _from_sdk_result_row read usage tokens with the bare int(... or 0)
+    # pattern #114 replaced, so a present-but-malformed token (NaN/inf/"abc"/
+    # negative/non-numeric) on one succeeded row raised out of the parse. It
+    # must abstain to 0, mirroring the cache-wrapper _coerce_token_count
+    # contract — token accounting is best-effort observability gathered after
+    # the row already succeeded.
+    entry = _FakeResultEntry(
+        "r-bad",
+        _FakeResult(succeeded=True, message=_MalformedMessage("ok", _MalformedUsage(bad, bad))),
+    )
+    row = _from_sdk_result_row(entry)  # must not raise
+    assert row.custom_id == "r-bad"
+    assert row.response_text == "ok"
+    assert row.prompt_tokens == 0
+    assert row.completion_tokens == 0
+    assert row.error is None
+
+
+def test_from_sdk_result_row_preserves_valid_usage_token():
+    # Over-abstention guard: a finite non-negative token still coerces unchanged.
+    entry = _FakeResultEntry(
+        "r-ok",
+        _FakeResult(succeeded=True, message=_MalformedMessage("hi", _MalformedUsage(12, 7))),
+    )
+    row = _from_sdk_result_row(entry)
+    assert row.prompt_tokens == 12
+    assert row.completion_tokens == 7
+
+
+def test_anthropic_backend_one_malformed_row_does_not_sink_the_whole_batch():
+    # The reachability harm #136 targets: results() maps every row through
+    # _from_sdk_result_row, so one bad row's token used to crash retrieval of
+    # ALL completed rows. After the fix, the good rows still come back and the
+    # malformed row abstains to zero tokens.
+    class _MixedBatches(_FakeBatches):
+        def results(self, job_id):  # noqa: ANN001
+            return [
+                _FakeResultEntry(
+                    "r-good",
+                    _FakeResult(
+                        succeeded=True, message=_FakeMessage("fine", prompt=10, completion=5)
+                    ),
+                ),
+                _FakeResultEntry(
+                    "r-bad",
+                    _FakeResult(
+                        succeeded=True,
+                        message=_MalformedMessage("still fine", _MalformedUsage(math.nan, "x")),
+                    ),
+                ),
+            ]
+
+    class _MixedMessages(_FakeMessagesNamespace):
+        def __init__(self) -> None:
+            self.batches = _MixedBatches()
+
+    class _MixedClient:
+        def __init__(self) -> None:
+            self.messages = _MixedMessages()
+
+    backend = AnthropicBatchBackend(_MixedClient())
+    backend.submit(_make_requests(2), idempotency_key="k-anth-mixed")
+    rows = backend.results("anth_batch_1")
+    assert len(rows) == 2
+    assert rows[0].response_text == "fine"
+    assert rows[0].prompt_tokens == 10
+    assert rows[1].response_text == "still fine"
+    assert rows[1].prompt_tokens == 0
+    assert rows[1].completion_tokens == 0
 
 
 def test_anthropic_backend_rejects_bad_client_shape():

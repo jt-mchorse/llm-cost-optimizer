@@ -39,6 +39,8 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from cost_optimizer.pricing import _coerce_token_count
+
 # Anthropic's public batch API charges 50% of standard input/output
 # rates on both axes; the same factor applies across the current Claude
 # family at time of writing. Source the up-to-date figure from
@@ -480,8 +482,13 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
         if isinstance(text, str):
             text_parts.append(text)
     usage = getattr(message, "usage", None)
-    prompt_tokens = int(getattr(usage, "input_tokens", 0) or 0)
-    completion_tokens = int(getattr(usage, "output_tokens", 0) or 0)
+    # A malformed usage token on one succeeded row must abstain (→ 0), not raise
+    # out of _from_sdk_result_row and destroy retrieval of the whole batch:
+    # results() maps every row through here. Same "abstain, don't crash on
+    # malformed SDK shapes" contract #114 set for the cache-wrapper usage
+    # tokens (the bare int(... or 0) below crashed on NaN/inf/"abc"). #136.
+    prompt_tokens = _coerce_token_count(getattr(usage, "input_tokens", 0))
+    completion_tokens = _coerce_token_count(getattr(usage, "output_tokens", 0))
     return BatchResultRow(
         custom_id=custom_id,
         response_text="".join(text_parts),
