@@ -645,6 +645,51 @@ def test_judge_signal_genuine_zero_score_still_trips() -> None:
     assert reading.trip is True
 
 
+@dataclass
+class _AnyScoreVerdict:
+    """A verdict whose `.score` can be any type (a BYO judge's raw output)."""
+
+    score: Any
+
+
+@pytest.mark.parametrize("bad", ["high", "0.8x", "", object(), [0.5], {"s": 1}])
+def test_judge_signal_non_numeric_score_reports_couldnt_measure(bad: Any) -> None:
+    # A present-but-non-numeric `.score` — a string label, a non-numeric string,
+    # or any object float() can't accept — is the fourth "no usable score" case
+    # after missing/None/non-finite. `.score` comes off a BYO duck-typed judge
+    # (the llm-eval-harness.Judge seam), so this is reachable. A bare float(raw)
+    # previously raised ValueError/TypeError straight out of measure()/route(),
+    # aborting the whole routing decision; it must abstain, not crash.
+    judge = _CannedJudge(verdict=_AnyScoreVerdict(score=bad))
+    signal = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)
+    reading = signal.measure(FakeResponse(text="answer", prompt="q"))
+    assert reading.value is None
+    assert reading.trip is False
+
+
+def test_judge_signal_numeric_string_score_still_measures() -> None:
+    # A numeric string ("0.9") is a usable score — float() parses it — so the
+    # abstain-on-non-numeric guard must not swallow it. 0.9 >= 0.7, so it
+    # measures without tripping.
+    judge = _CannedJudge(verdict=_AnyScoreVerdict(score="0.9"))
+    signal = JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)
+    reading = signal.measure(FakeResponse(text="answer", prompt="q"))
+    assert reading.value == 0.9
+    assert reading.trip is False
+
+
+def test_router_route_survives_non_numeric_judge_score() -> None:
+    # End-to-end: a malformed BYO verdict must not take down route() — the whole
+    # routing decision (and the cheap-model call it wraps) is aborted otherwise.
+    # The signal abstains, so the router sticks with the cheap model.
+    judge = _CannedJudge(verdict=_AnyScoreVerdict(score="high"))
+    adapter = StubAdapter(response=FakeResponse(text="answer", prompt="q"))
+    router = _make_router(adapter, [JudgeConfidenceSignal(judge=judge, rubric="r", threshold=0.7)])
+    decision = router.route("req")
+    assert decision.model_id == "claude-haiku-4-5"
+    assert decision.signal_values == {"judge": None}
+
+
 # ----------------------------------------------------------------------
 # End-to-end: router + real signals
 # ----------------------------------------------------------------------

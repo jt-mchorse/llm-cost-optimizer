@@ -369,7 +369,19 @@ class JudgeConfidenceSignal:
         raw = getattr(verdict, "score", None)
         if raw is None:
             return SignalReading(value=None, trip=False)
-        score = float(raw)
+        # A present-but-non-numeric score — a string label ("high"), a JSON-decoded
+        # string, or any object float() can't accept — is the fourth "no usable
+        # score" case after missing/None/non-finite. `.score` comes off a BYO
+        # duck-typed judge (the llm-eval-harness.Judge seam, D-002), so this is
+        # reachable, not hypothetical. A bare float(raw) raised ValueError/TypeError
+        # straight out of measure() and route(), aborting the whole routing
+        # decision for a completed cheap-model call. Abstain instead — "couldn't
+        # measure", the same contract the None/non-finite branches honor. A numeric
+        # string ("0.9") still parses and measures; a genuine finite 0.0 still trips.
+        try:
+            score = float(raw)
+        except (TypeError, ValueError):
+            return SignalReading(value=None, trip=False)
         if not math.isfinite(score):
             return SignalReading(value=None, trip=False)
         return SignalReading(value=score, trip=score < self.threshold)

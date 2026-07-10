@@ -918,3 +918,13 @@ Relocated the canonical `_coerce_token_count` to the shared token-domain module 
 **Deferred.** `request_counts` sum (`batch.py:441`) — `BatchJobMeta.__post_init__` treats a malformed count as a backend-shape bug, so a loud failure is arguably intended; left as-is to avoid churn.
 
 **Open questions / blockers.** None — PR ready for review.
+
+## 2026-07-10 — Issue #138: abstain on a non-numeric judge score (~22 min, night)
+
+**What got done.** `JudgeConfidenceSignal.measure` coerced the judge verdict's `.score` with a bare `float(raw)`. A present-but-non-numeric score — a string label (`"high"`), a JSON-decoded string, or any non-coercible object — raised `ValueError`/`TypeError` straight out of `measure()` and `UncertaintyRouter.route()` (no guard at the call site), aborting the whole routing decision for a completed cheap-model call. Since `.score` comes off a BYO duck-typed judge (the `llm-eval-harness.Judge` seam, D-002), this is reachable. The method's docstring already contracts "no usable score (missing/None/non-finite) → couldn't measure → abstain"; the #72 fix guarded three branches but left the bare `float()` unwrapped — present-but-non-numeric is the fourth "no usable score" case.
+
+Wrapped the coercion in `try/except (TypeError, ValueError)` → `SignalReading(value=None, trip=False)`, mirroring the None/non-finite branches. A numeric string (`"0.9"`) still parses; a genuine finite `0.0` still trips. 8 test cases (6 non-numeric shapes abstain, numeric-string still measures, end-to-end `route()` survives a malformed BYO verdict and stays on the cheap model). Full suite (494) + ruff green. Verified the repro firsthand before/after.
+
+**Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix / abstain-on-malformed-SDK-shape lens. Unrelated to the JT-gated #135/#97.
+
+**Open questions / blockers.** None — PR ready for review.
