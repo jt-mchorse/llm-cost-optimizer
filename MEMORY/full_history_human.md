@@ -948,3 +948,13 @@ Widened the guard with a small `_corrupt` helper (non-numeric → bad, else `not
 **Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix meta-lens on the 8 PRs merged in this run's Phase A. `Embedder` is an explicit BYO Protocol the `HashEmbedder` docstring points production callers at, so a JSON-decoded/truncated-SDK embedding row reaching this seam is real, not synthetic. Unrelated to the JT-gated #135 (per-call model pricing) / #97 and to any semantic-cache threshold tradeoff.
 
 **Open questions / blockers.** None — PR #143 ready for review.
+
+## 2026-07-11 — Issue #144: isinstance-guard 3 present-but-non-numeric pricing/batch seams (~22 min, night)
+
+**What got done.** Completed the present-but-non-numeric coercion sweep (#138/#140/#142) across the pricing/batch cost layer. Three sibling seams applied a bare numeric op to a caller-/JSON-supplied value with no isinstance pre-guard, so a `str`/`None` raised a raw `TypeError` at exit 1 instead of the clean field-named `ValueError` each contract promises (each already handled NaN/Inf cleanly): (1) `compare_realtime_vs_batch` `discount` — a documented per-call override, bare chained comparison `0.0 <= discount <= 1.0`; (2) `ModelPricing.__post_init__` — bare `math.isfinite` on rates (the exact #142 shape); (3) `BatchCostQuote.__post_init__` — same bare `math.isfinite` on prices.
+
+Added `isinstance(value, (int, float))` short-circuiting before the numeric op at each site; messages unchanged for the numeric fields, discount keeps its `[0.0, 1.0]` text, and behavior for bool/int/float is unchanged (kept minimal — only genuinely non-numeric values newly rejected). 20 new test cases (str/None/list/dict at each site; discount NaN case added). Full suite + ruff green. Reproduced all three firsthand before/after.
+
+**Why prioritized.** Found via a **second-order sibling hunt** on this run's own #142 fix (the same class's remaining siblings in the pricing/batch layer). Explicitly not JT-gated #135 (per-call model-pricing *semantics*) — this is pure input-validation completeness.
+
+**Open questions / blockers.** None — PR #145 ready. (Sibling of this run's #142/PR #143: different code files, but both touch MEMORY, so next Phase A merges #143 first then rebases #145.)
