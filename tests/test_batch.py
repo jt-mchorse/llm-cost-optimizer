@@ -309,6 +309,21 @@ def test_compare_realtime_vs_batch_rejects_out_of_range_discount():
         compare_realtime_vs_batch(rows, prices={"fake-big": _quote()}, discount=-0.1)
     with pytest.raises(ValueError, match="0.0, 1.0"):
         compare_realtime_vs_batch(rows, prices={"fake-big": _quote()}, discount=1.5)
+    # #144: NaN already fell through the chained comparison to the clean ValueError;
+    # keep that covered so the contract stays proven for the numeric-bad case.
+    with pytest.raises(ValueError, match="0.0, 1.0"):
+        compare_realtime_vs_batch(rows, prices={"fake-big": _quote()}, discount=float("nan"))
+
+
+@pytest.mark.parametrize("bad", ["0.5", None, [0.5], {"d": 0.5}])
+def test_compare_realtime_vs_batch_rejects_non_numeric_discount(bad):
+    # #144: `discount` is a documented per-call override pulled from JSON/config,
+    # so a present-but-non-numeric value hit the bare chained comparison
+    # `0.0 <= discount <= 1.0` and raised a raw TypeError instead of the clean
+    # field-named ValueError (sibling of the #142 present-but-non-numeric class).
+    rows = [BatchResultRow(custom_id="a", response_text="x", prompt_tokens=10, completion_tokens=0)]
+    with pytest.raises(ValueError, match="0.0, 1.0"):
+        compare_realtime_vs_batch(rows, prices={"fake-big": _quote()}, discount=bad)
 
 
 # ----------------------------------------------------------------------
@@ -633,6 +648,17 @@ class TestBatchCostQuoteRateValidation:
     @pytest.mark.parametrize("field", ["input_per_mtok", "output_per_mtok"])
     @pytest.mark.parametrize("bad", [-0.01, -15.0, float("nan"), float("inf"), float("-inf")])
     def test_rejects_negative_or_non_finite_rate(self, field: str, bad: float) -> None:
+        kwargs = dict(model="m", input_per_mtok=10.0, output_per_mtok=40.0)
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0.0"):
+            BatchCostQuote(**kwargs)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("field", ["input_per_mtok", "output_per_mtok"])
+    @pytest.mark.parametrize("bad", ["5.0", None, [1.0]])
+    def test_rejects_non_numeric_rate(self, field: str, bad: object) -> None:
+        # #144: a present-but-non-numeric rate (str/None/list from a JSON-decoded
+        # quote) hit the bare math.isfinite and raised a raw TypeError; must now
+        # raise the same field-named ValueError (sibling of #142).
         kwargs = dict(model="m", input_per_mtok=10.0, output_per_mtok=40.0)
         kwargs[field] = bad
         with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0.0"):

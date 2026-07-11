@@ -532,7 +532,11 @@ class BatchCostQuote:
             ("input_per_mtok", self.input_per_mtok),
             ("output_per_mtok", self.output_per_mtok),
         ):
-            if not math.isfinite(value) or value < 0.0:
+            # `isinstance` first (short-circuits before `math.isfinite`): a
+            # present-but-non-numeric price (a str/None from a JSON-decoded / config
+            # quote) hit the bare `math.isfinite(value)` and raised a raw TypeError
+            # instead of this field-named ValueError — sibling of the #142 gap.
+            if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
 
 
@@ -561,8 +565,15 @@ def compare_realtime_vs_batch(
     model from the first matching ``BatchCostQuote`` (raises if there
     are ≠1 quote entries).
     """
-    if not 0.0 <= discount <= 1.0:
-        raise ValueError(f"discount must be in [0.0, 1.0]; got {discount}")
+    # `isinstance` first: `discount` is a documented per-call override operators
+    # pull from a JSON contract/config/env, so a present-but-non-numeric value
+    # (a str like "0.5", or None) reached the bare chained comparison
+    # `0.0 <= discount <= 1.0` and raised a raw TypeError ("'<=' not supported
+    # between ...") instead of this field-named ValueError. NaN/Inf already fall
+    # through the comparison to the clean ValueError; only the non-numeric branch
+    # leaked — sibling of the #142 present-but-non-numeric class.
+    if not isinstance(discount, (int, float)) or not 0.0 <= discount <= 1.0:
+        raise ValueError(f"discount must be a number in [0.0, 1.0]; got {discount!r}")
     if not rows:
         return CostComparison(0.0, 0.0, 0.0, 0.0, 0)
     if model_of is None:

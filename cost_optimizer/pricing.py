@@ -87,7 +87,12 @@ class ModelPricing:
             ("cache_write_multiplier", self.cache_write_multiplier),
             ("cache_read_multiplier", self.cache_read_multiplier),
         ):
-            if not math.isfinite(value) or value < 0.0:
+            # `isinstance` first (short-circuits before `math.isfinite`): a
+            # present-but-non-numeric rate (a str/None from a JSON-decoded or
+            # config-supplied pricing table) hit the bare `math.isfinite(value)`
+            # and raised a raw TypeError instead of this field-named ValueError —
+            # the pricing-layer sibling of the #142 `_validate_embedding` gap.
+            if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
 
 
