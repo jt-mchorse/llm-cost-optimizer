@@ -464,14 +464,37 @@ def _validate_embedding(vector: list[float], *, where: str) -> None:
     loudly here rather than store/scan a poisoned vector, the same contract
     the ttl guards apply (#36/#85) and the sibling prompt-regression-suite
     #67 fix applies to candidate embeddings.
+
+    A *present-but-non-numeric* component (a `str`/`None`/list off the same
+    BYO seam — a JSON-decoded row, a truncated SDK response, an adapter that
+    returns the wrong element type) cannot go through `math.isfinite`, which
+    raises a raw `TypeError`. That escaped `put`/`lookup` uncaught, the
+    non-numeric sibling of the NaN/Inf branch (#140/#138 fixed the same
+    present-but-non-numeric-coercion gap at the router logprob/judge seams).
+    Reject it at the seam too, with the same field/index-naming `ValueError`.
     """
-    bad = next((i for i, v in enumerate(vector) if not math.isfinite(v)), None)
+
+    def _corrupt(v: object) -> bool:
+        if not isinstance(v, (int, float)):
+            return True  # present-but-non-numeric (str/None/list/...) off the BYO seam
+        return not math.isfinite(v)  # NaN / +/-Inf
+
+    bad = next((i for i, v in enumerate(vector) if _corrupt(v)), None)
     if bad is not None:
+        val = vector[bad]
+        if isinstance(val, (int, float)):
+            raise ValueError(
+                f"embedding from {where} has a non-finite component at index {bad}: "
+                f"{val!r}. The embedder returned a corrupt vector — a NaN/Inf "
+                "component makes every cosine similarity NaN and silently disables the "
+                "cache (every lookup misses, hit_rate reads 0). Fix the embedder."
+            )
         raise ValueError(
-            f"embedding from {where} has a non-finite component at index {bad}: "
-            f"{vector[bad]!r}. The embedder returned a corrupt vector — a NaN/Inf "
-            "component makes every cosine similarity NaN and silently disables the "
-            "cache (every lookup misses, hit_rate reads 0). Fix the embedder."
+            f"embedding from {where} has a non-numeric component at index {bad}: "
+            f"{val!r} ({type(val).__name__}). The embedder returned a corrupt vector — a "
+            "non-numeric component cannot enter cosine similarity and would otherwise "
+            "raise a raw TypeError deep in the scan; reject it at the seam. Fix the "
+            "embedder."
         )
 
 

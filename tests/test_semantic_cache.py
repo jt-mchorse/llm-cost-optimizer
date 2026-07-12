@@ -935,6 +935,45 @@ def test_lookup_rejects_non_finite_embedding(bad_vec: list[float]):
         cache.lookup("p", model="m")
 
 
+# Issue #142: the present-but-non-numeric sibling of #87. A `str`/`None`/list
+# component off the same BYO `Embedder` seam (a JSON-decoded row, a truncated
+# SDK response, a wrong-typed adapter element) hit a raw `math.isfinite(v)` and
+# raised an uncaught `TypeError` deep in the scan instead of the seam's clean
+# `ValueError` — the sibling of the #140/#138 present-but-non-numeric coercion
+# gap at the router logprob/judge seams. Both `put()` and `lookup()` must reject
+# it with the same field/index-naming `ValueError` the NaN/Inf branch raises.
+
+
+@pytest.mark.parametrize(
+    "bad_vec",
+    [
+        [0.6, "0.2", 0.8],
+        [0.1, None, 0.3],
+        [0.1, [0.2], 0.3],
+    ],
+    ids=["str", "none", "list"],
+)
+def test_put_rejects_non_numeric_embedding(bad_vec: list):
+    cache = _cache_with(_StubEmbedder(bad_vec))
+    with pytest.raises(ValueError, match="non-numeric component at index 1"):
+        cache.put("p", "v", model="m")
+
+
+@pytest.mark.parametrize(
+    "bad_vec",
+    [
+        [0.6, "0.2", 0.8],
+        [0.1, None, 0.3],
+        [0.1, [0.2], 0.3],
+    ],
+    ids=["str", "none", "list"],
+)
+def test_lookup_rejects_non_numeric_embedding(bad_vec: list):
+    cache = _cache_with(_StubEmbedder(bad_vec))
+    with pytest.raises(ValueError, match="non-numeric component at index 1"):
+        cache.lookup("p", model="m")
+
+
 def test_finite_byo_embedder_still_hits_on_identical_prompt():
     # Regression guard: the seam validation must not break a legitimate finite
     # embedder — an identical prompt must still be a hit with similarity 1.0.

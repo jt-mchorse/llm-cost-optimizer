@@ -938,3 +938,13 @@ Wrapped both coercions in `try/except (TypeError, ValueError)` → `return None`
 **Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix meta-lens on the 7 PRs merged in this run's Phase A. Unrelated to the JT-gated #135/#97.
 
 **Open questions / blockers.** None — PR ready for review.
+
+## 2026-07-11 — Issue #142: reject present-but-non-numeric embedding component in SemanticCache (~20 min, night)
+
+**What got done.** `SemanticCache._validate_embedding` guarded a numeric-but-non-finite embedding component (NaN/±Inf, #87) with a clean `ValueError`, but a **present-but-non-numeric** component (a `str`/`None`/list off the BYO `Embedder` Protocol seam) hit a bare `math.isfinite(v)` and raised an **uncaught `TypeError`** deep inside both `put()` and `lookup()` instead of the seam's clean, index-naming `ValueError`. This is the direct sibling of the #140/#138 "present-but-non-numeric coercion off a duck-typed/BYO seam" class fixed this same run at the router logprob and judge-score seams — the same guard shape, never applied at the embedding-validation seam.
+
+Widened the guard with a small `_corrupt` helper (non-numeric → bad, else `not math.isfinite`); the NaN/Inf branch keeps its exact `"non-finite component"` message so the #87 tests still match, and a new branch names the offending index/value/type for the non-numeric case. Six tests (`put()` + `lookup()` each rejecting a `str`/`None`/list component). Full suite + ruff green. Reproduced firsthand: a BYO embedder returning one `str` element went from `TypeError: must be real number, not str` (uncaught) to a clean `ValueError: ... non-numeric component at index 127: '0.2' (str) ...`.
+
+**Why prioritized.** Static priority:high queue globally exhausted; found via the sibling-incomplete-fix meta-lens on the 8 PRs merged in this run's Phase A. `Embedder` is an explicit BYO Protocol the `HashEmbedder` docstring points production callers at, so a JSON-decoded/truncated-SDK embedding row reaching this seam is real, not synthetic. Unrelated to the JT-gated #135 (per-call model pricing) / #97 and to any semantic-cache threshold tradeoff.
+
+**Open questions / blockers.** None — PR #143 ready for review.
