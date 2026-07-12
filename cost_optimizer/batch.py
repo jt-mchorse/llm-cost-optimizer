@@ -424,6 +424,41 @@ def _to_sdk_request(r: BatchRequest) -> dict[str, Any]:
     return {"custom_id": r.custom_id, "params": params}
 
 
+def _sdk_request_total(resp: Any) -> Any:
+    """Total request count from a duck-typed SDK Batch object.
+
+    Sums the SDK's ``request_counts`` fields (processing/succeeded/errored/
+    canceled) or falls back to a scalar ``n_requests``. Returns an ``int`` for
+    a well-formed count.
+
+    A *present-but-non-numeric* count — a ``str``/``list``/``dict``/``None`` off
+    the duck-typed ``resp`` (a test fake, SDK version drift, a hand-built poll
+    response) — is returned **unchanged** so ``BatchJobMeta.__post_init__``
+    rejects it with its clean, field-named ``ValueError``. The bare
+    ``sum(...)`` / ``int(n or 0)`` this replaces raised a raw ``TypeError``/
+    ``ValueError`` deep inside ``submit()``/``poll()`` instead — before the
+    value could reach that construction-boundary guard.
+
+    This is the malformed-SDK sibling of #136, which routed the token-count
+    ``int()`` sites in ``_from_sdk_result_row`` through ``_coerce_token_count``.
+    The contracts differ: token usage is best-effort observability and
+    *abstains* (→ 0); a request count of "no valid requests" is meaningless and
+    must *raise* (see ``BatchJobMeta.__post_init__``).
+    """
+    counts = getattr(resp, "request_counts", None)
+    if counts is not None:
+        # SDK exposes processing/succeeded/errored/canceled counts; total is the sum.
+        parts = [getattr(counts, k, 0) for k in ("processing", "succeeded", "errored", "canceled")]
+    else:
+        parts = [getattr(resp, "n_requests", 0)]
+    total: float = 0
+    for part in parts:
+        if not isinstance(part, (int, float)):
+            return part  # surfaced to __post_init__'s clean field-named ValueError
+        total += part
+    return int(total)
+
+
 def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:
     """Project an SDK Batch object to ``BatchJobMeta``."""
     status_raw = (
@@ -437,19 +472,11 @@ def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:
         "canceled": ENDED_CANCELED,
         "failed": ENDED_FAILED,
     }.get(str(status_raw), str(status_raw))
-    n_requests = getattr(resp, "request_counts", None)
-    if n_requests is not None:
-        # SDK exposes processing/succeeded/errored/canceled counts; total is the sum.
-        n = sum(
-            getattr(n_requests, k, 0) for k in ("processing", "succeeded", "errored", "canceled")
-        )
-    else:
-        n = getattr(resp, "n_requests", 0)
     return BatchJobMeta(
         job_id=getattr(resp, "id", ""),
         idempotency_key=idempotency_key,
         status=status,
-        n_requests=int(n or 0),
+        n_requests=_sdk_request_total(resp),
         created_at_iso=str(getattr(resp, "created_at", "") or ""),
     )
 
