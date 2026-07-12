@@ -212,9 +212,11 @@ through their own `PromptCacheWrapper` (or none).
   by `router_stats is not None` without a string-substring check. The
   bench's `_format_markdown` ignores the field (so `docs/savings.md`
   and the README table stay clean); the dashboard `Raw JSON` expander
-  surfaces it immediately. A dedicated `st.dataframe` panel for the
-  per-signal breakdown is a follow-on issue — keeping the JSON
-  expansion small and reviewable on its own.
+  surfaces it immediately, and a dedicated `st.dataframe` "Router
+  per-signal escalation" panel (#66) renders the per-signal
+  `trips`/`measured`/`trip_rate` breakdown built by
+  `dashboard/app.py`'s `_pick_router_row` / `_router_panel_rows`,
+  keeping the `Raw JSON` expander as the raw fallback beside it.
 
 ---
 
