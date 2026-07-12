@@ -968,3 +968,14 @@ Added a module helper `_sdk_request_total` that sums genuine numerics (`int`/`fl
 **Why prioritized.** Static priority:high queue globally exhausted. Found via the sibling-incomplete-fix meta-lens: **#136** routed the token-count `int()` sites in the immediate neighbor `_from_sdk_result_row` through `_coerce_token_count` but left the `n_requests` `int()`/`sum()` sites in `_from_sdk_batch` bare. The two seams have deliberately **different** contracts — token usage is best-effort observability and *abstains* (→0); a request count of "no valid requests" is meaningless and must *raise*. Verified firsthand (one of 7 sibling-hunt agents hit; the other 6 repos — leh/ems/prs/rag/chunking/aiapp — came back EMPTY, with leh's `JudgeScore.__post_init__` and chunking's `from_json` scalar-field gaps correctly left unfiled as no-real-entry-point / test-only-path churn).
 
 **Open questions / blockers.** None — PR #147 ready. Not JT-gated #135/#97/#124 (D-013).
+
+## 2026-07-12 — Issue #148: architecture.md calls a shipped dashboard panel a "follow-on issue"
+**Duration:** ~12 min · **Branch:** `session/2026-07-12-0943-issue-148`
+
+- `docs/architecture.md` (RouterStats-in-savings-JSON section) still described the per-signal router `st.dataframe` dashboard panel as unbuilt future work ("a follow-on issue"), but it shipped in #66 — `dashboard/app.py` renders the "Router per-signal escalation" panel via `_pick_router_row`/`_router_panel_rows`. Rewrote the sentence to reflect the shipped panel, citing #66 consistent with the doc's existing #62/#64 citations. Doc-only (the session's documentation exception to tests-with-code); the architecture-doc lock suite + full test suite stay green.
+
+**Why this work, this session:** Fifth hit of the run — the served-output doc-drift lens's second finding (with rag#140), reconciling a flagship architecture doc with shipped code.
+
+**Open questions / blockers:** none — ready for review.
+
+**Next session:** Phase A merge PR for #148.
