@@ -22,6 +22,7 @@ from cost_optimizer.batch import (
     InMemoryBatchBackend,
     JobNotComplete,
     JobNotFound,
+    _from_sdk_batch,
     _from_sdk_result_row,
     compare_realtime_vs_batch,
 )
@@ -635,6 +636,59 @@ class TestBatchJobMetaNRequestsValidation:
             created_at_iso="2026-05-25T00:00:00Z",
         )
         assert meta.n_requests == 1
+
+
+class _SdkObj:
+    """Minimal duck-typed stand-in for an SDK Batch / request_counts object."""
+
+    def __init__(self, **attrs: object) -> None:
+        for k, v in attrs.items():
+            setattr(self, k, v)
+
+
+class TestFromSdkBatchRequestCountCoercion:
+    """A present-but-non-numeric SDK request count must surface the clean,
+    field-named ``BatchJobMeta.n_requests`` ValueError — not a raw
+    ``TypeError``/``ValueError`` out of ``submit()``/``poll()``. Sibling of
+    the #136 token-count guard in ``_from_sdk_result_row``.
+    """
+
+    def _resp(self, **attrs: object) -> _SdkObj:
+        attrs.setdefault("id", "anth_batch_x")
+        attrs.setdefault("processing_status", "ended")
+        attrs.setdefault("created_at", "2026-05-16T00:00:00Z")
+        return _SdkObj(**attrs)
+
+    def test_valid_request_counts_sum(self) -> None:
+        counts = _SdkObj(processing=0, succeeded=3, errored=1, canceled=0)
+        meta = _from_sdk_batch(self._resp(request_counts=counts), idempotency_key="k")
+        assert meta.n_requests == 4
+
+    def test_valid_scalar_n_requests(self) -> None:
+        meta = _from_sdk_batch(self._resp(n_requests=5), idempotency_key="k")
+        assert meta.n_requests == 5
+
+    @pytest.mark.parametrize("bad", ["oops", None, [1, 2], {"n": 1}])
+    def test_non_numeric_request_counts_field_surfaces_clean_error(self, bad: object) -> None:
+        counts = _SdkObj(processing=0, succeeded=bad, errored=0, canceled=0)
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            _from_sdk_batch(self._resp(request_counts=counts), idempotency_key="k")
+
+    @pytest.mark.parametrize("bad", ["lots", [1, 2, 3], {"a": 1}])
+    def test_non_numeric_scalar_n_requests_surfaces_clean_error(self, bad: object) -> None:
+        # No ``request_counts`` attr → falls back to scalar ``n_requests``.
+        resp = _SdkObj(
+            id="b", processing_status="ended", created_at="2026-05-16T00:00:00Z", n_requests=bad
+        )
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            _from_sdk_batch(resp, idempotency_key="k")
+
+    def test_missing_count_bottoms_out_to_clean_error(self) -> None:
+        # Neither request_counts nor n_requests present → default 0 → rejected
+        # by the ``>= 1`` construction-boundary guard (unchanged behavior).
+        resp = _SdkObj(id="b", processing_status="ended", created_at="2026-05-16T00:00:00Z")
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            _from_sdk_batch(resp, idempotency_key="k")
 
 
 class TestBatchCostQuoteRateValidation:
