@@ -41,6 +41,18 @@ class TestModelPricingValidation:
         with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0\.0"):
             ModelPricing(**kwargs)  # type: ignore[arg-type]
 
+    @pytest.mark.parametrize("field", _FIELDS)
+    @pytest.mark.parametrize("bad", ["5.0", None, [1.0], {"x": 1}])
+    def test_rejects_non_numeric(self, field: str, bad: object) -> None:
+        # #144: a present-but-non-numeric rate (str/None/list from a JSON-decoded
+        # or config-supplied pricing table) hit the bare math.isfinite and raised
+        # a raw TypeError; it must now raise the same field-named ValueError as the
+        # NaN/Inf case (sibling of the #142 _validate_embedding fix).
+        kwargs: dict[str, object] = {"model": "m", "input_per_mtok": 1.0}
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0\.0"):
+            ModelPricing(**kwargs)  # type: ignore[arg-type]
+
     def test_rejects_empty_model(self) -> None:
         with pytest.raises(ValueError, match="model must be a non-empty string"):
             ModelPricing(model="", input_per_mtok=1.0)
