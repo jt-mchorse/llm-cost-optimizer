@@ -979,3 +979,15 @@ Added a module helper `_sdk_request_total` that sums genuine numerics (`int`/`fl
 **Open questions / blockers:** none — ready for review.
 
 **Next session:** Phase A merge PR for #148.
+
+## Session 2026-07-13 (night) — issue #150: harden three SemanticCache numeric-config guards
+
+`SemanticCache` validated three numeric config values — `similarity_threshold`, `default_ttl_s` (constructor), and the per-call `put(ttl_s=)` override — by running the numeric test (a chained comparison or `math.isfinite`) *before* any type check. A present-but-non-numeric value (a `str`/`None`/`list` arriving from a JSON/YAML/env config table) therefore reached the numeric operation and raised a raw `TypeError` with a message naming neither the field nor the value, instead of the clean field-named `ValueError` the rest of the token/config layer already raises (`ModelPricing`, `_validate_embedding`, `compare_realtime_vs_batch.discount`).
+
+The fix adds an `isinstance(value, (int, float))` check first in each guard, short-circuiting before the numeric op — the isinstance-first sibling of the #142/#144/#146 present-but-non-numeric sweep that had hardened the pricing, batch, and embedding seams but skipped these three cache-config seams. Reproduced all three raw `TypeError`s firsthand before filing, confirmed the sibling seams already raise the clean `ValueError`. Added three parametrized lock tests (`str`/`None`/`list`) across all seams; full suite (473 tests) green, ruff clean.
+
+**Why this work, this session:** First hit of the night run, surfaced by the sibling-incomplete-fix dogfood hunt on llm-cost-optimizer and verified firsthand.
+
+**Open questions / blockers:** none — PR #151 ready for review.
+
+**Next session:** Phase A merge PR for #150.
