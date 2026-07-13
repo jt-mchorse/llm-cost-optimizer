@@ -670,6 +670,37 @@ def test_put_rejects_non_finite_ttl_s(bad: float):
         cache.put("p", "v", model="m", ttl_s=bad)
 
 
+# Issue #150: the three numeric-config guards put the numeric test (chained
+# comparison / math.isfinite) BEFORE any type check, so a present-but-non-
+# numeric value (a str/None/list from a JSON/YAML/env config table) reached
+# the numeric op and raised a raw TypeError instead of the clean field-named
+# ValueError the rest of the token/config layer raises (ModelPricing,
+# _validate_embedding, compare_realtime_vs_batch). isinstance-first sibling of
+# the #142/#144 sweep. Lock all three seams against str/None.
+@pytest.mark.parametrize("bad", ["0.95", None, [0.95]])
+def test_threshold_rejects_non_numeric_with_valueerror(bad):
+    with pytest.raises(ValueError, match="must be a number"):
+        SemanticCache(embedder=HashEmbedder(), storage=InMemoryStorage(), similarity_threshold=bad)
+
+
+@pytest.mark.parametrize("bad", ["60", [60]])
+def test_default_ttl_rejects_non_numeric_with_valueerror(bad):
+    with pytest.raises(ValueError, match="finite positive number"):
+        SemanticCache(
+            embedder=HashEmbedder(),
+            storage=InMemoryStorage(),
+            similarity_threshold=0.9,
+            default_ttl_s=bad,
+        )
+
+
+@pytest.mark.parametrize("bad", ["60", [60]])
+def test_put_rejects_non_numeric_ttl_s_with_valueerror(bad):
+    cache, _ = _cache()
+    with pytest.raises(ValueError, match="finite positive number"):
+        cache.put("p", "v", model="m", ttl_s=bad)
+
+
 def test_put_ttl_s_none_falls_back_to_default():
     # ttl_s=None must still defer to default_ttl_s (here: no expiry).
     cache, _ = _cache(ttl=None)

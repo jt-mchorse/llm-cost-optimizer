@@ -578,14 +578,31 @@ class SemanticCache:
         default_ttl_s: float | None = None,
         now_fn: Any = time.time,
     ) -> None:
-        if not (0.0 < similarity_threshold <= 1.0):
-            raise ValueError(f"similarity_threshold must be in (0, 1]; got {similarity_threshold}")
+        # `isinstance` first (short-circuits before the chained comparison): a
+        # present-but-non-numeric threshold (a str/None from a JSON/YAML/env
+        # config table) hit the bare `0.0 < x <= 1.0` and raised a raw
+        # TypeError instead of this field-named ValueError — the cache-config
+        # sibling of the #142 `_validate_embedding` / #144 pricing-coercion gap.
+        if not isinstance(similarity_threshold, (int, float)) or not (
+            0.0 < similarity_threshold <= 1.0
+        ):
+            raise ValueError(
+                f"similarity_threshold must be a number in (0, 1]; got {similarity_threshold!r}"
+            )
         # Extend the existing sign-only check to finiteness (#36). A NaN ttl
         # would store as expires_at = now + NaN = NaN, then every subsequent
         # `now < expires_at` comparison is false → every entry reads as
         # expired → the cache silently goes fully bypassed without diagnostic.
-        if default_ttl_s is not None and (not math.isfinite(default_ttl_s) or default_ttl_s <= 0):
-            raise ValueError(f"default_ttl_s must be a finite positive number; got {default_ttl_s}")
+        # `isinstance` first, same reason as above: `math.isfinite("60")`
+        # raises a raw TypeError, not this ValueError.
+        if default_ttl_s is not None and (
+            not isinstance(default_ttl_s, (int, float))
+            or not math.isfinite(default_ttl_s)
+            or default_ttl_s <= 0
+        ):
+            raise ValueError(
+                f"default_ttl_s must be a finite positive number; got {default_ttl_s!r}"
+            )
         self.embedder = embedder
         self.storage = storage
         self.similarity_threshold = similarity_threshold
@@ -673,8 +690,12 @@ class SemanticCache:
         # ttl stores `expires_at = now + ttl` in the past → the entry is evicted on
         # the next lookup with no diagnostic; a non-finite ttl corrupts `expires_at`
         # entirely. Reject at this seam rather than store a poisoned record.
-        if ttl_s is not None and (not math.isfinite(ttl_s) or ttl_s <= 0):
-            raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s}")
+        # `isinstance` first: a present-but-non-numeric ttl_s (str/None-typed
+        # config) hits `math.isfinite` and raises a raw TypeError otherwise.
+        if ttl_s is not None and (
+            not isinstance(ttl_s, (int, float)) or not math.isfinite(ttl_s) or ttl_s <= 0
+        ):
+            raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s!r}")
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s
         expires_at = (self.now_fn() + ttl) if ttl is not None else None
         raw_vector = self.embedder.embed(self._scoped_prompt(prompt, model))
