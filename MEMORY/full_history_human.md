@@ -991,3 +991,14 @@ The fix adds an `isinstance(value, (int, float))` check first in each guard, sho
 **Open questions / blockers:** none — PR #151 ready for review.
 
 **Next session:** Phase A merge PR for #150.
+
+## 2026-07-13 (night) — Issue #152: isinstance-guard router thresholds
+**Duration:** ~20 min · **Branch:** `session/2026-07-13-0913-issue-152` · **PR:** #153
+
+`EntropySignal.threshold` and `JudgeConfidenceSignal.threshold` fed their value into `math.isfinite()`/a chained comparison in `__post_init__` before any type check, so a present-but-non-numeric config value (a `str`/`None` from a JSON/YAML/env table) raised a raw `TypeError` instead of the clean field-named `ValueError` the rest of the numeric-config layer raises. Prepended an `isinstance(x, (int, float))` check to both guards — the direct `router.py` sibling of the #151/#142/#144 isinstance-first sweep. Added `str`/`None`/`list`/`object` lock tests to both threshold-validation test classes (the prior tests only covered numeric-but-invalid values). Swept the module: no other seam has the gap.
+
+**Why this work, this session:** First hit of the night run, surfaced by the numeric-config sibling-incomplete-fix hunt on llm-cost-optimizer and verified firsthand with a running repro before filing.
+
+**Open questions / blockers:** none — PR #153 ready for review.
+
+**Next session:** Phase A merge PR for #152.

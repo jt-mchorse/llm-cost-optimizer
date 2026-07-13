@@ -896,6 +896,17 @@ class TestEntropySignalThresholdValidation:
         ):
             EntropySignal(threshold=bad)
 
+    @pytest.mark.parametrize("bad", ["1.5", None, [1.5], object()])
+    def test_rejects_non_numeric(self, bad: object) -> None:
+        # #152 (sibling of #142/#144/#151): a present-but-non-numeric threshold
+        # (a str/None from a JSON/YAML/env config table) hit `math.isfinite(...)`
+        # before any type check and raised a raw TypeError instead of this
+        # field-named ValueError. isinstance-first guard closes that.
+        with pytest.raises(
+            ValueError, match=r"EntropySignal\.threshold must be a finite number >= 0\.0"
+        ):
+            EntropySignal(threshold=bad)  # type: ignore[arg-type]
+
     def test_accepts_zero_boundary(self) -> None:
         # Zero is meaningful — "trip on any nonzero entropy".
         sig = EntropySignal(threshold=0.0)
@@ -926,6 +937,26 @@ class TestJudgeConfidenceSignalThresholdValidation:
             match=r"JudgeConfidenceSignal\.threshold must be a finite number in \[0\.0, 1\.0\]",
         ):
             JCS(judge=_StubJudge(), rubric="faithfulness", threshold=bad)
+
+    @pytest.mark.parametrize("bad", ["0.7", None, [0.7], object()])
+    def test_rejects_non_numeric(self, bad: object) -> None:
+        # #152 (sibling of #142/#144/#151): a present-but-non-numeric threshold
+        # (str/None from a config table) hit `math.isfinite(...)` before any type
+        # check and raised a raw TypeError instead of this field-named ValueError.
+        from cost_optimizer.router import JudgeConfidenceSignal as JCS
+
+        class _StubJudge:
+            def score(self, *_a, **_k):
+                class V:
+                    score = 0.5
+
+                return V()
+
+        with pytest.raises(
+            ValueError,
+            match=r"JudgeConfidenceSignal\.threshold must be a finite number in \[0\.0, 1\.0\]",
+        ):
+            JCS(judge=_StubJudge(), rubric="faithfulness", threshold=bad)  # type: ignore[arg-type]
 
     def test_accepts_inclusive_boundaries(self) -> None:
         class _StubJudge:
