@@ -186,9 +186,18 @@ class EntropySignal:
         # path was taken when in fact the strong model ran on every request);
         # +Infinity is silent-disable as well. Mirrors the contract-tightening
         # sweep across the portfolio (#36).
-        if not math.isfinite(self.threshold) or self.threshold < 0.0:
+        # `isinstance` first (short-circuits before `math.isfinite`): a present-
+        # but-non-numeric threshold (a str/None from a JSON/YAML/env config
+        # table) otherwise hit `math.isfinite(...)` and raised a raw TypeError
+        # instead of this field-named ValueError — the router-layer sibling of
+        # the #142/#144/#151 isinstance-first sweep.
+        if (
+            not isinstance(self.threshold, (int, float))
+            or not math.isfinite(self.threshold)
+            or self.threshold < 0.0
+        ):
             raise ValueError(
-                f"EntropySignal.threshold must be a finite number >= 0.0; got {self.threshold}"
+                f"EntropySignal.threshold must be a finite number >= 0.0; got {self.threshold!r}"
             )
 
     def measure(self, response: Any) -> SignalReading:
@@ -361,10 +370,18 @@ class JudgeConfidenceSignal:
         # every score < threshold → silent always-trip → strong model on every
         # request; < 0 → silent disable (no real score satisfies score < neg).
         # Same harm class as EntropySignal above (#36).
-        if not math.isfinite(self.threshold) or not (0.0 <= self.threshold <= 1.0):
+        # `isinstance` first, same reason as EntropySignal: a present-but-non-
+        # numeric threshold (str/None from a config table) otherwise hit
+        # `math.isfinite(...)` and raised a raw TypeError instead of this
+        # field-named ValueError (#142/#144/#151 sibling).
+        if (
+            not isinstance(self.threshold, (int, float))
+            or not math.isfinite(self.threshold)
+            or not (0.0 <= self.threshold <= 1.0)
+        ):
             raise ValueError(
                 f"JudgeConfidenceSignal.threshold must be a finite number in [0.0, 1.0]; "
-                f"got {self.threshold}"
+                f"got {self.threshold!r}"
             )
 
     def measure(self, response: Any) -> SignalReading:
