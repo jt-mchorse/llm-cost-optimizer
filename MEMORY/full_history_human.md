@@ -1002,3 +1002,16 @@ The fix adds an `isinstance(value, (int, float))` check first in each guard, sho
 **Open questions / blockers:** none — PR #153 ready for review.
 
 **Next session:** Phase A merge PR for #152.
+
+## 2026-07-14 (night) — Issue #154: atomic_write_text overflows NAME_MAX on a long basename
+**Duration:** ~12 min · **Branch:** `session/2026-07-14-0743-issue-154` · **PR:** #155
+
+`atomic_write_text` built its temp file name as `.<basename>.<random>.tmp`, so a destination basename near `NAME_MAX` (255 bytes) overflowed the limit and raised `OSError` ENAMETOOLONG — even though a plain `write_text` of that same path succeeds. Reachable from the `save(path)` dump APIs on `PromptCacheWrapper` / `Router` / `SemanticCache`. Identical to `rag-production-kit#128` and `mcp-server-cookbook#96`. Verified firsthand.
+
+Fixed by porting the rag#128 fix (`_cap_base_for_temp`, 200-byte typed char-boundary budget). One regression test; full suite + mypy gate green, ruff clean.
+
+**Why this work, this session:** Eighth hit of the night run — the priority-tier leg of the cross-repo `atomic_write_text` overflow sweep (leh #175, chunking #128, lco #154 all fixed this run; the non-tier repos ems/prs/pyasync/vsas carry the identical bug and are deferred to next run per D-009).
+
+**Open questions / blockers:** none — PR #155 ready for review.
+
+**Next session:** Phase A merge PR for #154; finish the atomic-write sweep on ems/prs/pyasync/vsas.

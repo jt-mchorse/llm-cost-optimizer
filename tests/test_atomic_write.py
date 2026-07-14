@@ -65,6 +65,18 @@ def test_atomic_write_text_overwrites_existing_file(tmp_path: Path) -> None:
     assert "STALE" not in body
 
 
+def test_atomic_write_text_long_basename_within_name_max(tmp_path: Path) -> None:
+    """A destination basename near NAME_MAX that ``write_text`` accepts must also
+    succeed via ``atomic_write_text`` — the temp name ``.<base>.<rand>.tmp`` must
+    not overflow the 255-byte filename limit (sibling of rag-production-kit#128,
+    mcp-server-cookbook#96)."""
+    base = "a" * 250  # 250 < 255 NAME_MAX; a plain write_text of this succeeds
+    (tmp_path / base).write_text("ok", encoding="utf-8")  # proves the name is legal
+    out = tmp_path / (base[:-1] + "b")  # distinct 250-byte basename
+    atomic_write_text(out, "payload")
+    assert out.read_text(encoding="utf-8") == "payload"
+
+
 def test_atomic_write_text_replace_failure_leaves_destination_absent(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
