@@ -18,6 +18,27 @@ import os
 import tempfile
 from pathlib import Path
 
+# Cap the target basename's contribution to the temp filename. The temp name is
+# ``.<base>.<random>.tmp``; the affixes add ~13-20 bytes, so prepending a full
+# basename that is itself near NAME_MAX (255 on ext4/APFS) overflows the limit
+# and the write fails with ``OSError: [Errno 63] File name too long`` — even
+# though a plain ``Path.write_text`` of that same target succeeds (sibling of
+# rag-production-kit#128 and mcp-server-cookbook#96). The base in the temp name
+# is cosmetic (``ls``-ability); uniqueness comes from ``NamedTemporaryFile``'s
+# random component, so truncating it is safe. Budget is in BYTES (NAME_MAX is a
+# byte limit) and we trim on a char boundary so multibyte names are never split
+# mid-codepoint.
+_MAX_TEMP_BASE_BYTES = 200
+
+
+def _cap_base_for_temp(base: str) -> str:
+    if len(base.encode("utf-8")) <= _MAX_TEMP_BASE_BYTES:
+        return base
+    out = base
+    while out and len(out.encode("utf-8")) > _MAX_TEMP_BASE_BYTES:
+        out = out[:-1]
+    return out
+
 
 def atomic_write_text(path: str | Path, text: str) -> None:
     """Write ``text`` to ``path`` atomically.
@@ -43,7 +64,7 @@ def atomic_write_text(path: str | Path, text: str) -> None:
             mode="w",
             encoding="utf-8",
             dir=target.parent,
-            prefix=f".{target.name}.",
+            prefix=f".{_cap_base_for_temp(target.name)}.",
             suffix=".tmp",
             delete=False,
         ) as tmp:
