@@ -289,7 +289,18 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    thresholds = sorted(set(float(t) for t in args.thresholds.split(",") if t.strip()))
+    # `--thresholds` is operator input: a non-numeric token made `float(t)` raise
+    # a raw `ValueError` traceback at exit 1, breaking the same operator-misconfig
+    # exit-2 contract the `--no-dry` guard above honors. Translate it to a clean
+    # stderr line + exit 2 (bad-input sibling of the write-seam guard below).
+    try:
+        thresholds = sorted(set(float(t) for t in args.thresholds.split(",") if t.strip()))
+    except ValueError as e:
+        print(
+            f"::error::--thresholds must be comma-separated numbers; got {args.thresholds!r} ({e})",
+            file=sys.stderr,
+        )
+        return 2
     rows = sweep(
         _build_sample_items(),
         thresholds,
@@ -306,7 +317,17 @@ def main(argv: list[str] | None = None) -> int:
         "strong_dollars_per_request": args.strong_dollars,
         "rows": [r.to_dict() for r in rows],
     }
-    atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
+    # The output stem is operator input too: an unwritable `--out` makes
+    # `atomic_write_text` raise OSError, which without this guard escaped `main`
+    # as a raw traceback at exit 1. Translate it to a clean stderr line + exit 2,
+    # matching the `--no-dry` guard above and the portfolio write-seam contract
+    # (llm-eval-harness#158/#159, python-async-llm-pipelines#84). The plot write
+    # (`_try_save_plot`) already degrades gracefully when matplotlib is absent.
+    try:
+        atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
+    except OSError as e:
+        print(f"::error::could not write sweep artifacts: {e}", file=sys.stderr)
+        return 2
     plot_written = _try_save_plot(rows, out_png)
     print(f"sweep wrote {out_json}")
     if plot_written:
