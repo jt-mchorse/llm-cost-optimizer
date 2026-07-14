@@ -1015,3 +1015,11 @@ Fixed by porting the rag#128 fix (`_cap_base_for_temp`, 200-byte typed char-boun
 **Open questions / blockers:** none — PR #155 ready for review.
 
 **Next session:** Phase A merge PR for #154; finish the atomic-write sweep on ems/prs/pyasync/vsas.
+
+## 2026-07-14 (night, issue #156) — bench scripts miss the write-seam / bad-input exit-2 invariant
+
+`scripts/bench_savings.py` and `scripts/tune_threshold.py` already commit to an exit-2-for-operator-misconfig contract (the `--no-dry` branch prints `::error::` and returns 2), but three sibling operator-input errors escaped as a raw traceback at exit 1 — breaking that contract and the portfolio-wide write-seam / bad-input invariant (llm-eval-harness#158/#159, python-async-llm-pipelines#84, vsas, chunking#126) that had never reached lco's scripts.
+
+Gaps: `bench_savings --n 0`/negative ran to completion and emitted a vacuous all-$0.00 "benchmark" over an empty workload (now exit 2, matching the `--n >= 1` guard in the pyasync/vsas bench scripts); an unwritable `--out` in either script raw-tracebacked after the run (now wrapped in `try/except OSError` → exit 2); and a non-numeric `--thresholds` token in tune raised a raw `ValueError` (now exit 2). Verified every path firsthand: all six error/happy cases exit as intended.
+
+The lens: a script that already has an explicit `return 2` operator-error path but raw-tracebacks on a sibling operator input is an internal contract inconsistency, not churn — the existing exit-2 branch is the evidence the gap is real. Found by my own manual hunt (lco scripts weren't in the agent wave; I'd only checked the core package earlier). Gotcha: two existing `test_atomic_write.py` tests monkeypatched `os.replace` to raise and asserted the OSError *propagates*; my guard now catches it, so I updated both to assert `rc == 2` with no partial artifacts (the atomic all-or-nothing intent is preserved under the new exit-2 contract). Full suite green, ruff clean. Shipped as PR #157.
