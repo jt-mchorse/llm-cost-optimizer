@@ -242,6 +242,35 @@ def test_main_real_api_mode_errors_out_until_implemented(
     assert not (tmp_path / "should_not_exist.json").exists()
 
 
+@pytest.mark.parametrize("bad_n", ["0", "-5"])
+def test_main_non_positive_n_exits_two(
+    bad_n: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """`--n 0`/negative is operator misconfig: instead of running to completion and
+    emitting a vacuous all-$0.00 "benchmark" over an empty workload, it must fail
+    loud with exit 2 (the same contract as the `--no-dry` guard; sibling of the
+    `--n >= 1` validation in the pyasync/vsas bench scripts). No artifacts written."""
+    stem = tmp_path / "savings"
+    rc = main(["--dry", "--n", bad_n, "--out", str(stem)])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "--n must be a positive integer" in captured.err
+    assert not stem.with_suffix(".json").exists()
+
+
+def test_main_unwritable_out_exits_two(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """An unwritable `--out` (a path component that is a file) makes
+    `atomic_write_text` raise OSError; instead of a raw traceback at exit 1 *after*
+    the bench ran, it must surface as a clean stderr line + exit 2 (portfolio
+    write-seam contract, sibling of leh#158/#159, pyasync#84)."""
+    blocker = tmp_path / "afile"
+    blocker.write_text("not a dir", encoding="utf-8")
+    rc = main(["--dry", "--n", "50", "--out", str(blocker / "savings")])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "could not write bench artifacts" in captured.err
+
+
 def test_main_dry_default_path_still_succeeds(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

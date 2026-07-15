@@ -89,6 +89,32 @@ def test_main_non_dry_mode_exits_with_documented_error(tmp_path: Path, capsys) -
     assert not out_stem.with_suffix(".json").exists()
 
 
+def test_main_bad_thresholds_exits_two(tmp_path: Path, capsys) -> None:
+    """A non-numeric `--thresholds` token is operator misconfig: instead of a raw
+    `ValueError` traceback at exit 1, it must surface as a clean stderr line + exit
+    2 (same contract as the `--no-dry` guard; bad-input sibling of the write-seam
+    guard)."""
+    out_stem = tmp_path / "should-not-be-written"
+    rc = main(["--dry", "--out", str(out_stem), "--thresholds", "0.5,notanumber"])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "--thresholds must be comma-separated numbers" in captured.err
+    assert not out_stem.with_suffix(".json").exists()
+
+
+def test_main_unwritable_out_exits_two(tmp_path: Path, capsys) -> None:
+    """An unwritable `--out` (a path component that is a file) makes
+    `atomic_write_text` raise OSError; instead of a raw traceback at exit 1 it must
+    surface as a clean stderr line + exit 2 (portfolio write-seam contract, sibling
+    of leh#158/#159, pyasync#84)."""
+    blocker = tmp_path / "afile"
+    blocker.write_text("not a dir", encoding="utf-8")
+    rc = main(["--dry", "--out", str(blocker / "sweep"), "--thresholds", "0.5,1.5"])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "could not write sweep artifacts" in captured.err
+
+
 # ----------------------------------------------------------------------
 # #54: ThresholdSweepRow.to_dict — explicit field-by-field contract.
 # Mirrors StrategyResult.to_dict in scripts/bench_savings.py.

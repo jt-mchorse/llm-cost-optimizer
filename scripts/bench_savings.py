@@ -823,14 +823,36 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    # `--n` is operator input: `--n 0` (or negative) runs to completion and emits
+    # an all-$0.0000 "benchmark" over an empty workload — a vacuous, misleading
+    # savings report, not a benchmark. Translate it to a clean stderr line + exit
+    # 2 (the same operator-misconfig contract the `--no-dry` guard above honors),
+    # matching the `--n >= 1` validation in the sibling bench scripts
+    # (python-async-llm-pipelines, vector-search-at-scale). No fabricated numbers
+    # ship from a degenerate run.
+    if args.n < 1:
+        print(f"::error::--n must be a positive integer; got {args.n}", file=sys.stderr)
+        return 2
+
     payload = run_bench(n=args.n, seed=args.seed)
     out_stem = Path(args.out)
     out_json = out_stem.with_suffix(".json")
     out_md = out_stem.with_suffix(".md")
     out_workload = out_stem.parent / "savings_workload.json"
-    atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
-    atomic_write_text(out_md, _format_markdown(payload))
-    _write_workload(_build_workload(n=args.n, seed=args.seed), out_workload)
+    # The output stem is operator input too: an unwritable `--out` (a read-only
+    # dir, a permission-denied path, or a path component that is a file) makes
+    # `atomic_write_text` raise OSError, which without this guard escaped `main`
+    # as a raw traceback at exit 1 — the "success" range — *after* the bench
+    # already ran. Translate it to a clean stderr line + exit 2, matching the
+    # `--no-dry` guard above and the portfolio write-seam contract
+    # (llm-eval-harness#158/#159, python-async-llm-pipelines#84).
+    try:
+        atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
+        atomic_write_text(out_md, _format_markdown(payload))
+        _write_workload(_build_workload(n=args.n, seed=args.seed), out_workload)
+    except OSError as e:
+        print(f"::error::could not write bench artifacts: {e}", file=sys.stderr)
+        return 2
 
     print(f"bench wrote {out_json}")
     print(f"bench wrote {out_md}")

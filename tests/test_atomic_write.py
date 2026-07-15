@@ -148,7 +148,9 @@ def test_bench_savings_json_routes_through_atomic_helper(
     """`bench_savings.py --dry --out STEM` writes `STEM.json`,
     `STEM.md`, and `<parent>/savings_workload.json`. A monkeypatched
     `os.replace` raises before any of those exist on disk — proving
-    all three writes route through the helper.
+    all three writes route through the helper. The write-seam OSError is
+    now translated to a clean exit 2 (operator-input contract) rather than
+    propagated; the atomic helper still leaves no partial artifacts.
     """
     out_stem = tmp_path / "out" / "savings"
 
@@ -156,8 +158,8 @@ def test_bench_savings_json_routes_through_atomic_helper(
         raise OSError("simulated rename failure")
 
     monkeypatch.setattr(io_mod.os, "replace", boom)
-    with pytest.raises(OSError, match="simulated rename failure"):
-        bench_main(["--dry", "--out", str(out_stem), "--n", "10"])
+    rc = bench_main(["--dry", "--out", str(out_stem), "--n", "10"])
+    assert rc == 2
 
     assert not (out_stem.with_suffix(".json")).exists()
     assert not (out_stem.with_suffix(".md")).exists()
@@ -168,7 +170,9 @@ def test_tune_threshold_json_routes_through_atomic_helper(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """`tune_threshold.py --dry --out STEM` writes `STEM.json`. The
-    monkeypatched `os.replace` raises before the destination exists.
+    monkeypatched `os.replace` raises before the destination exists. The
+    write-seam OSError is now translated to a clean exit 2 (operator-input
+    contract) rather than propagated; no partial artifact is left.
     """
     out_stem = tmp_path / "out" / "sweep"
 
@@ -176,8 +180,8 @@ def test_tune_threshold_json_routes_through_atomic_helper(
         raise OSError("simulated rename failure")
 
     monkeypatch.setattr(io_mod.os, "replace", boom)
-    with pytest.raises(OSError, match="simulated rename failure"):
-        tune_main(["--dry", "--out", str(out_stem)])
+    rc = tune_main(["--dry", "--out", str(out_stem)])
+    assert rc == 2
 
     assert not (out_stem.with_suffix(".json")).exists()
 
