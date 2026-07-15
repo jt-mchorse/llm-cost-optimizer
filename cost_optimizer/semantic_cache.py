@@ -583,8 +583,13 @@ class SemanticCache:
         # config table) hit the bare `0.0 < x <= 1.0` and raised a raw
         # TypeError instead of this field-named ValueError — the cache-config
         # sibling of the #142 `_validate_embedding` / #144 pricing-coercion gap.
-        if not isinstance(similarity_threshold, (int, float)) or not (
-            0.0 < similarity_threshold <= 1.0
+        # `bool` is an `int` subclass, so `True`/`False` coerce to 1.0/0.0 and
+        # `similarity_threshold=True` (→1.0) slips through IN (0, 1] silently,
+        # mis-setting the hit gate. Reject `bool` explicitly (leh#178).
+        if (
+            isinstance(similarity_threshold, bool)
+            or not isinstance(similarity_threshold, (int, float))
+            or not (0.0 < similarity_threshold <= 1.0)
         ):
             raise ValueError(
                 f"similarity_threshold must be a number in (0, 1]; got {similarity_threshold!r}"
@@ -594,9 +599,13 @@ class SemanticCache:
         # `now < expires_at` comparison is false → every entry reads as
         # expired → the cache silently goes fully bypassed without diagnostic.
         # `isinstance` first, same reason as above: `math.isfinite("60")`
-        # raises a raw TypeError, not this ValueError.
+        # raises a raw TypeError, not this ValueError. Reject `bool` too (an
+        # `int` subclass): `default_ttl_s=True` (→1s) silently expires entries
+        # almost immediately, the same silent-eviction harm as a negative ttl
+        # (leh#178).
         if default_ttl_s is not None and (
-            not isinstance(default_ttl_s, (int, float))
+            isinstance(default_ttl_s, bool)
+            or not isinstance(default_ttl_s, (int, float))
             or not math.isfinite(default_ttl_s)
             or default_ttl_s <= 0
         ):
@@ -692,8 +701,14 @@ class SemanticCache:
         # entirely. Reject at this seam rather than store a poisoned record.
         # `isinstance` first: a present-but-non-numeric ttl_s (str/None-typed
         # config) hits `math.isfinite` and raises a raw TypeError otherwise.
+        # Reject `bool` too (an `int` subclass) — `ttl_s=True` (→1s) silently
+        # expires the entry almost immediately, mirroring the constructor guard
+        # and leh#178.
         if ttl_s is not None and (
-            not isinstance(ttl_s, (int, float)) or not math.isfinite(ttl_s) or ttl_s <= 0
+            isinstance(ttl_s, bool)
+            or not isinstance(ttl_s, (int, float))
+            or not math.isfinite(ttl_s)
+            or ttl_s <= 0
         ):
             raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s!r}")
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s

@@ -190,9 +190,15 @@ class EntropySignal:
         # but-non-numeric threshold (a str/None from a JSON/YAML/env config
         # table) otherwise hit `math.isfinite(...)` and raised a raw TypeError
         # instead of this field-named ValueError — the router-layer sibling of
-        # the #142/#144/#151 isinstance-first sweep.
+        # the #142/#144/#151 isinstance-first sweep. `bool` is an `int` subclass,
+        # so `isinstance(True, (int, float))` is True and `True`/`False` coerce to
+        # 1.0/0.0 IN-range, slipping through silently: `threshold=False` (→0.0)
+        # disables the signal exactly like a negative, `threshold=True` (→1.0)
+        # makes it always-trip. Reject `bool` explicitly, mirroring the
+        # llm-eval-harness sibling guards (calibration.py/judge.py, #178).
         if (
-            not isinstance(self.threshold, (int, float))
+            isinstance(self.threshold, bool)
+            or not isinstance(self.threshold, (int, float))
             or not math.isfinite(self.threshold)
             or self.threshold < 0.0
         ):
@@ -373,9 +379,13 @@ class JudgeConfidenceSignal:
         # `isinstance` first, same reason as EntropySignal: a present-but-non-
         # numeric threshold (str/None from a config table) otherwise hit
         # `math.isfinite(...)` and raised a raw TypeError instead of this
-        # field-named ValueError (#142/#144/#151 sibling).
+        # field-named ValueError (#142/#144/#151 sibling). `bool` is an `int`
+        # subclass, so `True`/`False` coerce to 1.0/0.0 IN [0,1] and slip through
+        # silently — `threshold=False` (→0.0) disables the signal, `True` (→1.0)
+        # always-trips. Reject `bool` explicitly (leh#178 / calibration.py).
         if (
-            not isinstance(self.threshold, (int, float))
+            isinstance(self.threshold, bool)
+            or not isinstance(self.threshold, (int, float))
             or not math.isfinite(self.threshold)
             or not (0.0 <= self.threshold <= 1.0)
         ):
