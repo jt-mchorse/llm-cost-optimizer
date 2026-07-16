@@ -102,6 +102,52 @@ def test_main_bad_thresholds_exits_two(tmp_path: Path, capsys) -> None:
     assert not out_stem.with_suffix(".json").exists()
 
 
+@pytest.mark.parametrize(
+    ("flag", "value"),
+    [
+        ("--cheap-dollars", "nan"),
+        ("--cheap-dollars", "inf"),
+        ("--cheap-dollars", "-inf"),
+        ("--cheap-dollars", "-0.5"),
+        ("--strong-dollars", "nan"),
+        ("--strong-dollars", "inf"),
+        ("--strong-dollars", "-0.01"),
+    ],
+)
+def test_main_non_finite_or_negative_dollars_exits_two(
+    tmp_path: Path, capsys, flag: str, value: str
+) -> None:
+    """`--cheap-dollars`/`--strong-dollars` only get argparse `float` coercion,
+    which parses nan/inf/negative. Such a value would write a bare `NaN`/`Infinity`
+    (invalid JSON) or a fabricated negative cost into the committed
+    `docs/threshold_demo.json`. It must surface as a clean exit-2 operator error
+    with no artifact written — same contract as `--thresholds`/`--out`."""
+    out_stem = tmp_path / "should-not-be-written"
+    # `--flag=value` form so argparse assigns the value (a bare `-inf` token is
+    # otherwise mistaken for an option); this is how an operator would pass it.
+    rc = main(["--dry", "--out", str(out_stem), f"{flag}={value}"])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert f"{flag} must be a finite number >= 0" in captured.err
+    assert not out_stem.with_suffix(".json").exists()
+
+
+def test_main_finite_non_negative_dollars_still_written(tmp_path: Path) -> None:
+    """The guard must not regress the happy path: finite non-negative dollars
+    write a valid, strictly-parseable JSON artifact (no bare NaN/Infinity)."""
+    out_stem = tmp_path / "out"
+    rc = main(
+        ["--dry", "--out", str(out_stem), "--cheap-dollars", "0.001", "--strong-dollars", "0.02"]
+    )
+    assert rc == 0
+    text = (tmp_path / "out.json").read_text()
+    payload = json.loads(
+        text, parse_constant=lambda c: (_ for _ in ()).throw(ValueError(f"non-finite {c}"))
+    )
+    assert payload["cheap_dollars_per_request"] == 0.001
+    assert payload["strong_dollars_per_request"] == 0.02
+
+
 def test_main_unwritable_out_exits_two(tmp_path: Path, capsys) -> None:
     """An unwritable `--out` (a path component that is a file) makes
     `atomic_write_text` raise OSError; instead of a raw traceback at exit 1 it must
