@@ -1023,3 +1023,20 @@ Fixed by porting the rag#128 fix (`_cap_base_for_temp`, 200-byte typed char-boun
 Gaps: `bench_savings --n 0`/negative ran to completion and emitted a vacuous all-$0.00 "benchmark" over an empty workload (now exit 2, matching the `--n >= 1` guard in the pyasync/vsas bench scripts); an unwritable `--out` in either script raw-tracebacked after the run (now wrapped in `try/except OSError` → exit 2); and a non-numeric `--thresholds` token in tune raised a raw `ValueError` (now exit 2). Verified every path firsthand: all six error/happy cases exit as intended.
 
 The lens: a script that already has an explicit `return 2` operator-error path but raw-tracebacks on a sibling operator input is an internal contract inconsistency, not churn — the existing exit-2 branch is the evidence the gap is real. Found by my own manual hunt (lco scripts weren't in the agent wave; I'd only checked the core package earlier). Gotcha: two existing `test_atomic_write.py` tests monkeypatched `os.replace` to raise and asserted the OSError *propagates*; my guard now catches it, so I updated both to assert `rc == 2` with no partial artifacts (the atomic all-or-nothing intent is preserved under the new exit-2 contract). Full suite green, ruff clean. Shipped as PR #157.
+
+## 2026-07-15 — Issue #158: bool config values slip past isinstance(int,float) (sibling of leh#178)
+
+A cross-repo second-order sibling of this run's own llm-eval-harness #178. The
+#142/#144/#151 sweep added `isinstance(x,(int,float))`-first checks to reject
+str/None config before math.isfinite raised a raw TypeError — but `bool` is an
+`int` subclass, so True/False coerce to 1.0/0.0 in-range and slip through. Verified
+firsthand across 5 public seams (router EntropySignal/JudgeConfidenceSignal
+thresholds, SemanticCache similarity_threshold/default_ttl_s/per-call ttl_s), each
+with the documented silent-misconfig harm (disable/always-trip/near-instant-evict).
+
+Fixed by rejecting bool explicitly, mirroring leh calibration.py/judge.py/#178.
+Scoped to config validators with documented harm; left pricing + embedding-vector
+checks (different value class). Full suite green.
+
+Why prioritized: the bool-is-int-subclass lens from #178 transfers to every repo
+that added isinstance(int,float) for str/None but not bool.

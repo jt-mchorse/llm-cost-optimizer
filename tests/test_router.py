@@ -907,6 +907,18 @@ class TestEntropySignalThresholdValidation:
         ):
             EntropySignal(threshold=bad)  # type: ignore[arg-type]
 
+    @pytest.mark.parametrize("bad", [True, False])
+    def test_rejects_bool(self, bad: bool) -> None:
+        # `bool` is an `int` subclass, so it passes `isinstance(x, (int, float))`
+        # and `True`/`False` coerce to 1.0/0.0 (both finite, >= 0.0) — slipping
+        # through the isinstance-first guard silently: `threshold=False` (→0.0)
+        # disables the signal, `threshold=True` (→1.0) makes it always-trip.
+        # Sibling of llm-eval-harness #178; reject `bool` explicitly.
+        with pytest.raises(
+            ValueError, match=r"EntropySignal\.threshold must be a finite number >= 0\.0"
+        ):
+            EntropySignal(threshold=bad)  # type: ignore[arg-type]
+
     def test_accepts_zero_boundary(self) -> None:
         # Zero is meaningful — "trip on any nonzero entropy".
         sig = EntropySignal(threshold=0.0)
@@ -943,6 +955,27 @@ class TestJudgeConfidenceSignalThresholdValidation:
         # #152 (sibling of #142/#144/#151): a present-but-non-numeric threshold
         # (str/None from a config table) hit `math.isfinite(...)` before any type
         # check and raised a raw TypeError instead of this field-named ValueError.
+        from cost_optimizer.router import JudgeConfidenceSignal as JCS
+
+        class _StubJudge:
+            def score(self, *_a, **_k):
+                class V:
+                    score = 0.5
+
+                return V()
+
+        with pytest.raises(
+            ValueError,
+            match=r"JudgeConfidenceSignal\.threshold must be a finite number in \[0\.0, 1\.0\]",
+        ):
+            JCS(judge=_StubJudge(), rubric="faithfulness", threshold=bad)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("bad", [True, False])
+    def test_rejects_bool(self, bad: bool) -> None:
+        # `bool` is an `int` subclass, so `True`/`False` coerce to 1.0/0.0 IN
+        # [0, 1] and slip through the isinstance-first guard silently —
+        # `threshold=False` (→0.0) disables the signal, `True` (→1.0) always-trips.
+        # Sibling of llm-eval-harness #178; reject `bool` explicitly.
         from cost_optimizer.router import JudgeConfidenceSignal as JCS
 
         class _StubJudge:

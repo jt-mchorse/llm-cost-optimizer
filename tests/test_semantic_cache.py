@@ -701,6 +701,35 @@ def test_put_rejects_non_numeric_ttl_s_with_valueerror(bad):
         cache.put("p", "v", model="m", ttl_s=bad)
 
 
+# `bool` is an `int` subclass, so it passes `isinstance(x, (int, float))` and
+# `True`/`False` coerce to 1.0/0.0 IN-range — slipping past the isinstance-first
+# guards above and silently mis-setting the config (similarity_threshold=True →
+# 1.0 hit gate; ttl_s=True → 1s near-instant eviction). Sibling of
+# llm-eval-harness #178; reject `bool` explicitly at every seam.
+@pytest.mark.parametrize("bad", [True, False])
+def test_similarity_threshold_rejects_bool_with_valueerror(bad):
+    with pytest.raises(ValueError, match="must be a number"):
+        SemanticCache(embedder=HashEmbedder(), storage=InMemoryStorage(), similarity_threshold=bad)
+
+
+@pytest.mark.parametrize("bad", [True, False])
+def test_default_ttl_rejects_bool_with_valueerror(bad):
+    with pytest.raises(ValueError, match="finite positive number"):
+        SemanticCache(
+            embedder=HashEmbedder(),
+            storage=InMemoryStorage(),
+            similarity_threshold=0.9,
+            default_ttl_s=bad,
+        )
+
+
+@pytest.mark.parametrize("bad", [True, False])
+def test_put_rejects_bool_ttl_s_with_valueerror(bad):
+    cache, _ = _cache()
+    with pytest.raises(ValueError, match="finite positive number"):
+        cache.put("p", "v", model="m", ttl_s=bad)
+
+
 def test_put_ttl_s_none_falls_back_to_default():
     # ttl_s=None must still defer to default_ttl_s (here: no expiry).
     cache, _ = _cache(ttl=None)
