@@ -161,6 +161,30 @@ def test_main_unwritable_out_exits_two(tmp_path: Path, capsys) -> None:
     assert "could not write sweep artifacts" in captured.err
 
 
+def test_main_plot_write_oserror_exits_two(tmp_path: Path, capsys, monkeypatch) -> None:
+    """The PNG plot is the sibling write seam of the JSON write: with matplotlib
+    installed but the `.png` path unwritable, `_try_save_plot`'s `mkdir`/`savefig`
+    raise OSError. It must surface as a clean stderr line + exit 2 (not escape
+    `main` as a raw traceback at exit 1). Sibling of the #156/#157 JSON-seam guard,
+    which left `_try_save_plot` bare. Monkeypatching the plot fn keeps the lock
+    matplotlib-free (it is absent from the `dev` extra / CI)."""
+    import tune_threshold
+
+    def _raise_oserror(rows, out_png):
+        raise OSError("read-only file system")
+
+    monkeypatch.setattr(tune_threshold, "_try_save_plot", _raise_oserror)
+    out_stem = tmp_path / "sweep"
+    rc = main(["--dry", "--out", str(out_stem), "--thresholds", "0.5,1.5"])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "could not write sweep plot" in captured.err
+    # The JSON artifact wrote successfully *before* the plot seam failed — this is
+    # the divergent-failure path the wholesale-unwritable `--out` above can't reach
+    # (there the JSON write fails first).
+    assert (tmp_path / "sweep.json").exists()
+
+
 # ----------------------------------------------------------------------
 # #54: ThresholdSweepRow.to_dict — explicit field-by-field contract.
 # Mirrors StrategyResult.to_dict in scripts/bench_savings.py.
