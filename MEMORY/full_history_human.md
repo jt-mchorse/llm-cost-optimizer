@@ -1046,3 +1046,17 @@ that added isinstance(int,float) for str/None but not bool.
 `scripts/tune_threshold.py` carefully guards `--thresholds`, `--out`, and `--no-dry` with a clean exit-2 contract, but the two dollar flags `--cheap-dollars`/`--strong-dollars` had only argparse's `type=float` — which parses `nan`/`inf`/negative. Those values flowed into `json.dumps` as bare `NaN`/`Infinity` (invalid JSON) and into `sweep()`'s per-request dollar arithmetic, so a mistyped flag could write invalid JSON or a fabricated negative cost into the committed `docs/threshold_demo.json` (the artifact README:181 documents regenerating) at exit 0.
 
 Fixed by validating both flags with `math.isfinite(v) and v >= 0` after `parse_args`, emitting a clean `::error::` line + exit 2 — the same operator-misconfig contract as `--thresholds`, and the portfolio's "no non-finite / no fabricated dollar at JSON egress" rule. Verified all cases firsthand. 8 tests added (7 parametrized rejects + a happy-path strict-parse). Note: the tests pass `--flag=value` because a bare `-inf` token is otherwise mistaken for an option by argparse. PR #161.
+
+## 2026-07-17 — Issue #162: guard the PNG plot write seam (exit 2)
+
+The #156/#157 fix wrapped the JSON write in `tune_threshold.py` so an unwritable
+`--out` exits cleanly with code 2 instead of a raw traceback. It missed the
+sibling PNG write one line below: `_try_save_plot` runs `mkdir` + `savefig`, both
+of which raise `OSError` when the `.png` path is unwritable (a directory sitting
+at the `.png` stem, a read-only file) — with matplotlib installed that escaped
+`main()` as a raw exit-1 traceback. The guard's own comment even wrongly claimed
+the plot write "already degrades gracefully" (only true when matplotlib is
+absent). Wrapped the plot call to emit `::error::could not write sweep plot` and
+return 2, matching the JSON seam. Test monkeypatches `_try_save_plot` to raise
+`OSError` so the lock runs in CI without a matplotlib dependency. Shipped as PR
+#163 (ready).
