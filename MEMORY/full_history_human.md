@@ -1040,3 +1040,9 @@ checks (different value class). Full suite green.
 
 Why prioritized: the bool-is-int-subclass lens from #178 transfers to every repo
 that added isinstance(int,float) for str/None but not bool.
+
+## 2026-07-16 (night) — tune_threshold non-finite/negative dollar flags (#160)
+
+`scripts/tune_threshold.py` carefully guards `--thresholds`, `--out`, and `--no-dry` with a clean exit-2 contract, but the two dollar flags `--cheap-dollars`/`--strong-dollars` had only argparse's `type=float` — which parses `nan`/`inf`/negative. Those values flowed into `json.dumps` as bare `NaN`/`Infinity` (invalid JSON) and into `sweep()`'s per-request dollar arithmetic, so a mistyped flag could write invalid JSON or a fabricated negative cost into the committed `docs/threshold_demo.json` (the artifact README:181 documents regenerating) at exit 0.
+
+Fixed by validating both flags with `math.isfinite(v) and v >= 0` after `parse_args`, emitting a clean `::error::` line + exit 2 — the same operator-misconfig contract as `--thresholds`, and the portfolio's "no non-finite / no fabricated dollar at JSON egress" rule. Verified all cases firsthand. 8 tests added (7 parametrized rejects + a happy-path strict-parse). Note: the tests pass `--flag=value` because a bare `-inf` token is otherwise mistaken for an option by argparse. PR #161.

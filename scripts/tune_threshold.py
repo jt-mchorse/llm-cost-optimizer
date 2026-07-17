@@ -289,6 +289,26 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    # `--cheap-dollars`/`--strong-dollars` are operator input too (argparse only
+    # enforces `float`, which happily parses `nan`/`inf`/negative). A non-finite
+    # value flows into `json.dumps` as a bare `NaN`/`Infinity` token — invalid
+    # JSON a strict parser rejects — and into `sweep()`'s per-request dollar
+    # arithmetic; a negative value fabricates a negative cost. Both would land in
+    # the committed `docs/threshold_demo.json`. Reject them with the same clean
+    # exit-2 operator-misconfig contract as `--thresholds` below and the
+    # portfolio's "no non-finite / no fabricated dollar at JSON egress" rule
+    # (ModelPricing/BatchCostQuote.__post_init__).
+    for _flag, _value in (
+        ("--cheap-dollars", args.cheap_dollars),
+        ("--strong-dollars", args.strong_dollars),
+    ):
+        if not math.isfinite(_value) or _value < 0.0:
+            print(
+                f"::error::{_flag} must be a finite number >= 0; got {_value!r}",
+                file=sys.stderr,
+            )
+            return 2
+
     # `--thresholds` is operator input: a non-numeric token made `float(t)` raise
     # a raw `ValueError` traceback at exit 1, breaking the same operator-misconfig
     # exit-2 contract the `--no-dry` guard above honors. Translate it to a clean
