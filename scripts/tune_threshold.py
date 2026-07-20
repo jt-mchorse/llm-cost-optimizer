@@ -341,14 +341,25 @@ def main(argv: list[str] | None = None) -> int:
     # `atomic_write_text` raise OSError, which without this guard escaped `main`
     # as a raw traceback at exit 1. Translate it to a clean stderr line + exit 2,
     # matching the `--no-dry` guard above and the portfolio write-seam contract
-    # (llm-eval-harness#158/#159, python-async-llm-pipelines#84). The plot write
-    # (`_try_save_plot`) already degrades gracefully when matplotlib is absent.
+    # (llm-eval-harness#158/#159, python-async-llm-pipelines#84).
     try:
         atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
     except OSError as e:
         print(f"::error::could not write sweep artifacts: {e}", file=sys.stderr)
         return 2
-    plot_written = _try_save_plot(rows, out_png)
+    # The PNG plot is the sibling write seam sharing the same operator `--out`.
+    # `_try_save_plot` degrades gracefully when matplotlib is *absent* (ImportError
+    # -> returns False), but its `mkdir`/`savefig` raise OSError when the `.png`
+    # path itself is unwritable (a dir pre-existing at the `.png` stem, a read-only
+    # file, a path component that is a file) — reachable when the `.json` write
+    # above succeeds but the `.png` specifically can't be written, with matplotlib
+    # installed. Without this guard that OSError escaped `main` as a raw traceback
+    # at exit 1, the same contract break #156 fixed for the JSON seam one line up.
+    try:
+        plot_written = _try_save_plot(rows, out_png)
+    except OSError as e:
+        print(f"::error::could not write sweep plot: {e}", file=sys.stderr)
+        return 2
     print(f"sweep wrote {out_json}")
     if plot_written:
         print(f"plot wrote  {out_png}")
