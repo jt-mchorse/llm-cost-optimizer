@@ -327,6 +327,17 @@ def test_compare_realtime_vs_batch_rejects_non_numeric_discount(bad):
         compare_realtime_vs_batch(rows, prices={"fake-big": _quote()}, discount=bad)
 
 
+@pytest.mark.parametrize("bad", [True, False])
+def test_compare_realtime_vs_batch_rejects_boolean_discount(bad):
+    # bool subclasses int, so `discount=True` passed (`0.0 <= 1 <= 1.0`) and
+    # applied NO discount (savings 0%), while `discount=False` applied a FULL
+    # discount (batch free, savings 100%) — both mis-price the dashboard. The
+    # bool-is-int-subclass sibling of the rate-field guards above.
+    rows = [BatchResultRow(custom_id="a", response_text="x", prompt_tokens=10, completion_tokens=0)]
+    with pytest.raises(ValueError, match="0.0, 1.0"):
+        compare_realtime_vs_batch(rows, prices={"fake-big": _quote()}, discount=bad)
+
+
 # ----------------------------------------------------------------------
 # Protocol conformance + AnthropicBatchBackend (duck-typed, with a fake client)
 # ----------------------------------------------------------------------
@@ -713,6 +724,17 @@ class TestBatchCostQuoteRateValidation:
         # #144: a present-but-non-numeric rate (str/None/list from a JSON-decoded
         # quote) hit the bare math.isfinite and raised a raw TypeError; must now
         # raise the same field-named ValueError (sibling of #142).
+        kwargs = dict(model="m", input_per_mtok=10.0, output_per_mtok=40.0)
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0.0"):
+            BatchCostQuote(**kwargs)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("field", ["input_per_mtok", "output_per_mtok"])
+    @pytest.mark.parametrize("bad", [True, False])
+    def test_rejects_boolean_rate(self, field: str, bad: bool) -> None:
+        # bool subclasses int, so a JSON true/false passed every check and
+        # fabricated a $1/$0 per-MTok rate — the same bool-is-int-subclass hole
+        # ModelPricing.__post_init__ carried, which this validator mirrors.
         kwargs = dict(model="m", input_per_mtok=10.0, output_per_mtok=40.0)
         kwargs[field] = bad
         with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0.0"):

@@ -53,6 +53,18 @@ class TestModelPricingValidation:
         with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0\.0"):
             ModelPricing(**kwargs)  # type: ignore[arg-type]
 
+    @pytest.mark.parametrize("field", _FIELDS)
+    @pytest.mark.parametrize("bad", [True, False])
+    def test_rejects_boolean(self, field: str, bad: bool) -> None:
+        # bool subclasses int, so a JSON true/false passed isinstance((int, float))
+        # + isfinite + >= 0.0 and fabricated a rate (True -> $1/MTok or a 1.0x
+        # multiplier, False -> a 0.0x free-cache multiplier). The bool-is-int-subclass
+        # sibling of the int-field guards in batch.py and the router config (#158).
+        kwargs: dict[str, object] = {"model": "m", "input_per_mtok": 1.0}
+        kwargs[field] = bad
+        with pytest.raises(ValueError, match=rf"{field} must be a finite number >= 0\.0"):
+            ModelPricing(**kwargs)  # type: ignore[arg-type]
+
     def test_rejects_empty_model(self) -> None:
         with pytest.raises(ValueError, match="model must be a non-empty string"):
             ModelPricing(model="", input_per_mtok=1.0)
