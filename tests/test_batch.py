@@ -701,6 +701,56 @@ class TestFromSdkBatchRequestCountCoercion:
         with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
             _from_sdk_batch(resp, idempotency_key="k")
 
+    # #166: the `isinstance(part, (int, float))` gate was wider than the
+    # docstring's "well-formed count", and the trailing `int(total)` laundered
+    # the extras past `BatchJobMeta.__post_init__` — the guard the docstring
+    # points at. `True` fabricated `n_requests=1` (bool subclasses int, and
+    # __post_init__'s own bool check never ran), `2.7` truncated to `2`, and
+    # NaN/inf reached `int()` and raised a raw non-field-named ValueError /
+    # an OverflowError. All must take the same clean path as str/None/containers.
+    _MALFORMED_PARTS = [True, False, 2.7, -0.5, float("nan"), float("inf"), float("-inf")]
+
+    @pytest.mark.parametrize("bad", _MALFORMED_PARTS)
+    def test_malformed_request_counts_field_surfaces_clean_error(self, bad: object) -> None:
+        counts = _SdkObj(processing=0, succeeded=bad, errored=0, canceled=0)
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            _from_sdk_batch(self._resp(request_counts=counts), idempotency_key="k")
+
+    @pytest.mark.parametrize("bad", _MALFORMED_PARTS)
+    def test_malformed_scalar_n_requests_surfaces_clean_error(self, bad: object) -> None:
+        # No ``request_counts`` attr → falls back to scalar ``n_requests``; the
+        # fallback path must reject the same shapes as the summed path.
+        resp = _SdkObj(
+            id="b", processing_status="ended", created_at="2026-05-16T00:00:00Z", n_requests=bad
+        )
+        with pytest.raises(ValueError, match=r"BatchJobMeta\.n_requests must be an int >= 1"):
+            _from_sdk_batch(resp, idempotency_key="k")
+
+    @pytest.mark.parametrize("bad", _MALFORMED_PARTS)
+    def test_malformed_part_never_raises_overflow_error(self, bad: object) -> None:
+        # `int(float("inf"))` raises OverflowError, which is NOT a ValueError
+        # subclass — it slipped past every downstream `except ValueError` and
+        # escaped as a raw traceback. Lock the exception *type*, not just the
+        # message: this is the branch that broke the contract hardest.
+        counts = _SdkObj(processing=0, succeeded=bad, errored=0, canceled=0)
+        try:
+            _from_sdk_batch(self._resp(request_counts=counts), idempotency_key="k")
+        except ValueError:
+            pass  # the documented, field-named outcome
+        except Exception as exc:  # pragma: no cover - fails loudly if it regresses
+            raise AssertionError(f"expected ValueError, got {type(exc).__name__}: {exc}") from exc
+        else:
+            raise AssertionError(f"malformed count {bad!r} was silently accepted")
+
+    @pytest.mark.parametrize(("good", "expected"), [(3.0, 7), (0.0, 4)])
+    def test_integral_float_counts_still_sum(self, good: float, expected: int) -> None:
+        # Regression lock: the SDK legitimately hands back JSON numbers, so an
+        # integral float must keep summing — the #166 guard narrows to bool /
+        # non-finite / non-integral only.
+        counts = _SdkObj(processing=good, succeeded=1, errored=2, canceled=1)
+        meta = _from_sdk_batch(self._resp(request_counts=counts), idempotency_key="k")
+        assert meta.n_requests == expected
+
 
 class TestBatchCostQuoteRateValidation:
     # `BatchCostQuote` is the batch-axis equivalent of `ModelPricing`, which
