@@ -92,8 +92,19 @@ class ModelPricing:
             # config-supplied pricing table) hit the bare `math.isfinite(value)`
             # and raised a raw TypeError instead of this field-named ValueError —
             # the pricing-layer sibling of the #142 `_validate_embedding` gap.
-            if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0.0:
-                raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
+            # `bool` is excluded explicitly: it subclasses `int`, so a JSON
+            # `true`/`false` passes `isinstance((int, float))` + `isfinite` +
+            # `>= 0.0` and fabricates a rate (`True`→$1/MTok or a 1.0× multiplier,
+            # `False`→a 0.0× free-cache multiplier) — the bool-is-int-subclass
+            # class the portfolio-wide sweep already applied to the int fields in
+            # `batch.py` and the config seams in the router (#158).
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value < 0.0
+            ):
+                raise ValueError(f"{name} must be a finite number >= 0.0; got {value!r}")
 
 
 # Input $/MTok. Update when Anthropic publishes new pricing; the rule is

@@ -1060,3 +1060,18 @@ absent). Wrapped the plot call to emit `::error::could not write sweep plot` and
 return 2, matching the JSON seam. Test monkeypatches `_try_save_plot` to raise
 `OSError` so the lock runs in CI without a matplotlib dependency. Shipped as PR
 #163 (ready).
+
+## 2026-07-21 — cost-rate validators reject bool (#164, PR #165)
+
+Three lco cost-rate validators — `ModelPricing.__post_init__`,
+`BatchCostQuote.__post_init__`, and `compare_realtime_vs_batch`'s `discount`
+guard — checked `isinstance(value, (int, float))` + finiteness/range + non-negative
+but none excluded `bool`. Since bool subclasses int, a JSON `true`/`false` from a
+config/JSON pricing contract passed every check and fabricated a rate: `True`→$1/MTok
+or a 1.0× multiplier, `False`→a 0.0× free-cache multiplier or a 100% batch discount;
+`discount=True`→0% savings. The int-field validators in the same `batch.py` already
+excluded bool, so the float-rate validators were inconsistent. Verified all three
+firsthand. lco#158 swept the router/semantic-cache *config* threshold seams but not
+these *cost-rate* validators — a distinct dataclass cluster. Three parametrized
+tests. Lesson: a "bool-is-int-subclass EXHAUSTED" note scoped to one cluster doesn't
+cover a different one — re-scan per dataclass family when the vein resurfaces.

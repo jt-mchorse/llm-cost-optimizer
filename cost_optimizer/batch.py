@@ -563,8 +563,17 @@ class BatchCostQuote:
             # present-but-non-numeric price (a str/None from a JSON-decoded / config
             # quote) hit the bare `math.isfinite(value)` and raised a raw TypeError
             # instead of this field-named ValueError — sibling of the #142 gap.
-            if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0.0:
-                raise ValueError(f"{name} must be a finite number >= 0.0; got {value}")
+            # `bool` is excluded explicitly (it subclasses `int`): a JSON
+            # `true`/`false` otherwise passed every check and fabricated a $1/$0
+            # per-MTok rate — the same bool-is-int-subclass hole `ModelPricing`
+            # carried, mirrored here.
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value < 0.0
+            ):
+                raise ValueError(f"{name} must be a finite number >= 0.0; got {value!r}")
 
 
 @dataclass(frozen=True)
@@ -598,8 +607,16 @@ def compare_realtime_vs_batch(
     # `0.0 <= discount <= 1.0` and raised a raw TypeError ("'<=' not supported
     # between ...") instead of this field-named ValueError. NaN/Inf already fall
     # through the comparison to the clean ValueError; only the non-numeric branch
-    # leaked — sibling of the #142 present-but-non-numeric class.
-    if not isinstance(discount, (int, float)) or not 0.0 <= discount <= 1.0:
+    # leaked — sibling of the #142 present-but-non-numeric class. `bool` is
+    # excluded explicitly (it subclasses `int`): `discount=True` otherwise passed
+    # (`0.0 <= 1 <= 1.0`) and applied *no* discount (savings 0%), and
+    # `discount=False` applied a *full* discount (batch free, savings 100%) —
+    # both mis-price the dashboard, the bool-is-int-subclass class one axis over.
+    if (
+        isinstance(discount, bool)
+        or not isinstance(discount, (int, float))
+        or not 0.0 <= discount <= 1.0
+    ):
         raise ValueError(f"discount must be a number in [0.0, 1.0]; got {discount!r}")
     if not rows:
         return CostComparison(0.0, 0.0, 0.0, 0.0, 0)
