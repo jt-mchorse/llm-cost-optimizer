@@ -444,6 +444,26 @@ def _sdk_request_total(resp: Any) -> Any:
     The contracts differ: token usage is best-effort observability and
     *abstains* (→ 0); a request count of "no valid requests" is meaningless and
     must *raise* (see ``BatchJobMeta.__post_init__``).
+
+    "Well-formed" is narrower than ``isinstance(part, (int, float))`` (#166).
+    That gate let three malformed shapes through, and the trailing ``int(total)``
+    then *laundered* them past the very ``__post_init__`` guard this docstring
+    points at:
+
+    - ``bool`` subclasses ``int``, so ``succeeded=True`` summed to ``1`` and
+      fabricated ``n_requests=1`` — while ``__post_init__`` explicitly rejects a
+      bool ``n_requests``, making that guard dead on this path. Same
+      bool-is-int-subclass vein as the float rate validators in this file (#164).
+    - a non-integral ``float`` (``2.7``) truncated silently to ``2``;
+      ``__post_init__``'s ``isinstance(..., int)`` would have caught the raw value.
+    - ``NaN``/``±inf`` reached ``int()``, which raises a raw non-field-named
+      ``ValueError`` (NaN) or an ``OverflowError`` (inf) — and ``OverflowError``
+      is not a ``ValueError`` subclass, so it slips past every downstream
+      ``except ValueError`` and escapes as a traceback.
+
+    All three are returned unchanged now, joining ``str``/``None``/containers on
+    the clean field-named path. Integral floats (``3.0``) still sum — the SDK
+    legitimately hands back JSON numbers.
     """
     counts = getattr(resp, "request_counts", None)
     if counts is not None:
@@ -453,10 +473,25 @@ def _sdk_request_total(resp: Any) -> Any:
         parts = [getattr(resp, "n_requests", 0)]
     total: float = 0
     for part in parts:
-        if not isinstance(part, (int, float)):
+        if _is_malformed_count_part(part):
             return part  # surfaced to __post_init__'s clean field-named ValueError
         total += part
     return int(total)
+
+
+def _is_malformed_count_part(part: Any) -> bool:
+    """True when a request-count component must bypass summing (see #166).
+
+    Returning the offending part unchanged is what routes it to
+    ``BatchJobMeta.__post_init__``'s field-named ``ValueError`` instead of a raw
+    exception (or, worse, a silently fabricated count) out of ``submit()``/
+    ``poll()``.
+    """
+    if isinstance(part, bool) or not isinstance(part, (int, float)):
+        return True
+    if not math.isfinite(part):
+        return True  # int(NaN) -> raw ValueError; int(inf) -> OverflowError
+    return part != int(part)  # non-integral float would truncate silently
 
 
 def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:

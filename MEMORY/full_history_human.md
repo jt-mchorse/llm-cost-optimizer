@@ -1111,3 +1111,35 @@ just formatter scope.
 Pinning a ruff range in `.[dev]` is the deeper fix, but that is a dependency
 policy call across six repos rather than a bug fix, so it is flagged for JT
 rather than made unilaterally.
+
+## 2026-07-31 — `_sdk_request_total` laundered malformed counts (#166, PR #167)
+
+`_sdk_request_total` exists for one reason: hand a malformed SDK request count
+back untouched so `BatchJobMeta.__post_init__` can reject it with a clean,
+field-named `ValueError` instead of a raw exception erupting out of
+`submit()`/`poll()`. Its `isinstance(part, (int, float))` gate was wider than the
+"well-formed count" the docstring claims, and the trailing `int(total)` then
+laundered the extras straight past the guard the docstring points at.
+
+Four branches, verified firsthand against `main`. `succeeded=True` summed to 1
+and fabricated `n_requests=1` — bool subclasses int, so `__post_init__`'s own
+explicit bool check never ran; that guard was dead on this path. `2.7` truncated
+silently to `2`. `NaN` reached `int()` and raised a raw, non-field-named
+`ValueError`. And `inf` raised `OverflowError` — which is not a `ValueError`
+subclass, so it slipped past every downstream `except ValueError` and escaped as
+a traceback. That last one is the worst: it breaks the exception *type* contract,
+not just the diagnostic.
+
+Fixed by extracting `_is_malformed_count_part`, which rejects bool, non-finite,
+and non-integral floats so all three join `str`/`None`/containers on the clean
+path; integral floats like `3.0` still sum, since the SDK legitimately returns
+JSON numbers. Tests cover every shape on both the `request_counts` and scalar
+`n_requests` paths, lock the exception type, and regression-lock integral floats.
+
+Two lessons worth carrying. First: when a fix hardens a dataclass's
+`__post_init__` validators (#164 did exactly that for this file's float rate
+validators), also grep the module for *coercion helpers that run before
+construction* — they can render the new guard dead on their path. Second: audit
+the exception *type*, not just the presence of a guard. `int(nan)` is a
+`ValueError` but `int(inf)` is an `OverflowError`, and that difference defeats
+`except ValueError` contracts.
