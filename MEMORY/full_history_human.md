@@ -1075,3 +1075,39 @@ firsthand. lco#158 swept the router/semantic-cache *config* threshold seams but 
 these *cost-rate* validators — a distinct dataclass cluster. Three parametrized
 tests. Lesson: a "bool-is-int-subclass EXHAUSTED" note scoped to one cluster doesn't
 cover a different one — re-scan per dataclass family when the vein resurfaces.
+
+## 2026-07-31 — ruff 0.16.1 started formatting Markdown (#168, PR)
+
+CI installs ruff unpinned through `pip install -e '.[dev]'`, and ruff 0.16.1 —
+released since the last green run — extended `ruff format` to Python code
+blocks *inside Markdown*. Nothing in this repo changed; the tool's scope did.
+Six portfolio repos broke the same way on the same day: rag-production-kit,
+llm-eval-harness, chunking-strategies-lab and llm-cost-optimizer went red on the
+morning's merges, while prompt-regression-suite and python-async-llm-pipelines
+were latent, set to go red on their next push.
+
+The trap is version skew. Local venvs still carry 0.15.13, so `ruff format
+--check` passes locally and fails in CI; reproducing it at all meant installing
+0.16.1 into a throwaway venv. I only found it because my own in-flight PR went
+red on lint and `main` turned out to be red too.
+
+Reformatting the Markdown would have been the wrong fix. The lint contract here
+has always been "format Python source", and prose is not Python source. The
+sharpest case is chunking-strategies-lab, where the same sweep wanted to rewrite
+`data/corpus/05_async_pipelines.md` — a pinned benchmark corpus document.
+Editing a code block inside it changes the text the chunkers run over and shifts
+every canonical metric. A lint tool must never rewrite a benchmark input.
+
+So: `extend-exclude = ["*.md"]`, which re-states the scope the config always
+meant, plus a lock test so a future pyproject cleanup can't silently re-expand
+it. The test asserts on the config rather than shelling out to ruff, because the
+intent needs to be un-droppable and the assertion has to hold on any ruff
+version — including ones predating the Markdown feature, which is the very skew
+that let this land unnoticed. Amusingly, the lock test itself tripped a *second*
+0.16.1 change: UP036 now flags the `sys.version_info >= (3, 11)` tomllib import
+guard at `target-version = "py311"`. Lint rules drift on minor releases too, not
+just formatter scope.
+
+Pinning a ruff range in `.[dev]` is the deeper fix, but that is a dependency
+policy call across six repos rather than a bug fix, so it is flagged for JT
+rather than made unilaterally.
