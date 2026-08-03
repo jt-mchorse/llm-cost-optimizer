@@ -1143,3 +1143,41 @@ construction* — they can render the new guard dead on their path. Second: audi
 the exception *type*, not just the presence of a guard. `int(nan)` is a
 `ValueError` but `int(inf)` is an `OverflowError`, and that difference defeats
 `except ValueError` contracts.
+
+## 2026-08-03 — Issue #170: eight dashboard tests that had never run
+
+The savings dashboard is layer 5 of the README, it is in the repo's one-line
+description, and `README.md:21` tells the reader to run `streamlit run
+dashboard/app.py`. Eight tests in `tests/test_bench_savings.py` exist to
+protect it. None of them had ever executed in CI.
+
+The `test` job installed `pip install -e '.[dev]'`, and `[dev]` carries neither
+streamlit nor pandas — those are the `[dashboard]` extra. So every one of the
+eight hit its `find_spec(...) → pytest.skip(...)` guard and skipped, and the
+job reported green on every PR while nothing checked the feature. Confirmed in
+a fresh 3.11 venv with exactly CI's install line: eight `SKIPPED` lines. With
+`[dashboard]` added, zero skips and the full suite green on 3.11 and 3.12.
+
+This is a different shape from the CI-coverage-gap sweep that produced mcp#90
+and rag#120. Those were missing *jobs*. Here the job exists and is green while
+the tests quietly skip — a green check mark that means less than it looks like.
+It is also mechanically findable: run pytest with `-rs` in a fresh venv using
+the repo's own CI install line, and count the skips. Doing that across the
+portfolio turned up the same shape in three more repos (chunking 2, ems 4, vsas
+3), filed separately. rag's seven Postgres skips are *not* in this class — its
+`integration-pg` job brings up a real Postgres service, so those genuinely run.
+
+The guards themselves stay. They are right for a contributor in a minimal venv;
+CI is not that environment, and the bug was treating it as though it were. Both
+packages are pure-Python wheels, so CI stays hermetic.
+
+The lock test is the part worth reusing. Asserting "CI installs `[dashboard]`"
+would let the next extra repeat this silently, which is exactly how this one
+happened — so it reads the requirement out of the suite instead, scanning the
+skip guards for `(the [<name>] extra)` and asserting each name appears in the
+install line. There is an anti-vacuous test that fails loudly if the guard
+wording changes, rather than letting the lock start passing while checking
+nothing, and a parametrized check that each guarded extra actually exists in
+pyproject — a guard naming a nonexistent extra can never be satisfied. And I
+reverted the install line to confirm the lock fails with the right diagnostic
+before shipping it. Shipped as PR #171.
