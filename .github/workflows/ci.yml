@@ -42,7 +42,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - run: pip install -e '.[dev]'
+      # `[dashboard]` (streamlit + pandas) is installed alongside `[dev]` so
+      # the 8 savings-dashboard tests in tests/test_bench_savings.py actually
+      # execute. Their `find_spec(...) -> pytest.skip(...)` guards are correct
+      # for a contributor's minimal venv, but under a `[dev]`-only CI install
+      # they skipped every run — the job went green while nothing checked a
+      # feature that is layer 5 of the README and reads docs/savings.json
+      # directly (#170). Both are pure-Python wheels: no service, no network,
+      # no secret, so CI stays hermetic.
+      - run: pip install -e '.[dev,dashboard]'
       - run: pytest --cov=cost_optimizer --cov-report=term-missing
 
   memory-check:
