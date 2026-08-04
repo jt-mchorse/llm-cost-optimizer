@@ -1181,3 +1181,59 @@ nothing, and a parametrized check that each guarded extra actually exists in
 pyproject — a guard naming a nonexistent extra can never be satisfied. And I
 reverted the install line to confirm the lock fails with the right diagnostic
 before shipping it. Shipped as PR #171.
+
+## 2026-08-04 — Issue #172: two clocks, one subtraction
+
+`SemanticCache` takes an injectable `now_fn` and computes
+`expires_at = now_fn() + ttl_s`. `RedisStorage.put` turned that absolute
+timestamp back into a relative TTL with a direct `time.time()` call.
+
+Two different clocks in one subtraction. With the default they're the *same
+object* and the difference is microseconds, which is exactly why this survived
+this long. Under the injected clock the parameter exists for — the one the
+repo's own `_cache()` test helper uses, with a fake `1000.0` — the subtraction is
+nonsense, and `max(1, …)` floors the result:
+
+```
+ttl requested: 3600s; redis TTL actually set: 1
+in-memory: after 1.2 REAL seconds of a 3600s ttl -> hit=True
+redis:     after 1.2 REAL seconds of a 3600s ttl -> hit=False
+```
+
+A one-hour entry evicted after one second, with no diagnostic, and it inverts
+what the tool is for: the Redis-backed cache stops caching, every lookup misses,
+every request goes to the model.
+
+The `max(1, …)` is what made it silent rather than visible — it turned "these
+numbers came from different clocks" into a plausible short TTL. But it's doing a
+real job (stopping an already-expired record from becoming `EXPIRE key 0`, an
+immediate delete), so it stays. It was the clock that was wrong, not the floor.
+
+The lens worth keeping: **when a component takes a `now_fn`, grep the whole
+module for direct `time.time()` / `datetime.now()` / `perf_counter()` calls.**
+Any collaborator that consumes a timestamp the injected clock *produced*, but
+reads the wall clock to do it, is a silent divergence — and one that's invisible
+at the default, so tests written against the default won't find it.
+
+It's also the #131 shape again: one `Storage` interface, two implementations,
+and a property that holds for free in one is hand-maintained in the other.
+`InMemoryStorage` honours `expires_at` through `purge_expired(now_fn())`, the
+cache's clock threaded correctly. `RedisStorage` delegates expiry to Redis, which
+only knows the wall clock. The README states it as a feature: "RedisStorage uses
+… native Redis TTL for expiry."
+
+`RedisStorage` now takes its own `now_fn`, and `SemanticCache.__init__` refuses a
+storage whose clock isn't its own — by *identity*, so an untouched construction
+(the same `time.time` on both sides) passes and the only configuration rejected
+is a clock set on one side and not the other, which is precisely the mistake.
+
+I considered `EXPIREAT` with `record.expires_at`, which looks tidier and is
+worse: it hands Redis a timestamp on a clock Redis doesn't share, so a fake clock
+starting at 1000.0 would delete the key instantly instead of after a second.
+
+One test does nothing but assert that the pre-fix expression really did yield 1
+for a 3600-second TTL and the corrected one yields 3600. That keeps the guard
+anchored to the silent short TTL rather than to a constructor error a future
+change could relax around.
+
+626 passed. Shipped as PR #173.
