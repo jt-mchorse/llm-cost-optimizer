@@ -281,6 +281,7 @@ class RedisStorage:
         client: Any | None = None,
         key_prefix: str = DEFAULT_KEY_PREFIX,
         tag_prefix: str = DEFAULT_TAG_PREFIX,
+        now_fn: Any = time.time,
     ) -> None:
         if client is None:
             try:
@@ -294,6 +295,12 @@ class RedisStorage:
         self.client = client
         self.key_prefix = key_prefix
         self.tag_prefix = tag_prefix
+        # Must be the SAME clock `SemanticCache` computes `expires_at` from —
+        # `put` below turns that absolute timestamp back into a relative TTL,
+        # and the subtraction is meaningless across two clocks (#172).
+        # `SemanticCache.__init__` rejects a mismatch rather than letting it
+        # degrade quietly.
+        self.now_fn = now_fn
 
     def _record_key(self, key: str) -> str:
         return f"{self.key_prefix}:{key}"
@@ -332,7 +339,20 @@ class RedisStorage:
         # b2a_base64 to keep bytes safe for any Redis-client encoding mode.
         self.client.set(self._record_key(record.key), b2a_base64(blob).decode("ascii"))
         if record.expires_at is not None:
-            ttl = max(1, int(record.expires_at - time.time()))
+            # `record.expires_at` is an absolute timestamp on the *cache's*
+            # clock (`SemanticCache.now_fn() + ttl_s`), so the subtraction has
+            # to use that same clock. This read `time.time()` directly, which
+            # is only correct when `now_fn` happens to be the wall clock —
+            # under the injected clock the parameter exists for, a 3600s ttl
+            # produced `int(3600ish - 1.78e9)`, and `max(1, ...)` turned that
+            # into a **1-second** TTL. The record vanished after one real
+            # second while the in-memory backend still served it, so the
+            # Redis-backed cache silently stopped caching (#172).
+            #
+            # `max(1, ...)` stays: it keeps an already-expired record from
+            # becoming `EXPIRE key 0` (an immediate delete). It is only the
+            # floor, not the clock, that was doing the papering-over.
+            ttl = max(1, int(record.expires_at - self.now_fn()))
             self.client.expire(self._record_key(record.key), ttl)
         for tag in record.tags:
             self.client.sadd(self._tag_key(tag), record.key)
@@ -611,6 +631,29 @@ class SemanticCache:
         ):
             raise ValueError(
                 f"default_ttl_s must be a finite positive number; got {default_ttl_s!r}"
+            )
+        # A storage backend that has its own clock must be given *this* one.
+        # `expires_at` is computed here as `now_fn() + ttl_s`, and
+        # `RedisStorage.put` turns that absolute timestamp back into a relative
+        # TTL — arithmetic that is meaningless across two clocks. Left
+        # unchecked it degraded silently: with a fake clock on the cache and
+        # the default wall clock on the storage, `max(1, int(expires_at - now))`
+        # made every entry a 1-second TTL, so a Redis-backed cache stopped
+        # caching and every lookup went to the model (#172).
+        #
+        # Identity, not equality: the default is the same `time.time` object on
+        # both sides, so an untouched construction passes. The only shape this
+        # rejects is a clock configured on one side and not the other, which is
+        # exactly the mistake. Backends without a clock (`InMemoryStorage`,
+        # which reads `now` from `purge_expired`'s argument) are unaffected.
+        storage_now_fn = getattr(storage, "now_fn", None)
+        if storage_now_fn is not None and storage_now_fn is not now_fn:
+            raise ValueError(
+                f"{type(storage).__name__} carries its own now_fn "
+                f"({storage_now_fn!r}) that differs from this cache's "
+                f"({now_fn!r}); expires_at is computed from the cache's clock "
+                "and converted back to a TTL by the storage, so they must be "
+                "the same callable — pass now_fn to both"
             )
         self.embedder = embedder
         self.storage = storage
