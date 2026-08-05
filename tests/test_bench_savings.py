@@ -620,3 +620,52 @@ def test_run_bench_handles_zero_row_workload_without_crashing() -> None:
     router = next(s for s in by_name.values() if "router" in s["strategy"])
     assert sem["extra"]["hit_rate"] == 0.0
     assert router["extra"]["escalation_rate"] == 0.0
+
+
+# ----- stemless --out (#174) -------------------------------------------------
+#
+# `main` derives its real filenames with `Path.with_suffix`, which raises
+# ValueError when the path has no filename component — and it did so *outside*
+# the write-seam try, so `--out ''` / `.` / `/` escaped as a raw traceback at
+# exit 1. That is the same "success"-range escape the unwritable-`--out` guard
+# above exists to close, for an adjacent kind of unusable `--out`.
+
+
+# Exactly the stems whose `.name` is empty — the set `with_suffix` rejects.
+# `..` is deliberately NOT here: its name is `".."`, so `with_suffix` yields
+# `...json` and writing that file is a coherent, if odd, operator request.
+@pytest.mark.parametrize("bad_out", ["", ".", "/"])
+def test_main_stemless_out_exits_two(bad_out: str, capsys: pytest.CaptureFixture[str]) -> None:
+    rc = main(["--dry", "--n", "5", "--out", bad_out])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "--out must be a path stem with a filename component" in captured.err
+    # A guard that returns 2 *and* prints a stack is not a clean failure; the
+    # exit code alone can't tell the two apart.
+    assert "Traceback" not in captured.err
+
+
+def test_main_stemless_out_fails_before_running_the_bench(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The check sits with the other argument guards, so the operator isn't made
+    to wait for a full bench before being told the flag is wrong. The bench
+    prints one summary line per strategy on success; none should appear."""
+    rc = main(["--dry", "--n", "500", "--out", ""])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert captured.out == ""
+
+
+@pytest.mark.parametrize("good_out", ["savings", "nested/savings", "savings.json"])
+def test_main_ordinary_stems_are_unaffected(
+    good_out: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Including a stem that already carries a suffix: `with_suffix` replaces it,
+    which is the pre-existing behavior and is deliberately not changed."""
+    stem = tmp_path / good_out
+    rc = main(["--dry", "--n", "20", "--out", str(stem)])
+    _ = capsys.readouterr()
+    assert rc == 0
+    assert stem.with_suffix(".json").exists()
+    assert stem.with_suffix(".md").exists()
