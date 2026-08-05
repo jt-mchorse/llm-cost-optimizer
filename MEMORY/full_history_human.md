@@ -1237,3 +1237,56 @@ anchored to the silent short TTL rather than to a constructor error a future
 change could relax around.
 
 626 passed. Shipped as PR #173.
+
+## 2026-08-05 — a stemless `--out` crashed both artifact scripts (#174)
+
+`bench_savings.py` and `tune_threshold.py` both take `--out` as a *stem* and
+derive the real filenames from it:
+
+```python
+out_stem = Path(args.out)
+out_json = out_stem.with_suffix(".json")
+out_md   = out_stem.with_suffix(".md")     # .png in tune_threshold
+```
+
+`Path.with_suffix` raises `ValueError` when the path has no filename component,
+and `Path("")`, `Path(".")` and `Path("/")` all qualify. That call sat *outside*
+the write-seam `try`, so all three escaped `main()` as a raw traceback at exit 1
+on both scripts.
+
+What makes it a gap rather than a nitpick is the company it keeps. Both `main()`s
+already translate every other operator misconfiguration into a clean `::error::`
+line and exit 2 — `--no-dry`, `--n < 1`, malformed `--thresholds`, and, pointedly,
+an **unwritable `--out`**. So an unusable `--out` of one kind (can't be written to)
+was a clean exit 2 with a comment explaining why, while an unusable `--out` of an
+adjacent kind (has no filename to suffix) was a stack trace. The write-seam guard's
+own comment says it exists because the `OSError` "escaped `main` as a raw traceback
+at exit 1 — the 'success' range"; that sentence describes this path equally well.
+
+In `tune_threshold` it also failed later than necessary: the whole sweep ran to
+completion before the suffix blew up.
+
+The fix adds `scripts/_io.resolve_out_stem`, used by both `main()`s at
+argument-handling time. Eleven tests cover the three bad stems on each script,
+the fail-before-the-work property (asserting stdout is empty), and ordinary,
+nested and already-suffixed stems to prove nothing else moved.
+
+Two notes on scope. The first parametrization included `..` and `x/..`, and both
+*failed* — `Path("..").name` is `".."`, not empty, so `with_suffix` happily yields
+`...json`, and writing a file with that name is a coherent if odd request rather
+than a crash. They came out; the guard now matches exactly the set `with_suffix`
+rejects. And the sibling stem-suffix site in
+`python-async-llm-pipelines/scripts/bench_1000_doc.py` was checked and is fine —
+there `atomic_write_text(out_path, …)` runs *before* `with_suffix`, so a stemless
+`--out` surfaces as the already-guarded `OSError` and exits 2 correctly.
+`capture_demo.py`'s two calls build their stem from an internal temp dir and
+aren't operator-reachable.
+
+How it surfaced is worth recording, because it wasn't a hunch. An AST scan across
+all eight Python repos extracted the exception arms of every `main`/`cli` function
+looking for intra-repo asymmetry, and `bench_savings` catching only `OSError` next
+to `tune_threshold` catching `OSError` *and* `ValueError` is what pointed at the
+file. The actual bug turned out to be a third thing neither arm covered — the scan
+found the right file for the wrong reason, which is still a good trade.
+
+Full suite 638 passed; ruff clean under 0.15.13 and 0.16.1.
