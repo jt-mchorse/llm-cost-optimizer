@@ -254,3 +254,38 @@ def test_main_dry_payload_rows_use_to_dict_shape(tmp_path: Path) -> None:
             "n",
             "threshold",
         ]
+
+
+# ----- stemless --out (#174) -------------------------------------------------
+#
+# Same gap as bench_savings, one script over: `Path.with_suffix` raised
+# ValueError outside the write-seam try. Worse here, because it fired *after*
+# `sweep` had already run — the operator waited for the whole sweep to be told
+# the flag was wrong.
+
+
+# Exactly the stems whose `.name` is empty — the set `with_suffix` rejects.
+# `..` is deliberately NOT here: its name is `".."`, so `with_suffix` yields
+# `...json` and writing that file is a coherent, if odd, operator request.
+@pytest.mark.parametrize("bad_out", ["", ".", "/"])
+def test_main_stemless_out_exits_two(bad_out: str, capsys) -> None:
+    rc = main(["--dry", "--out", bad_out])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "--out must be a path stem with a filename component" in captured.err
+    assert "Traceback" not in captured.err
+
+
+def test_main_stemless_out_fails_before_the_sweep(capsys) -> None:
+    rc = main(["--dry", "--out", "", "--thresholds", "0.1,0.2,0.3,0.4,0.5"])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert captured.out == ""
+
+
+def test_main_ordinary_stem_is_unaffected(tmp_path: Path, capsys) -> None:
+    stem = tmp_path / "nested" / "threshold"
+    rc = main(["--dry", "--out", str(stem)])
+    _ = capsys.readouterr()
+    assert rc == 0
+    assert stem.with_suffix(".json").exists()

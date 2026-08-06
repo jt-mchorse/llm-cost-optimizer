@@ -70,7 +70,7 @@ from cost_optimizer.semantic_cache import (  # noqa: E402
     InMemoryStorage,
     SemanticCache,
 )
-from scripts._io import atomic_write_text  # noqa: E402
+from scripts._io import atomic_write_text, resolve_out_stem  # noqa: E402
 
 # ----------------------------------------------------------------------
 # Workload generation (deterministic)
@@ -834,8 +834,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"::error::--n must be a positive integer; got {args.n}", file=sys.stderr)
         return 2
 
+    # Resolve `--out` *before* the bench runs. `Path.with_suffix` raises
+    # ValueError on a stem with no filename component (`''`, `.`, `/`), and it
+    # does so outside the write-seam try below — so a stemless `--out` escaped
+    # as a raw traceback at exit 1, the same "success"-range escape that guard
+    # exists to close, for an adjacent kind of unusable `--out` (#174).
+    # Checking here also means the operator isn't made to wait for a full bench
+    # before being told the flag is wrong.
+    try:
+        out_stem = resolve_out_stem(args.out)
+    except ValueError as e:
+        print(f"::error::{e}", file=sys.stderr)
+        return 2
+
     payload = run_bench(n=args.n, seed=args.seed)
-    out_stem = Path(args.out)
     out_json = out_stem.with_suffix(".json")
     out_md = out_stem.with_suffix(".md")
     out_workload = out_stem.parent / "savings_workload.json"

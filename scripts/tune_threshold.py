@@ -41,7 +41,7 @@ from cost_optimizer.router import (  # noqa: E402
     EntropySignal,
     UncertaintyRouter,
 )
-from scripts._io import atomic_write_text  # noqa: E402
+from scripts._io import atomic_write_text, resolve_out_stem  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -321,6 +321,19 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
+
+    # Resolve `--out` here, alongside the other argument checks and *before*
+    # `sweep` runs. `Path.with_suffix` raises ValueError on a stem with no
+    # filename component (`''`, `.`, `/`), and it did so below, outside the
+    # write-seam try — so a stemless `--out` escaped as a raw traceback at exit
+    # 1 (#174), and only after the whole sweep had already completed. Same
+    # operator-misconfig contract as the `--thresholds` guard directly above.
+    try:
+        out_stem = resolve_out_stem(args.out)
+    except ValueError as e:
+        print(f"::error::{e}", file=sys.stderr)
+        return 2
+
     rows = sweep(
         _build_sample_items(),
         thresholds,
@@ -328,7 +341,6 @@ def main(argv: list[str] | None = None) -> int:
         strong_dollars=args.strong_dollars,
     )
 
-    out_stem = Path(args.out)
     out_json = out_stem.with_suffix(".json")
     out_png = out_stem.with_suffix(".png")
     payload = {
