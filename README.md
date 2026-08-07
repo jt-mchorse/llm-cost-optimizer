@@ -16,7 +16,7 @@ Today the five runtime layers and one offline sibling have all shipped:
 
 - **Prompt-cache wrapper** (#1) — the duck-typed Anthropic-SDK wrapper above; `CacheTelemetry` per call and aggregate. `CacheTelemetry.to_dict()` and `PromptCacheWrapper.dump_aggregate_json(path)` (#50) emit a JSON-stable observability shape — atomic-written so a log-tailer never reads a half-written file.
 - **Semantic response cache** (#2) — `cost_optimizer.semantic_cache` keys on an embedding of the user prompt, caches the full response, and exposes TTL plus exact-prompt invalidation. Pluggable `Embedder` Protocol (default in-repo hash embedder; swap in a real one). `CacheStats.to_dict()` and `SemanticCache.dump_stats_json(path)` (#52) emit the same JSON-stable observability shape as the prompt-cache wrapper (raw counters + `total_lookups` + `hit_rate`) — atomic-written so a log-tailer never reads a half-written file.
-- **Uncertainty-routed model fallback** (#3) — `cost_optimizer.router` first-passes the cheap model and escalates to the strong model only when a confidence signal (logprob entropy or judge score) clears a threshold. The threshold curve is produced by `scripts/tune_threshold.py` against an operator-supplied dataset.
+- **Uncertainty-routed model fallback** (#3) — `cost_optimizer.router` first-passes the cheap model and escalates to the strong model only when a confidence signal (logprob entropy or judge score) clears a threshold. The threshold curve is swept by `scripts/tune_threshold.py`, which runs today against committed sample fixtures (`--dry`); the real-API mode that would take an operator-supplied dataset is an explicit not-implemented stub.
 - **Anthropic Batch API integration** (#4) — `cost_optimizer.batch` wraps the non-realtime batch endpoint with an idempotency key derived from request content, exposes a polling-friendly `BatchJobMeta`, and reports both the realtime-equivalent cost and the actual batch cost so the savings number is directly comparable.
 - **Savings dashboard** (#5) — `streamlit run dashboard/app.py` renders the five-strategy savings bench against a realistic mixed workload. Strategy summaries and cumulative series live in `docs/savings.json`; the dashboard reads them directly so the same data backs the README table, the markdown report, and the live UI.
 - **Live-API integration test** (#7) — `tests/integration/` exercises `PromptCacheWrapper` against real Anthropic prompt caching (cold call writes tokens, warm call reads them), gated on `ANTHROPIC_API_KEY` and a `LIVE_CACHE_BUDGET_USD` guardrail (default $0.10). Runs in CI only on `workflow_dispatch`.
@@ -307,8 +307,9 @@ dashboard.
 
 The pricing math is unit-tested against the published Anthropic
 multipliers (`tests/test_cache_wrapper.py`); the router's tuning
-curve is produced by `scripts/tune_threshold.py` against an
-operator-supplied dataset and API key; the batch layer's cost math is
+curve is swept by `scripts/tune_threshold.py` against committed
+sample fixtures, with the operator-supplied dataset and API key path
+still an explicit not-implemented stub; the batch layer's cost math is
 unit-tested against fixture prices in `tests/test_batch.py`; the
 five-strategy savings bench is reconciled against both the strategy
 summaries and the cumulative series in `tests/test_bench_savings.py`.

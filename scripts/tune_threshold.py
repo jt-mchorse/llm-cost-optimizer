@@ -14,13 +14,20 @@ Two modes:
   No real API call; no fabricated numbers in the README — the only
   thing this asserts is the *plumbing* (the script runs, the schema is
   stable, the plot file is produced).
-- Without `--dry`: requires `ANTHROPIC_API_KEY`. Calls the real cheap
-  and strong models against the dataset; the operator commits the
-  resulting `docs/threshold_report.md` once they've vetted the curve.
+- `--no-dry`: reserved for real-API mode, which is **not implemented**.
+  It exits 2 with a message rather than shipping a fabricated version;
+  wiring it needs a real dataset, real cheap/strong adapters, and an
+  operator-supplied `ANTHROPIC_API_KEY` (D-007's posture, §10's rule).
+  The operator commits the resulting `docs/threshold_report.md` once
+  that lands and they've vetted the curve.
+
+The dry path's dataset is `_build_sample_items()` — five hand-crafted
+rows, hardcoded. There is deliberately no flag for supplying your own;
+it arrives with the real-API adapters, not before.
 
 Usage:
     python scripts/tune_threshold.py --dry --out docs/threshold_demo
-    python scripts/tune_threshold.py --dataset path/to.jsonl --out docs/threshold
+    python scripts/tune_threshold.py --dry --out docs/threshold_demo --thresholds 0.2,0.5,0.8
 """
 
 from __future__ import annotations
