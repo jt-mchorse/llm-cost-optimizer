@@ -96,8 +96,8 @@ def _run_bench_into(tmp_out_stem: Path) -> str:
     """Run `bench_savings.main` against a tmp `--out` stem; return its stdout.
 
     The bench script writes three artifacts next to the stem
-    (`<stem>.json`, `<stem>.md`, and `<stem>.parent>/savings_workload.json`)
-    and prints a per-strategy summary line per row to stdout. The capture
+    (`<stem>.json`, `<stem>.md`, `<stem>_workload.json`) and prints a
+    per-strategy summary line per row to stdout. The capture
     script forwards that stdout into the recording so the terminal frame
     shows the same per-strategy numbers the README's savings table
     derives from.

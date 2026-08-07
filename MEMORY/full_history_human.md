@@ -1290,3 +1290,102 @@ file. The actual bug turned out to be a third thing neither arm covered — the 
 found the right file for the wrong reason, which is still a good trade.
 
 Full suite 638 passed; ruff clean under 0.15.13 and 0.16.1.
+
+## Session 2026-08-06 — the workload file belonged to the directory, not the run (#176)
+
+`bench_savings.py` builds three output paths from `--out STEM`. Two of
+them use the stem. The third didn't:
+
+```python
+out_json     = out_stem.with_suffix(".json")
+out_md       = out_stem.with_suffix(".md")
+out_workload = out_stem.parent / "savings_workload.json"   # stem discarded
+```
+
+The canonical invocation is `--out docs/savings`, whose stem is
+`savings` — so all three names come out identical and the divergence is
+invisible. The README's other example, `--out /tmp/savings`, works for
+the same accidental reason. It only shows up when the stem is anything
+else, which is how I found it: running the documented command with
+`--out /tmp/lco_sav` printed
+
+```
+workload   /tmp/savings_workload.json
+```
+
+The script announces the mismatch on its own stdout.
+
+### What it costs
+
+Because the basename was a constant, two runs in one directory
+overwrite each other:
+
+```
+$ python scripts/bench_savings.py --dry --n 500 --out /tmp/d/savings
+$ python scripts/bench_savings.py --dry --n 25 --seed 7 --out /tmp/d/savings_small
+$ ls /tmp/d
+savings.json  savings.md  savings_small.json  savings_small.md  savings_workload.json
+```
+
+One workload file for two runs — and since `--n` and `--seed` are
+operator flags, it isn't the same workload at a different size, it's a
+different workload at a different seed. The 500-row `savings.json`,
+whose table the README quotes, ends up sitting next to a 25-row workload
+record. `savings_small` never gets a file at all.
+
+That file isn't incidental output. It's the provenance record the whole
+benchmark rests on. D-012:
+
+> Token counts and first-token logprobs are canned in
+> `docs/savings_workload.json` **so the numbers are bit-for-bit
+> reproducible.**
+
+Silently swapping it for another run's is exactly the failure D-012
+exists to prevent. It's the no-fabricated-benchmarks rule approached
+from the other side: every number is honest, but the artifact that
+proves they're re-derivable can be quietly replaced.
+
+It was already latent in shipped code. `capture_demo.py` runs the bench
+with stem `savings_run`, so it writes `savings_run.json`,
+`savings_run.md`, and `savings_workload.json` — and its own docstring
+*documented* that mismatch as though it were the design.
+
+### Checking whether it was deliberate first
+
+Two existing tests reference `<parent>/savings_workload.json`. Per the
+lesson from python-async-llm-pipelines#90 — a test that names a
+behaviour can mean the code is right and the docstring is wrong — that
+had to be ruled out before calling this a bug.
+
+It isn't the same situation. Both tests use a stem of literally
+`savings`, where `<stem>_workload.json` and `<parent>/savings_workload.json`
+are the *same string*. They mirror the code; they can't observe the stem
+being discarded. And both pass **unmodified** under the fix, which is
+the cleanest evidence available that the canonical path is untouched —
+so neither was edited.
+
+D-012 itself pins the *committed* artifact's location, and its stated
+rationale is re-derivability. The fix serves that rationale rather than
+conflicting with it, and there's now a lock test asserting `--out
+docs/savings` still produces `docs/savings_workload.json`, so a future
+refactor of the derivation can't quietly rename the one path D-012, the
+README, and `docs/architecture.md` all depend on.
+
+### The fix
+
+`out_stem.with_name(out_stem.name + "_workload.json")`. Byte-identical
+at the canonical stem, so no committed artifact was regenerated — this
+is name derivation only, and regenerating would be churn against the
+benchmark-integrity rule.
+
+The regression test asserts on the *corruption*, not on file existence:
+each workload's row count has to match its own run's `n_rows`. Two files
+existing would pass even if the contents were crossed.
+
+### Generalizable
+
+When N paths are derived from one operator argument, check that all N
+actually use it — and probe with a value where the derivations *differ*.
+A default that makes two formulas agree hides the one that's wrong.
+Running the shipped example verbatim proves nothing here, because the
+documented stem is precisely the value that masks the bug.

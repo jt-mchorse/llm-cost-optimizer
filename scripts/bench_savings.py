@@ -8,7 +8,10 @@ What this produces:
 - ``docs/savings.md`` — human-readable table sourced from the JSON;
   the README links it.
 - ``docs/savings_workload.json`` — the deterministic workload itself,
-  committed so the numbers can be re-derived.
+  committed so the numbers can be re-derived. All three names derive
+  from ``--out``'s stem (``<stem>_workload.json``), so two runs in one
+  directory keep their own provenance record instead of overwriting a
+  shared one (#176).
 
 The workload is **hermetic synthetic** with documented composition:
 
@@ -850,7 +853,21 @@ def main(argv: list[str] | None = None) -> int:
     payload = run_bench(n=args.n, seed=args.seed)
     out_json = out_stem.with_suffix(".json")
     out_md = out_stem.with_suffix(".md")
-    out_workload = out_stem.parent / "savings_workload.json"
+    # Derived from the stem, like its two siblings above — not a constant
+    # basename in the same directory. With the canonical `--out docs/savings`
+    # the stem *is* `savings`, so all three names coincided and the divergence
+    # was invisible; with any other stem the workload landed under a name that
+    # didn't belong to it, and because the name was fixed, a second run in the
+    # same directory silently overwrote the first run's record (#176). `--n`
+    # and `--seed` are operator flags, so it is not even the same workload:
+    # `--out d/savings --n 500` followed by `--out d/savings_small --n 25`
+    # left the 500-row `savings.json` — the run whose table the README quotes
+    # — sitting next to a 25-row workload. That file is the provenance record
+    # D-012 rests on ("canned ... so the numbers are bit-for-bit
+    # reproducible"); losing it silently is the failure D-012 exists to
+    # prevent. This yields `docs/savings_workload.json` byte-identically for
+    # the documented invocation, so the committed artifact is untouched.
+    out_workload = out_stem.with_name(out_stem.name + "_workload.json")
     # The output stem is operator input too: an unwritable `--out` (a read-only
     # dir, a permission-denied path, or a path component that is a file) makes
     # `atomic_write_text` raise OSError, which without this guard escaped `main`

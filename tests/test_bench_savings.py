@@ -669,3 +669,69 @@ def test_main_ordinary_stems_are_unaffected(
     assert rc == 0
     assert stem.with_suffix(".json").exists()
     assert stem.with_suffix(".md").exists()
+
+
+# ---------------------------------------------------------------------------
+# #176: the workload sidecar belongs to its run, not to its directory.
+# ---------------------------------------------------------------------------
+
+
+def test_workload_sidecar_is_derived_from_the_out_stem(tmp_path: Path) -> None:
+    """`--out STEM` writes `STEM_workload.json`, not a fixed basename.
+
+    The two pre-existing tests that reference the sidecar both use a stem of
+    literally `savings`, where `<stem>_workload.json` and the old
+    `<parent>/savings_workload.json` are the same string — so neither could
+    observe the stem being discarded. This one uses a different stem.
+    """
+    stem = tmp_path / "run_a"
+    assert main(["--dry", "--n", "10", "--out", str(stem)]) == 0
+
+    assert (tmp_path / "run_a_workload.json").exists()
+    assert not (tmp_path / "savings_workload.json").exists(), (
+        "the sidecar must not fall back to a constant basename"
+    )
+
+
+def test_two_runs_in_one_directory_keep_their_own_workload_records(tmp_path: Path) -> None:
+    """The regression this issue is about.
+
+    `--n` and `--seed` are operator flags, so each run's workload differs in
+    *content*, not just size. Under the old constant basename the second run
+    overwrote the first's provenance record: the 500-row `savings.json` whose
+    table the README quotes ended up beside a 25-row workload. Assert on the
+    corruption — each workload's row count matching its own run's `n_rows` —
+    rather than merely on two files existing, so widening this later can't
+    silently reintroduce the mismatch.
+    """
+    big = tmp_path / "savings"
+    small = tmp_path / "savings_small"
+    assert main(["--dry", "--n", "40", "--seed", "1", "--out", str(big)]) == 0
+    assert main(["--dry", "--n", "9", "--seed", "7", "--out", str(small)]) == 0
+
+    for stem, expected_rows in ((big, 40), (small, 9)):
+        payload = json.loads(stem.with_suffix(".json").read_text(encoding="utf-8"))
+        workload = json.loads(
+            stem.with_name(stem.name + "_workload.json").read_text(encoding="utf-8")
+        )
+        assert payload["n_rows"] == expected_rows
+        assert len(workload["rows"]) == expected_rows, (
+            f"{stem.name}'s workload record describes {len(workload['rows'])} rows "
+            f"but its savings.json reports {payload['n_rows']} — the provenance "
+            "record belongs to a different run"
+        )
+
+
+def test_canonical_out_stem_still_yields_docs_savings_workload_json(tmp_path: Path) -> None:
+    """D-012 pins the committed artifact at `docs/savings_workload.json`.
+
+    The documented invocation is `--out docs/savings`, whose stem is
+    `savings` — so the derived name is byte-identical to the pre-#176 one and
+    the committed artifact, the README and `docs/architecture.md` are all
+    untouched. Locked here so a future refactor of the derivation can't
+    quietly rename the one path those three depend on.
+    """
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    assert main(["--dry", "--n", "10", "--out", str(docs / "savings")]) == 0
+    assert (docs / "savings_workload.json").exists()
