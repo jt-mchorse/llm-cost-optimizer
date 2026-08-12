@@ -1429,3 +1429,44 @@ And the check only ever runs `--help`, which exits before `main()` does
 anything. The more obvious design — try each documented flag and see if
 argparse rejects it — would have run `--dry` on its own and written into
 `docs/`.
+
+## 2026-08-12 — a wrapper that threw away the exit code its callee got right (#180)
+
+`scripts/bench_savings.py` does the right thing. Given a read-only output
+directory it catches the write failure, prints a clean
+`::error::could not write bench artifacts: [Errno 13] ...`, and returns the
+documented 2. That behaviour is exactly what #156 was for.
+
+`scripts/capture_demo.py` then threw all of it away. `_run_bench_into` raised
+an uncaught `RuntimeError` on any non-zero rc, which downgraded the code from
+2 to 1 — the findings code, for an I/O error — dumped a traceback on top of
+the one diagnostic worth reading, and did so via a message ending in
+`output captured:` followed by nothing at all. That last part is almost funny:
+`redirect_stdout` captures stdout, and the bench's diagnostic goes to stderr,
+so the single thing the exception contributed over the callee's own reporting
+was a blank line.
+
+The general shape is worth keeping: **a wrapper that raises on a callee's
+non-zero rc destroys that callee's exit-code contract.** The entire point of
+an exit-code sweep is that a *code* travels through a call chain. An exception
+doesn't. Anywhere in the portfolio, `if rc != 0: raise ...` sitting above a
+script that was carefully taught to return 2 is the same bug.
+
+What settled it as an oversight rather than a decision was twelve lines below
+the raise, where the sibling failure — same class, "the bench didn't give us
+what we need" — was already handled properly, with a clean `[capture]` line
+and an explicit return. Two adjacent handlers for two halves of one failure
+mode, only one of them actually written as a handler.
+
+The other three seams are the ordinary family, and they match the
+llm-eval-harness sibling shipped earlier in the same run: an unvalidated
+`type=float --pause-seconds` that crashes on `inf` (after STAGE 1 has already
+run) and silently pauses nowhere on `nan`, a bare `mkdir`, and a bare
+`copy2`. The `copy2` deserves its own note: it is genuinely a second seam, not
+a redundant one, because an existing-but-unwritable *file* leaves the
+*directory* perfectly valid — so it sails through `mkdir(exist_ok=True)` and
+fails at the copy instead.
+
+Worth recording that porting a lens is not porting a fix. The leh sibling
+prompted the look here, but the most damaging finding in this repo has no
+counterpart there.
