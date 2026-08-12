@@ -1389,3 +1389,43 @@ actually use it — and probe with a value where the derivations *differ*.
 A default that makes two formulas agree hides the one that's wrong.
 Running the shipped example verbatim proves nothing here, because the
 documented stem is precisely the value that masks the bug.
+
+## 2026-08-07 — `--help` printed a command that fails (#178)
+
+`scripts/tune_threshold.py` documented a `--dataset path/to.jsonl` flag in
+the Usage block at the end of its module docstring. No such flag exists.
+What makes it worse than a stale comment is that argparse uses the module
+docstring as the parser description, so `--help` printed that broken example
+immediately above the list of flags that contradicts it. The README repeated
+the claim twice, in the present tense, saying the curve is produced against
+an operator-supplied dataset — when the dataset is five hardcoded rows.
+
+The fix moves the docs to the code rather than the other way round. The
+real-API path is a deliberate stub that exits 2 and says so, with a comment
+explaining it would need real adapters and a real key and that a fabricated
+version isn't going to ship. Adding the flag without the adapters would be
+half a feature and would quietly undo that. The docstring now says what the
+dry path actually uses and that a supply-your-own flag comes with the
+adapters.
+
+The interesting part was the sweep this came from — the same lens as the
+llm-eval-harness fixture work earlier tonight, moved from documented *paths*
+to documented *flags*. Six candidates across twelve repos, and five were
+false positives. Every one of them taught the test something: one flag was a
+second-position alias, one was synthesized by `BooleanOptionalAction`, two
+belonged to other commands quoted as provenance, and one was a test module
+that isn't a CLI at all.
+
+So the lock reads each script's own `--help` instead of grepping
+`add_argument`, which makes aliases and the implicit `--no-X` resolve for
+free, and it scans only the `Usage:` block, which is what keeps other
+commands' flags out. One subtlety mattered more than it looks: accepted flags
+are collected from the option-entry lines of the help output and never from
+the option help prose, because `--dry`'s own help text contains the string
+"--dry" — harvesting prose would have made the lock too lenient, letting any
+ghost flag mentioned anywhere pass.
+
+And the check only ever runs `--help`, which exits before `main()` does
+anything. The more obvious design — try each documented flag and see if
+argparse rejects it — would have run `--dry` on its own and written into
+`docs/`.
