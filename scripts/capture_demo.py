@@ -43,6 +43,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import io
+import math
 import shutil
 import subprocess
 import sys
@@ -64,9 +65,49 @@ STABLE_SAVINGS_JSON = "savings_demo.json"
 DASHBOARD_URL = "http://localhost:8501"
 
 
+def _fail(message: str) -> int:
+    """Print a clean ``::error::`` line to stderr and return exit code 2.
+
+    Same shape `scripts/bench_savings.py` and `scripts/tune_threshold.py`
+    already use (#156, #160). This script is an entry point too — `main(argv)
+    -> int` under `raise SystemExit(main())` — so it owes the operator the same
+    `0 = clean / 1 = findings / 2 = I/O or usage error` contract (#180).
+    """
+    print(f"::error::{message}", file=sys.stderr)
+    return 2
+
+
 def _banner(stage: int, title: str) -> str:
     line = "=" * 72
     return f"\n{line}\n  STAGE {stage}  {title}\n{line}\n"
+
+
+def _validate_pause_seconds(seconds: float) -> str | None:
+    """Return an error message for an unusable ``--pause-seconds``, else ``None``.
+
+    ``type=float`` is not validation, and both directions of the unguarded
+    domain were live (#180):
+
+    - ``inf`` reached ``time.sleep`` and raised a raw ``OverflowError``, and it
+      fired from ``_pause`` — i.e. *after* STAGE 1 had already run the bench
+      and written artifacts, so the operator got a half-finished capture and a
+      traceback.
+    - ``nan`` and negatives were the quiet half: ``_pause`` guards
+      ``if seconds > 0`` and ``nan > 0`` is ``False``, so the run exited 0
+      having paused nowhere. The inter-stage pause is the script's stated
+      reason to exist ("cue points"), so that clean-looking run produces an
+      unusable recording with no diagnostic at all.
+
+    ``bool`` is excluded because ``True`` is an ``int`` worth ``1.0`` and would
+    otherwise silently become a one-second pause for an in-process caller.
+    """
+    if not isinstance(seconds, (int, float)) or isinstance(seconds, bool):
+        return f"--pause-seconds must be a number; got {seconds!r}"
+    if math.isnan(seconds) or math.isinf(seconds):
+        return f"--pause-seconds must be finite; got {seconds!r}"
+    if seconds < 0:
+        return f"--pause-seconds must be >= 0; got {seconds!r}"
+    return None
 
 
 def _pause(seconds: float) -> None:
@@ -92,8 +133,8 @@ def _import_bench_main():
     return mod.main
 
 
-def _run_bench_into(tmp_out_stem: Path) -> str:
-    """Run `bench_savings.main` against a tmp `--out` stem; return its stdout.
+def _run_bench_into(tmp_out_stem: Path) -> tuple[int, str]:
+    """Run `bench_savings.main` against a tmp `--out` stem; return `(rc, stdout)`.
 
     The bench script writes three artifacts next to the stem
     (`<stem>.json`, `<stem>.md`, `<stem>_workload.json`) and prints a
@@ -101,16 +142,24 @@ def _run_bench_into(tmp_out_stem: Path) -> str:
     script forwards that stdout into the recording so the terminal frame
     shows the same per-strategy numbers the README's savings table
     derives from.
+
+    This used to raise ``RuntimeError`` on a non-zero ``rc``, and nothing
+    caught it — so a bench that failed correctly got its work undone three
+    ways (#180). ``bench_savings`` returns the documented **2** on an I/O
+    error and prints its own clean ``::error::`` line (#156); the wrapper
+    downgraded that to a traceback at exit **1**, buried the useful stderr
+    line underneath it, and did so via a message reading "output captured:"
+    followed by nothing — ``redirect_stdout`` captures stdout, and the
+    diagnostic went to stderr.
+
+    Returning the code lets `main` propagate it verbatim, which is also what
+    the artifact-missing check immediately below already does.
     """
     bench_main = _import_bench_main()
     buf = io.StringIO()
     with redirect_stdout(buf):
         rc = bench_main(["--dry", "--out", str(tmp_out_stem)])
-    if rc != 0:
-        raise RuntimeError(
-            f"scripts.bench_savings.main exited {rc}; output captured:\n{buf.getvalue()}"
-        )
-    return buf.getvalue()
+    return rc, buf.getvalue()
 
 
 def _dashboard_cheatsheet() -> str:
@@ -206,14 +255,38 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    # Validate before anything runs. The pre-fix `inf` crash fired from
+    # `_pause`, i.e. after STAGE 1 had already run the bench and written
+    # artifacts — a usage error that cost the operator a partial capture.
+    # Checking here makes it free.
+    if (msg := _validate_pause_seconds(args.pause_seconds)) is not None:
+        return _fail(msg)
+
     output_dir: Path = args.output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # `mkdir` was bare: an `--output-dir` that is an existing file raised
+    # FileExistsError and one under a file parent raised NotADirectoryError,
+    # both as raw tracebacks at exit 1 (#180).
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        return _fail(f"failed to create output directory {output_dir}: {e}")
 
     # STAGE 1 — bench savings (auto, hermetic).
     print(_banner(1, "Savings bench (scripts/bench_savings.py --dry)"))
     tmp_out_stem = output_dir / "savings_run"
-    bench_stdout = _run_bench_into(tmp_out_stem)
+    bench_rc, bench_stdout = _run_bench_into(tmp_out_stem)
     print(bench_stdout, end="")
+    if bench_rc != 0:
+        # Propagate the bench's own code verbatim — a bench I/O error is a 2
+        # and must stay a 2. `bench_savings` has already printed its clean
+        # `::error::` line to stderr (#156), so don't restate the cause here;
+        # just say which stage aborted. Same shape as the artifact-missing
+        # handler below.
+        print(
+            f"[capture] scripts/bench_savings.py exited {bench_rc}; aborting demo capture.",
+            file=sys.stderr,
+        )
+        return bench_rc
 
     bench_md = tmp_out_stem.with_suffix(".md")
     bench_json = tmp_out_stem.with_suffix(".json")
@@ -229,8 +302,15 @@ def main(argv: list[str] | None = None) -> int:
     # across re-captures, independent of the `--out` stem.
     stable_md = output_dir / STABLE_SAVINGS_MD
     stable_json = output_dir / STABLE_SAVINGS_JSON
-    shutil.copy2(bench_md, stable_md)
-    shutil.copy2(bench_json, stable_json)
+    # Separate seam from the `mkdir` above, reached by an input that `mkdir`
+    # accepts: an existing-but-unwritable stable target leaves the *directory*
+    # perfectly fine and fails here instead, after the bench has already run
+    # (#180).
+    try:
+        shutil.copy2(bench_md, stable_md)
+        shutil.copy2(bench_json, stable_json)
+    except OSError as e:
+        return _fail(f"failed to copy bench artifacts into {output_dir}: {e}")
     print(f"\n[capture] stable savings table: {stable_md}")
     print(f"[capture] stable savings JSON:  {stable_json}")
     _pause(args.pause_seconds)
