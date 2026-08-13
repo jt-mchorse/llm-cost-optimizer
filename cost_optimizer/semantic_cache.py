@@ -663,16 +663,31 @@ class SemanticCache:
         self.stats = CacheStats()
 
     def _make_key(self, prompt: str, model: str) -> str:
-        # Keys include the model so the same prompt → two different models
-        # are two cache entries (D-005). Hash the same unambiguous
-        # `_scoped_prompt` form the embedder uses (`[model=...] prompt`), NOT a
-        # bare `f"{model} {prompt}"`: with a space-delimited concatenation the
-        # field boundary can slide, so distinct pairs like ("b c", "a") and
-        # ("c", "a b") hashed to the same key and the second `put` silently
-        # overwrote the first in storage (which keys records by `record.key`).
-        # The `[model=...]` delimiter can't be produced by any other split, so
-        # only a genuinely identical (model, prompt) collides — D-005 preserved.
-        h = hashlib.sha256(self._scoped_prompt(prompt, model).encode()).hexdigest()
+        # Keys include the model so the same prompt → two different models are
+        # two cache entries (D-005).
+        #
+        # Hashed as a structured JSON object, not a concatenated string. Two
+        # earlier attempts both hand-built a delimiter and both could be forged
+        # from field content: `f"{model} {prompt}"` slid on a space, so ("b c",
+        # "a") and ("c", "a b") shared a key; `f"[model={model}] {prompt}"`
+        # slid on `] `, so ("claude-opus-4] extra", "PROMPT") and
+        # ("claude-opus-4", "extra] PROMPT") shared one (#182). Storage keys
+        # records by `record.key`, so each time the second `put` silently
+        # overwrote the first.
+        #
+        # The comment on the second attempt asserted the `[model=...]`
+        # delimiter "can't be produced by any other split". It could, and that
+        # assertion is why nobody re-checked. So this doesn't pick a better
+        # delimiter — there isn't one. `json.dumps` escapes field content, so a
+        # boundary cannot be produced from inside a field *by construction*,
+        # which is a property that holds without anyone having to be clever
+        # about which characters a model id can contain. Byte-shape matches
+        # `batch.py`'s payload hash (sort_keys, tight separators), which is the
+        # same problem solved the same way one module over.
+        blob = json.dumps(
+            {"model": model, "prompt": prompt}, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        h = hashlib.sha256(blob).hexdigest()
         return h[:16]
 
     def lookup(self, prompt: str, *, model: str) -> CacheLookupResult:
@@ -794,6 +809,16 @@ class SemanticCache:
         # Embedding input includes the model id so the two-model "different
         # entries for the same prompt" property holds at the embedding layer
         # too (not just the synthetic key).
+        #
+        # Deliberately still a readable `[model=...] prompt` string, and
+        # deliberately no longer shared with `_make_key` (#182). The two uses
+        # have different constraints: a *key* must make field boundaries
+        # unforgeable, which is a job for JSON escaping, while an *embedding
+        # input* is text handed to a tokenizer, where a JSON blob would put
+        # braces and quotes into the token stream and degrade the very
+        # similarity signal this exists to produce. The model prefix's
+        # embedding behaviour was also tuned against the 0.95 threshold in #125
+        # and #133, so it is not free to change shape.
         return f"[model={model}] {prompt}"
 
 
