@@ -1470,3 +1470,19 @@ fails at the copy instead.
 Worth recording that porting a lens is not porting a fix. The leh sibling
 prompted the look here, but the most damaging finding in this repo has no
 counterpart there.
+
+## 2026-08-13 — The cache key delimiter could be forged, and the comment said it couldn't (#182)
+
+**Duration:** ~35 min · **Issue:** #182 · **PR:** #183
+
+`_make_key` has now hand-built a delimiter twice. The first, `f"{model} {prompt}"`, slid on a space — two different (model, prompt) pairs hashing to one key, and since storage keys records by their key, the second write silently destroyed the first. The replacement was `f"[model={model}] {prompt}"`, and it slides on `] ` in exactly the same way.
+
+What made it findable was the comment. It asserted that the `[model=...]` delimiter "can't be produced by any other split, so only a genuinely identical (model, prompt) collides". That is a test case written in prose, and running it took under a minute. This is the third time this run that a comment asserting a property turned out to be the thing pointing at the bug.
+
+The lesson isn't to pick a better delimiter — a third hand-picked one would have the same shape of bug. It's to stop hand-picking. `json.dumps` escapes field content, so a boundary can't be produced from inside a field by construction, and nobody has to reason about which characters a model id might contain. That pattern was already in the repo: `batch.py` hashes canonical JSON for its payload comparison. Two key-derivation sites in one package, one structurally safe and one asserted safe.
+
+I've been explicit in both the issue and the PR that reachability here is contrived — a real caller passes a real model id, and this is not a live incident. The reasons to fix it are the wrong comment and the correct pattern sitting one module over, not the collision itself.
+
+The embedding input keeps its readable `[model=...]` form and no longer backs the key. A key needs unforgeable boundaries; an embedding input is text going to a tokenizer, where braces and quotes would degrade the similarity signal, and that prefix was tuned against the 0.95 threshold in #125/#133. Consolidate the mechanism, not the string.
+
+**Operational note:** every key value changes, so an upgrade starts from a cold cache. In-memory that's nothing; Redis ages the old keys out on their TTL.
