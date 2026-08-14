@@ -424,6 +424,7 @@ def test_run_bench_payload_router_row_carries_router_stats() -> None:
         "cheap_only",
         "per_signal_trips",
         "per_signal_measured",
+        "per_signal_errors",
         "escalation_rate",
     }, f"router_stats keys drifted: {sorted(rs)}"
 

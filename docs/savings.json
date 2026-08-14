@@ -16067,6 +16067,7 @@
         "cheap_only": 450,
         "escalation_rate": 0.1,
         "escalations": 50,
+        "per_signal_errors": {},
         "per_signal_measured": {
           "entropy": 500
         },
