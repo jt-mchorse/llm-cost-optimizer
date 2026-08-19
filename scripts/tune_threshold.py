@@ -329,6 +329,53 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    # The guard above covers a token `float()` REFUSES. It does not cover the
+    # tokens `float()` accepts and the sweep cannot use (#186) — and the comment
+    # four lines up already names them: "argparse only enforces `float`, which
+    # happily parses `nan`/`inf`/negative". That rule was applied to the two
+    # dollar flags and not to the flag this script is named after.
+    #
+    # Measured pre-fix, exit codes captured before any pipe:
+    #
+    #   --thresholds 'abc'      -> exit 2, clean ::error:: line        (correct)
+    #   --thresholds 'nan,0.5'  -> exit 1, raw ValueError traceback
+    #   --thresholds 'inf'      -> exit 1, raw ValueError traceback
+    #   --thresholds '-1.0,0.5' -> exit 1, raw ValueError traceback
+    #   --thresholds '1e400'    -> exit 1, raw ValueError traceback
+    #
+    # All four reached `EntropySignal.__post_init__`'s own guard (#36) from
+    # inside `sweep()`, so a script-level *usage* error surfaced as a
+    # library-level exception at the wrong exit code. `1e400` is the one an
+    # operator cannot see coming: it is a finite-looking decimal literal that
+    # `float()` returns as `inf`.
+    for _t in thresholds:
+        if not math.isfinite(_t) or _t < 0.0:
+            print(
+                f"::error::--thresholds values must be finite numbers >= 0; got {_t!r} "
+                f"(from {args.thresholds!r})",
+                file=sys.stderr,
+            )
+            return 2
+
+    # An empty list is not a sweep. `--thresholds ''` and `--thresholds ','`
+    # both survive `if t.strip()` and left `thresholds == []`, so `sweep()`
+    # returned no rows and the script exited **0** having overwritten the
+    # committed 8-row `docs/threshold_demo.json` — the default `--out` stem, and
+    # the artifact the README's documented command produces — with
+    # `"rows": []`. With matplotlib installed `ax.plot([], [])` is legal too, so
+    # a blank PNG was written beside it and reported as `plot wrote`.
+    #
+    # `--thresholds "$THRESHOLDS"` with an unset variable is the ordinary way to
+    # reach this from CI or a wrapper script, and a success exit code is exactly
+    # what makes it survive review.
+    if not thresholds:
+        print(
+            f"::error::--thresholds must name at least one threshold; got {args.thresholds!r} "
+            "(an empty sweep would overwrite the artifact with zero rows at exit 0)",
+            file=sys.stderr,
+        )
+        return 2
+
     # Resolve `--out` here, alongside the other argument checks and *before*
     # `sweep` runs. `Path.with_suffix` raises ValueError on a stem with no
     # filename component (`''`, `.`, `/`), and it did so below, outside the
