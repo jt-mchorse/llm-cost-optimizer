@@ -116,6 +116,15 @@ class RouterStats:
     reading, so a consumer can distinguish "didn't trip" from "couldn't
     measure" — the same distinction `RouterDecision.signal_values`
     preserves at the per-call layer.
+
+    `per_signal_errors` counts every signal whose `measure()` *raised* and
+    was converted to an abstention by `route()` (#184). It exists so that
+    conversion doesn't merely trade a loud failure for a silent one: a
+    signal that abstains by raising looks identical in
+    `RouterDecision.signal_values` to one that abstains by returning
+    `value=None`, and only this counter separates "the judge couldn't
+    measure this response" from "the judge is broken and every route is
+    running unmeasured".
     """
 
     total_routes: int = 0
@@ -123,6 +132,7 @@ class RouterStats:
     cheap_only: int = 0
     per_signal_trips: dict[str, int] = field(default_factory=dict)
     per_signal_measured: dict[str, int] = field(default_factory=dict)
+    per_signal_errors: dict[str, int] = field(default_factory=dict)
 
     @property
     def escalation_rate(self) -> float:
@@ -144,6 +154,7 @@ class RouterStats:
             "cheap_only": self.cheap_only,
             "per_signal_trips": dict(self.per_signal_trips),
             "per_signal_measured": dict(self.per_signal_measured),
+            "per_signal_errors": dict(self.per_signal_errors),
             "escalation_rate": self.escalation_rate,
         }
 
@@ -516,7 +527,36 @@ class UncertaintyRouter:
         triggered: str | None = None
         chosen = self.cheap_model
         for sig in self.signals:
-            reading = sig.measure(cheap_response)
+            # A signal that *raises* is the other half of the seam #94/#106/
+            # #95/#112/#118 hardened. Each of those taught one signal to
+            # abstain on a malformed return *value*; none covered the signal
+            # blowing up, and that is the half the documented BYO extension
+            # points actually produce. `EscalationSignal` is a public Protocol,
+            # and `JudgeConfidenceSignal.judge` is explicitly the
+            # `eval_harness.Judge` seam (D-002) — whose `.score()` raises
+            # `JudgeParseError` in three places, a count llm-eval-harness#201
+            # deliberately widened.
+            #
+            # `call_cheap` has already run and been *paid for* by the time we
+            # get here, so letting the exception through discards a completed
+            # billed response and hands the caller nothing. Convert it to the
+            # abstention this module already defines, exactly as the
+            # None/non-finite/non-numeric branches inside the signals do.
+            #
+            # `Exception`, not `BaseException`: a Ctrl-C or a `SystemExit`
+            # raised inside a signal must still bring the process down rather
+            # than be laundered into "couldn't measure".
+            try:
+                reading = sig.measure(cheap_response)
+            except Exception:
+                # Recorded, not swallowed. Without this counter the fix would
+                # trade a loud failure for a silent one — `signal_values` shows
+                # `None` either way, so a permanently broken judge would be
+                # indistinguishable from one that legitimately couldn't measure.
+                self.stats.per_signal_errors[sig.name] = (
+                    self.stats.per_signal_errors.get(sig.name, 0) + 1
+                )
+                reading = SignalReading(value=None, trip=False)
             readings[sig.name] = reading.value
             if reading.value is not None:
                 self.stats.per_signal_measured[sig.name] = (

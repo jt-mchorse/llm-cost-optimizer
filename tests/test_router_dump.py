@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from cost_optimizer import RouterStats, UncertaintyRouter
 from cost_optimizer.router import SignalReading
 
@@ -90,6 +92,7 @@ def test_to_dict_returns_full_field_set_plus_derived() -> None:
         "cheap_only",
         "per_signal_trips",
         "per_signal_measured",
+        "per_signal_errors",
         "escalation_rate",
     }
     assert payload["total_routes"] == 10
@@ -128,6 +131,7 @@ def test_to_dict_on_zero_stats_is_full_shape_with_zero_rate() -> None:
         "cheap_only": 0,
         "per_signal_trips": {},
         "per_signal_measured": {},
+        "per_signal_errors": {},
         "escalation_rate": 0.0,
     }
 
@@ -210,6 +214,7 @@ def test_dump_stats_json_writes_file_with_stats_shape(tmp_path: Path) -> None:
         "cheap_only",
         "per_signal_trips",
         "per_signal_measured",
+        "per_signal_errors",
         "escalation_rate",
     }
     assert payload["total_routes"] == 2
@@ -265,5 +270,158 @@ def test_dump_stats_json_zero_stats_writes_empty_shape(tmp_path: Path) -> None:
         "cheap_only": 0,
         "per_signal_trips": {},
         "per_signal_measured": {},
+        "per_signal_errors": {},
         "escalation_rate": 0.0,
     }
+
+
+# ----------------------------------------------------------------------
+# A signal that RAISES is isolated from the paid cheap call (#184)
+#
+# #94/#106/#95/#112/#118 each taught one signal to abstain on a malformed
+# return *value*. None covered the signal raising, which is the half the
+# documented BYO extension points actually produce: `EscalationSignal` is a
+# public Protocol, and `JudgeConfidenceSignal.judge` is the
+# `eval_harness.Judge` seam (D-002), whose `.score()` raises `JudgeParseError`
+# in three places.
+#
+# Measured pre-fix, from the probe in #184:
+#
+#   judge RAISES JudgeParseError -> JudgeParseError escapes route()
+#                                   cheap calls paid for = 1
+#                                   total_routes recorded = 0
+#   BYO signal raises            -> RuntimeError escapes route()
+#                                   cheap calls paid for = 1
+#                                   total_routes recorded = 0
+#
+# Both assertions below are anchored to that: the response was already paid
+# for, and the stats block sat after the loop so the failed route never
+# reached the escalation_rate denominator.
+# ----------------------------------------------------------------------
+
+
+@dataclass
+class _RaisingSignal:
+    name: str
+    exc: BaseException
+
+    def measure(self, response: Any) -> SignalReading:  # noqa: ARG002
+        raise self.exc
+
+
+class _JudgeParseError(ValueError):
+    """Shape-identical to ``eval_harness.judge.JudgeParseError``.
+
+    Constructed locally rather than imported: llm-eval-harness is not a
+    dependency of this repo (the judge is duck-typed by design, D-002), so
+    the test pins the *shape* the seam raises, not the class identity.
+    """
+
+
+def test_raising_signal_does_not_destroy_the_paid_cheap_response() -> None:
+    # Pre-fix this raised straight out of route(), discarding a completed,
+    # billed cheap-model response and handing the caller nothing.
+    sig = _RaisingSignal("judge", _JudgeParseError("missing SCORE: line in judge output"))
+    adapter = _StubAdapter(_FakeResponse(text="the cheap model's completed answer"))
+    r = UncertaintyRouter(
+        cheap_model="claude-haiku-4-5",
+        strong_model="claude-sonnet-4-6",
+        cheap_adapter=adapter,
+        signals=[sig],
+    )
+    decision = r.route(object())
+
+    # The paid response survives and reaches the caller.
+    assert len(adapter.calls) == 1, "the cheap call was made and billed"
+    assert decision.cheap_response.text == "the cheap model's completed answer"
+    # A signal that couldn't measure must not escalate — same contract the
+    # None/non-finite/non-numeric branches inside the signals honor.
+    assert decision.model_id == "claude-haiku-4-5"
+    assert decision.triggered_signal is None
+    assert decision.signal_values == {"judge": None}
+
+
+def test_raising_signal_still_counts_toward_the_escalation_rate_denominator() -> None:
+    # Pre-fix: total_routes == 0 after a raising route, so every failed route
+    # was missing from escalation_rate's *denominator* and the rate reported
+    # to dump_stats_json / docs/savings.json / the dashboard was computed over
+    # a silently truncated sample — a router whose judge fails intermittently
+    # reported a better-looking escalation rate than reality.
+    sig = _RaisingSignal("judge", _JudgeParseError("unparseable score"))
+    r = _build_router(sig)
+    r.route(object())
+    r.route(object())
+
+    assert r.stats.total_routes == 2
+    assert r.stats.cheap_only == 2
+    assert r.stats.escalations == 0
+    assert r.stats.escalation_rate == 0.0
+
+
+def test_raising_signal_is_recorded_not_silently_swallowed() -> None:
+    # The counter is the reason this fix isn't just "trade a loud failure for
+    # a silent one": `signal_values` shows None whether the signal abstained
+    # or exploded, so without per_signal_errors a permanently broken judge is
+    # indistinguishable from one that legitimately couldn't measure.
+    broken = _RaisingSignal("judge", RuntimeError("judge backend unreachable"))
+    quiet = _ConstantSignal("entropy", SignalReading(value=None, trip=False))
+    r = _build_router(broken, quiet)
+    r.route(object())
+    r.route(object())
+
+    assert r.stats.per_signal_errors == {"judge": 2}
+    # The signal that abstained *by returning None* must NOT be counted as an
+    # error — that is exactly the distinction the counter exists to draw.
+    assert "entropy" not in r.stats.per_signal_errors
+    # And neither one measured anything, so per_signal_measured stays empty.
+    assert r.stats.per_signal_measured == {}
+
+
+def test_a_raising_signal_does_not_suppress_a_later_signal_that_trips() -> None:
+    # Isolation is per-signal, not per-route: the loop must keep going so a
+    # working signal still escalates. Pre-fix the first signal's exception
+    # aborted the whole loop, so a broken judge silently disabled every
+    # signal declared after it.
+    broken = _RaisingSignal("judge", RuntimeError("boom"))
+    tripping = _ConstantSignal("entropy", SignalReading(value=2.0, trip=True))
+    r = _build_router(broken, tripping)
+    decision = r.route(object())
+
+    assert decision.model_id == "claude-sonnet-4-6"
+    assert decision.triggered_signal == "entropy"
+    assert decision.signal_values == {"judge": None, "entropy": 2.0}
+    assert r.stats.per_signal_errors == {"judge": 1}
+    assert r.stats.per_signal_trips == {"entropy": 1}
+    assert r.stats.escalations == 1
+    assert r.stats.escalation_rate == 1.0
+
+
+def test_keyboard_interrupt_and_system_exit_still_propagate() -> None:
+    # `except Exception`, not `except BaseException`. A Ctrl-C inside a signal
+    # must still bring the process down rather than be laundered into
+    # "couldn't measure" — otherwise the operator cannot stop a run whose
+    # judge is hanging.
+    for exc in (KeyboardInterrupt(), SystemExit(1)):
+        r = _build_router(_RaisingSignal("judge", exc))
+        with pytest.raises(type(exc)):
+            r.route(object())
+        # And nothing was recorded, because the process is going down.
+        assert r.stats.total_routes == 0
+        assert r.stats.per_signal_errors == {}
+
+
+def test_per_signal_errors_round_trips_through_dump_stats_json(tmp_path: Path) -> None:
+    # The counter is useless if it stops at the in-process dict: the whole
+    # point is that an operator tailing router-stats.json can see a judge
+    # that is failing.
+    r = _build_router(_RaisingSignal("judge", RuntimeError("boom")))
+    r.route(object())
+    out = tmp_path / "router-stats.json"
+    r.dump_stats_json(out)
+    payload = json.loads(out.read_text(encoding="utf-8"))
+
+    assert payload["per_signal_errors"] == {"judge": 1}
+    assert payload["total_routes"] == 1
+    # Nested dict is copied, not aliased — same contract as the other two.
+    payload["per_signal_errors"]["judge"] = 999
+    assert r.stats.per_signal_errors == {"judge": 1}

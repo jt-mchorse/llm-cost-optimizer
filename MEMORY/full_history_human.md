@@ -1486,3 +1486,69 @@ I've been explicit in both the issue and the PR that reachability here is contri
 The embedding input keeps its readable `[model=...]` form and no longer backs the key. A key needs unforgeable boundaries; an embedding input is text going to a tokenizer, where braces and quotes would degrade the similarity signal, and that prefix was tuned against the 0.95 threshold in #125/#133. Consolidate the mechanism, not the string.
 
 **Operational note:** every key value changes, so an upgrade starts from a cold cache. In-memory that's nothing; Redis ages the old keys out on their TTL.
+
+## 2026-08-14 — a router signal that raises destroyed a paid-for cheap call (#184)
+
+`UncertaintyRouter.route()` calls each escalation signal in a bare loop, with
+no exception handling, *after* it has already called the cheap model and been
+billed for it. A signal that raised took that completed response down with it
+and handed the caller nothing.
+
+What makes this a clean find rather than a speculative one is that `router.py`
+argues against itself. Its comments state the contract three separate times —
+"aborting the whole routing decision for a completed cheap-model call. Abstain
+instead". But every fix that produced those comments (#94, #106, #95, #112,
+#118) hardened a signal against a malformed **return value**. Not one covered
+the signal **raising**. The general form is worth keeping: when a module has a
+whole wave of "abstain, don't crash" fixes, ask which axis the wave ran along,
+and probe the other one.
+
+The raise half is also the half that actually happens in production. Both entry
+points are BYO by design: `EscalationSignal` is a public `Protocol`, and
+`JudgeConfidenceSignal.judge` is explicitly the `eval_harness.Judge` seam
+(D-002). That second one is a direct consequence of work merged in this same
+session — llm-eval-harness#201 deliberately made `Judge.score` raise
+`JudgeParseError` in more cases, on the sound reasoning that a wrong-but-
+plausible judge score is the failure that harness exists to catch. Right call
+there; it widens exactly the branch this repo didn't catch. Finding it meant
+looking at the *consumer* of a seam I had just changed in another repo.
+
+The probe was a four-row table — usable score, non-numeric score, raising
+judge, raising BYO signal — printing the outcome next to two counters: how many
+cheap calls had been paid for, and what `total_routes` recorded. Rows two and
+three side by side are the entire issue: a judge returning garbage is handled
+gracefully, a judge raising is not.
+
+Printing the telemetry counter is what surfaced the second defect.
+`total_routes` read **0** on both failing rows, because the stats block sits
+after the signal loop and a raising signal skips it. `escalation_rate` is
+`escalations / total_routes`, so every failed route was missing from the
+*denominator* — meaning a router whose judge fails intermittently reports a
+better-looking escalation rate than reality, to `dump_stats_json`,
+`docs/savings.json` and the dashboard alike.
+
+One design point generalizes. Converting a raise into an abstention trades a
+loud failure for a silent one unless you also record it: `signal_values` shows
+`None` whether the signal abstained or exploded. So the new
+`RouterStats.per_signal_errors` counter isn't polish, it's what makes the fix
+correct, and there's a test asserting that a signal abstaining by *returning*
+`None` is not counted as an error. The isolation also turned out to be
+per-signal rather than per-route — pre-fix, one broken judge silently disabled
+every signal declared after it, which got its own test.
+
+`docs/savings.json` had to be regenerated because `router_stats` embeds
+`RouterStats.to_dict()` wholesale. The diff is exactly one line and every
+dollar figure is byte-identical, which is the check that this is an
+observability change and not a benchmark movement. Four existing shape locks
+failed on the new key; all four were right, and were updated rather than
+weakened.
+
+Two hunts in this repo came back empty and are recorded so they aren't
+repeated. `pricing.py` is saturated. And `bench_savings.py`'s `_sort_key` does
+hand-concatenate `f"{seed}:{row_id}"` into a SHA-256 — the exact class #182
+fixed in `semantic_cache` — but `row_id` is generated internally as
+`easy-`/`medium-`/`hard-` plus four digits and `seed` is an `int`, so no
+delimiter can be injected. Separately, lco was missing from the portfolio's
+GFM pipe-escaping enumeration, so I checked it: `_format_markdown` has one
+free-form cell, but every `extra` key is a fixed literal and every value is a
+number, so it isn't reachable. lco is now enumerated too.
