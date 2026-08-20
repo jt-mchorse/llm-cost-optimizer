@@ -1552,3 +1552,62 @@ delimiter can be injected. Separately, lco was missing from the portfolio's
 GFM pipe-escaping enumeration, so I checked it: `_format_markdown` has one
 free-form cell, but every `extra` key is a fixed literal and every value is a
 number, so it isn't reachable. lco is now enumerated too.
+
+## 2026-08-19 — `--thresholds` was guarded for parse failure and nothing else (#186)
+
+`scripts/tune_threshold.py` validates `--cheap-dollars`, `--strong-dollars`
+and `--out` against their value domains and exits 2 on each. `--thresholds` —
+the flag the script is named after — was checked only for tokens `float()`
+*refuses*. The comment introducing the dollars guard, four lines above, states
+the rule it was missing almost verbatim:
+
+> argparse only enforces `float`, which happily parses `nan`/`inf`/negative
+
+That rule was applied to two flags and not to the third. This is a lens worth
+reusing: when a guard's comment articulates a rule in general terms, check
+every sibling the rule covers, not just the one the comment is attached to.
+
+Running the variant table (and capturing the exit code *before* any pipe)
+showed the matrix immediately:
+
+```
+--thresholds 'abc'       exit=2   correct
+--thresholds 'nan,0.5'   exit=1   raw ValueError traceback
+--thresholds 'inf'       exit=1   raw ValueError traceback
+--thresholds '-1.0,0.5'  exit=1   raw ValueError traceback
+--thresholds '1e400'     exit=1   raw ValueError traceback
+--thresholds ''          exit=0   (!)
+--thresholds ','         exit=0   (!)
+```
+
+All four exit-1 rows reach `EntropySignal.__post_init__`'s own guard from
+*inside* `sweep()`, so a script-level usage error surfaces as a library-level
+exception at the wrong exit code. `1e400` is the one an operator cannot see
+coming — an ordinary finite-looking decimal literal that `float()` returns as
+`inf`.
+
+The two exit-0 rows turned out to be the bigger problem. An empty or
+comma-only list survives the `if t.strip()` filter, leaving `thresholds == []`,
+so the sweep produces no rows and the script prints `sweep wrote ...` and
+succeeds. `--out` defaults to `docs/threshold_demo`, which is the stem the
+README's documented command uses, so I watched it replace the committed
+eight-row artifact with `{"rows": []}` and then restored it with
+`git checkout`. With matplotlib installed, `ax.plot([], [])` is legal too, so
+a blank PNG lands beside it and is reported as `plot wrote`. The empty row
+list is silent at every seam. `--thresholds "$THRESHOLDS"` with an unset
+variable is the ordinary way to reach this from CI, and the success exit code
+is exactly what lets it survive review.
+
+Both guards go before `sweep()` and before any write, matching where the
+existing guards sit, so a rejected run leaves no half-produced `.json`/`.png`
+pair. The tests assert the exit code *and* that neither artifact exists —
+for the empty-list case the artifact is the whole defect, so asserting only
+the exception type would have missed it. One test reads
+`docs/threshold_demo.json` and pins its eight rows so the severity claim is
+anchored rather than asserted in prose, and the `0.0` boundary gets its own
+test since the guard rejects `< 0` and not `<= 0`, and `0.0` is the first row
+of the committed default sweep.
+
+No upper bound was added. Entropy has no natural ceiling here and inventing
+one would be a guess; non-finite and negative are the two values the code
+demonstrably cannot use.
