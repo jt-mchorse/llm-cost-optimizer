@@ -183,6 +183,17 @@ class Storage(Protocol):
         above-threshold same-model record and turn a legitimate hit into a
         miss (#133). ``model=None`` (the default) scans every record, so
         direct callers and pre-#133 code keep their behavior.
+
+        **Ties are part of this contract** (#188). When two records score the
+        same cosine, an implementation must return the one with the greater
+        ``record.key`` — not whichever it happened to scan first. Iteration
+        order is a property of how a backend stores things, so resolving a tie
+        by position makes the served payload depend on write order and lets two
+        conforming backends disagree about the same cache. ``key`` is a hash of
+        the ``{model, prompt}`` object, so every backend can agree on it
+        without coordinating. A backend that grows a server-side nearest-vector
+        query (RediSearch, pgvector) must carry the tiebreak into its ``ORDER
+        BY`` rather than dropping it.
         """
 
     def invalidate_by_tag(self, tag: str) -> int:
@@ -228,7 +239,34 @@ class InMemoryStorage:
             if model is not None and r.model != model:
                 continue
             sim = cosine(vector, list(r.vector))
-            if best is None or sim > best[1]:
+            # Ties break on `record.key`, not on scan position (#188). A bare
+            # `sim > best[1]` let the FIRST record scanned win, and "first" here
+            # is `dict.values()` insertion order — a property of how the cache
+            # was written, not of what it holds.
+            #
+            # Ties are ordinary, not exotic: `_tokenize` is `text.lower().split()`,
+            # so casing and whitespace runs vanish from the EMBEDDING, while
+            # `_make_key` hashes the exact prompt text. Four casings of one
+            # question are therefore four distinct records sharing one vector,
+            # all at cosine 1.0. Measured: across the 24 insertion permutations
+            # of those four, `lookup` served four different payloads, and
+            # `measure_false_positive_rate` read 0.00 for 12 orders and 1.00 for
+            # the other 12 on identical cache contents — that rate is the
+            # offline number D-007 exists to produce.
+            #
+            # `key` is a SHA-256 digest of the `{model, prompt}` object, so it is
+            # unique and derived from CONTENT. That is what makes `RedisStorage`
+            # land on the same record: a tiebreak on a scan *position* would
+            # remove the dependence on the iteration mechanism but not on the
+            # write order, which is the actual defect (llm-eval-harness#206,
+            # agent-orchestration-platform#120).
+            #
+            # It does not make the winner the *right* record — among tied
+            # entries it is arbitrary-but-fixed, and identical across backends.
+            # "Freshest wins" would be better semantics but needs a `created_at`
+            # on `CacheRecord`, i.e. a stored-format change; see `model`'s
+            # backward-compatibility note above for why that wants its own issue.
+            if best is None or (sim, r.key) > (best[1], best[0].key):
                 best = (r, sim)
         if best is None:
             return None
@@ -405,7 +443,15 @@ class RedisStorage:
                 if model is not None and record.model != model:
                     continue
                 sim = cosine(vector, list(record.vector))
-                if best is None or sim > best[1]:
+                # Same content tiebreak as InMemoryStorage (#188) — see the long
+                # note there. This half is why the fix is not cosmetic: `SCAN`
+                # returns keys in an order Redis does not define, so the two
+                # backends resolved a tie to *different records* on the same
+                # populated cache with the same insertion order (measured:
+                # in-memory 250a127aab1750fb, Redis 1a5ec8281b4bf5ff). This
+                # module already asserts cross-backend parity in its test
+                # suite; the tiebreak is what makes that hold on ties too.
+                if best is None or (sim, record.key) > (best[1], best[0].key):
                     best = (record, sim)
             if cursor == 0:
                 break
