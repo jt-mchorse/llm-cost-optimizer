@@ -1611,3 +1611,66 @@ of the committed default sweep.
 No upper bound was added. Entropy has no natural ceiling here and inventing
 one would be a guess; non-finite and negative are the two values the code
 demonstrably cannot use.
+
+## 2026-08-20 — the cache served whichever tied record was written first (#188)
+
+`find_nearest` picked the best record with a bare `sim > best[1]`. Strict `>`
+means the first record *scanned* wins a tie — and "first" is an iteration
+order, not a property of the data: `dict.values()` insertion order for
+`InMemoryStorage`, `SCAN` order for `RedisStorage`.
+
+The part worth carrying to other repos is why the tie is ordinary rather than
+exotic. `_tokenize` is `text.lower().split()`, so casing and whitespace runs
+vanish from the *embedding*, while `_make_key` hashes the *exact* prompt text.
+Four casings of one question are therefore four distinct records sharing one
+vector, all at cosine 1.0. Any cache with a normalizing embedding path beside
+an exact-hashing key path has this shape.
+
+What made it unarguable was finding the metric it corrupts.
+`measure_false_positive_rate` read **0.00 for 12 insertion orders and 1.00 for
+the other 12** on identical cache contents. That rate is the offline number
+D-007 exists to produce and the evidence behind D-006's 0.95 threshold. On top
+of that, the two backends disagreed on the same cache with the same insertion
+order — in-memory chose `250a127aab1750fb`, Redis chose `1a5ec8281b4bf5ff` —
+and this module already asserts cross-backend parity in its test suite, so the
+bug violated a property the repo had already committed to.
+
+I was careful not to overclaim. With `fakeredis`, `SCAN` order was stable
+across 50 repeat lookups in one process, and I said so rather than asserting
+the stronger intra-backend flapping that Redis's own docs would permit. It does
+vary *between* processes, which is why the single-order parity test is not a
+reliable pre-fix detector and the all-24-orders one is.
+
+The tiebreak is `record.key`, a SHA-256 digest of the `{model, prompt}` object:
+unique and content-derived, which is exactly what lets both backends land on
+the same record. A tiebreak on a scan position would remove the dependence on
+the iteration mechanism but not on the write order, which is the actual defect
+— the third time that distinction paid today. The rule also went into the
+`Storage` protocol docstring, not just the two implementations, so a future
+server-side nearest-vector backend carries it into its `ORDER BY`.
+
+Two things deferred. "Freshest wins" is arguably better semantics but
+`CacheRecord` has no `created_at`, and this class already carries the scar of
+adding a stored field — `model: str = ""` defaults precisely so pre-#125 Redis
+blobs stay readable. And normalizing `_make_key`'s input to match `_tokenize`
+would stop the casing variants becoming distinct records at all, but it would
+change every existing key in every deployed cache. The ordering defect is real
+independently of either.
+
+One process note. The "similarity outranks the tiebreak" test needs the
+better-matching record to have the *smaller* key, and my first candidate
+sorted the other way — which would have made the test vacuous. I had written
+that fixture assumption as an explicit `assert`, it failed loudly, and I
+searched a table of ten candidate prompts for one that satisfies it instead of
+guessing again.
+
+**Why this work, this session:** the static `priority:high` queue was globally
+empty, so the issue came from a firsthand differential probe of the two
+`Storage` backends.
+
+**Open questions / blockers:** none new. `#135` and `#97` remain JT-gated
+decision-revisits.
+
+**Next session:** a `created_at` on `CacheRecord` with a freshest-wins tie
+policy is the natural follow-up, but it is a stored-format change and wants
+JT's call on the compatibility question.
