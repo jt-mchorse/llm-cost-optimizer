@@ -291,7 +291,17 @@ A few honest notes the README leads with rather than buries:
   cache layer so the cache offsets the strong-model spend.
 - The Streamlit dashboard renders the bar chart of per-strategy
   savings, the cumulative-savings line, a quality-maintained flag,
-  and an expandable JSON view of the raw artifact.
+  a per-signal router-escalation panel, and an expandable JSON view of
+  the raw artifact.
+- The router panel breaks each escalation signal down into `trips` /
+  `measured` / `errors` / `attempts` / `trip_rate` / `error_rate`.
+  `errors` counts the rows where a signal's `measure()` *raised* and
+  was converted to an abstention — without it a permanently broken
+  signal is indistinguishable from one that legitimately had nothing
+  to measure, and before #190 such a signal was not shown at all. Both
+  rate columns render blank rather than `0.00` when their denominator
+  is zero: a rate of zero is a measurement, and a signal nothing
+  reached has not been measured.
 
 Real-API savings against a real workload follows the same posture as
 `scripts/tune_threshold.py` (D-007): the script supports a `--dry` mode

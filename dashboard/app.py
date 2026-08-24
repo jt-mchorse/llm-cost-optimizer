@@ -60,24 +60,73 @@ def _pick_router_row(payload: dict[str, Any]) -> dict[str, Any] | None:
 def _router_panel_rows(router_stats: dict[str, Any]) -> list[dict[str, Any]]:
     """Build the per-signal rows for the router escalation table.
 
-    One row per signal name in ``per_signal_trips ∪ per_signal_measured``.
-    ``trip_rate`` is ``trips / measured`` and defaults to ``0.0`` when
-    ``measured == 0`` (e.g., a signal that was wired up but never had a
-    sample reach it because an earlier signal short-circuited the chain).
+    One row per signal name in
+    ``per_signal_trips ∪ per_signal_measured ∪ per_signal_errors``.
+
+    ``per_signal_errors`` is in that union because of what it is *for*.
+    `RouterStats`' own docstring says the counter exists so the #184
+    raise-to-abstention conversion "doesn't merely trade a loud failure for a
+    silent one ... only this counter separates 'the judge couldn't measure this
+    response' from 'the judge is broken and every route is running unmeasured'".
+    This panel is the one place an operator looks for that, and it used to build
+    its row set from ``trips | measured`` alone -- so a signal that *only ever
+    raised* appears in neither dict and was not a row at all.
+
+    Measured over 100 routes, three signals: ``entropy`` (raises on 40% of
+    calls, trips on 20%), ``judge`` (raises on every call), ``zz_unreached``
+    (always abstains with ``value=None``)::
+
+        producer   per_signal_trips     {'entropy': 20}
+                   per_signal_measured  {'entropy': 60}
+                   per_signal_errors    {'judge': 100, 'entropy': 40}
+
+        panel               trips  measured  trip_rate
+                  entropy      20        60   0.333333
+
+    One row. A judge that failed on 100 of 100 routes -- the router ran blind on
+    every one -- was invisible, and ``entropy``'s ``20/60 = 0.333`` read as
+    "fires on a third of what it sees" when the truth is 20 trips out of 100
+    attempts, 40 of which errored. Same number, opposite conclusion about
+    whether the signal works. ``attempts`` and ``errors`` are what make the
+    denominator readable.
+
+    ``trip_rate`` is ``trips / measured``, and is ``None`` -- not ``0.0`` --
+    when ``measured == 0``. Once errors are unioned in, ``measured == 0`` stops
+    being exotic and becomes the permanently-broken signal's ordinary state, so
+    ``0.0`` would render the 100%-broken judge as ``trip rate 0.00``: the bottom
+    of the range, indistinguishable from a signal measured 5,000 times that
+    never tripped. A default landing at an extreme of a comparison does not
+    abstain, it ranks. ``None`` renders as a blank cell next to ``errors=100``.
+    The test that pinned the old ``0.0`` gave its reason as "not a
+    ``ZeroDivisionError``"; ``None`` satisfies that reason and is truthful.
+
+    ``error_rate`` is ``errors / attempts`` and is ``None`` when nothing was
+    attempted, by the same rule -- a signal nothing reached is not a signal with
+    a 0% error rate.
+
+    Note this is arithmetic over fields already in the artifact, not a
+    re-derivation of savings: D-011's "the dashboard does no recomputation"
+    posture is intact.
     """
     trips = router_stats.get("per_signal_trips", {})
     measured = router_stats.get("per_signal_measured", {})
-    signals = sorted(set(trips) | set(measured))
+    errors = router_stats.get("per_signal_errors", {})
+    signals = sorted(set(trips) | set(measured) | set(errors))
     rows: list[dict[str, Any]] = []
     for sig in signals:
         t = int(trips.get(sig, 0))
         m = int(measured.get(sig, 0))
+        e = int(errors.get(sig, 0))
+        attempts = m + e
         rows.append(
             {
                 "signal": sig,
                 "trips": t,
                 "measured": m,
-                "trip_rate": (t / m) if m > 0 else 0.0,
+                "errors": e,
+                "attempts": attempts,
+                "trip_rate": (t / m) if m > 0 else None,
+                "error_rate": (e / attempts) if attempts > 0 else None,
             }
         )
     return rows
@@ -196,12 +245,18 @@ def main() -> None:
         st.dataframe(pd.DataFrame(rows).set_index("signal"), width="stretch")
         st.caption(
             "`trips` is first-trip-wins attribution per signal; "
-            "`measured` is how many rows reached that signal "
-            "(earlier signals can short-circuit). `trip_rate = "
-            "trips / measured`, defaulting to 0.0 when `measured` "
-            "is 0 — the only way to debug a router that's escalating "
-            "either too much or not enough (the dollar columns can't "
-            "tell you *which* signal is firing)."
+            "`measured` is how many rows the signal returned a reading "
+            "for; `errors` is how many rows its `measure()` *raised* and "
+            "was converted to an abstention; `attempts = measured + "
+            "errors`. `trip_rate = trips / measured` and `error_rate = "
+            "errors / attempts`, both **blank** rather than 0.00 when "
+            "their denominator is 0 — a signal nothing reached is not a "
+            "signal with a 0% rate. This is the only way to debug a "
+            "router that's escalating either too much or not enough "
+            "(the dollar columns can't tell you *which* signal is "
+            "firing), and a non-zero `errors` column is the only way to "
+            "tell a signal that legitimately couldn't measure a response "
+            "from one that is simply broken."
         )
 
     # ----- strategy table -----

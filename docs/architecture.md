@@ -197,9 +197,13 @@ through their own `PromptCacheWrapper` (or none).
   `UncertaintyRouter.dump_stats_json(path)` ship the same observability
   shape the two cache layers expose (#50 / #52): a stable JSON dict
   with the three raw counters (`total_routes`, `escalations`,
-  `cheap_only`), two per-signal breakdowns (`per_signal_trips` for
+  `cheap_only`), three per-signal breakdowns (`per_signal_trips` for
   first-trip-wins attribution, `per_signal_measured` for the
-  didn't-trip vs. couldn't-measure distinction), and the derived
+  didn't-trip vs. couldn't-measure distinction, and `per_signal_errors`
+  (#184) for the couldn't-measure vs. *is broken* distinction — a
+  signal that abstains by raising is indistinguishable in
+  `signal_values` from one that abstains by returning `value=None`, and
+  only this counter separates them), and the derived
   `escalation_rate`. Written atomically through
   `cost_optimizer/io_utils.py`. Closes the last observability gap in
   the runtime layer — all three runtime classes now expose one
@@ -214,9 +218,18 @@ through their own `PromptCacheWrapper` (or none).
   and the README table stay clean); the dashboard `Raw JSON` expander
   surfaces it immediately, and a dedicated `st.dataframe` "Router
   per-signal escalation" panel (#66) renders the per-signal
-  `trips`/`measured`/`trip_rate` breakdown built by
-  `dashboard/app.py`'s `_pick_router_row` / `_router_panel_rows`,
-  keeping the `Raw JSON` expander as the raw fallback beside it.
+  `trips`/`measured`/`errors`/`attempts`/`trip_rate`/`error_rate`
+  breakdown built by `dashboard/app.py`'s `_pick_router_row` /
+  `_router_panel_rows`, keeping the `Raw JSON` expander as the raw
+  fallback beside it. The row set is the union of all *three* counter
+  dicts (#190): it was `trips | measured` alone, so a signal that only
+  ever raised appeared in neither and was not a row — measured, a judge
+  that failed on 100 of 100 routes was entirely absent from the one
+  panel an operator consults, which defeated the purpose
+  `per_signal_errors` was added for. `trip_rate` and `error_rate` are
+  `None` (rendered blank, not `0.00`) when their denominator is zero,
+  because a rate of zero is a *measurement* and a signal nothing
+  reached has not been measured.
 
 ---
 
