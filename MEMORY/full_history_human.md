@@ -1674,3 +1674,77 @@ decision-revisits.
 **Next session:** a `created_at` on `CacheRecord` with a freshest-wins tie
 policy is the natural follow-up, but it is a stored-format change and wants
 JT's call on the compatibility question.
+
+---
+
+## 2026-08-24 — Issue #190: `per_signal_errors` had no consumer
+
+**What got done.** `RouterStats.per_signal_errors` shipped in #184 with an
+unusually explicit statement of purpose in its own docstring: it exists so that
+converting a raising signal into an abstention "doesn't merely trade a loud
+failure for a silent one ... only this counter separates 'the judge couldn't
+measure this response' from 'the judge is broken and every route is running
+unmeasured'." The counter was populated, serialized by `to_dict`, and written
+into `docs/savings.json`. Grepping for who *reads* it turned up nobody.
+
+`dashboard/app.py`'s `_router_panel_rows` built its row set from
+`set(per_signal_trips) | set(per_signal_measured)`. A signal that only ever
+raised appears in neither dict, so it was not mis-rendered — it was absent. And
+that panel's own caption calls it "the only way to debug a router that's
+escalating either too much or not enough".
+
+Measured over 100 routes with `entropy` (raises on 40% of calls, trips on 20%)
+and `judge` (raises on every call):
+
+```
+producer   per_signal_trips     {'entropy': 20}
+           per_signal_measured  {'entropy': 60}
+           per_signal_errors    {'judge': 100, 'entropy': 40}
+
+panel               trips  measured  trip_rate
+          entropy      20        60   0.333333
+```
+
+One row. A judge that failed on every single route — the router ran blind on all
+100 — did not appear, and `entropy`'s `20/60 = 0.333` read as "fires on a third
+of what it sees" when the truth was 20 trips out of 100 attempts, 40 of which
+errored. Same number, opposite conclusion about whether the signal works.
+
+**The fix.** The row set is now the union of all three counter dicts, with
+`errors`, `attempts` and `error_rate` columns so a rate's denominator carries its
+own provenance. `trip_rate` and `error_rate` are `None` — rendered blank rather
+than `0.00` — when their denominator is zero. That third change matters because
+of the first: once errors are unioned in, `measured == 0` stops being exotic and
+becomes the permanently-broken signal's *ordinary* state, so `0.0` would have
+rendered the 100%-broken judge as "trip rate 0.00", the bottom of the range and
+indistinguishable from a healthy signal that never happened to trip.
+
+**Two process notes.** Changing a pinned `0.0` needed a justification, and the
+test itself supplied one: its stated reason was "must be 0.0, **not a
+`ZeroDivisionError`**" — a reason `None` satisfies equally. The `0.0` was never
+argued for on its own merits. That same test's fixture (`{"per_signal_trips":
+{"unreached": 0}, "per_signal_measured": {"unreached": 0}}`) was also a shape the
+producer cannot emit, since both dicts are written with `.get(name, 0) + 1` and a
+key never exists with the value 0. Every new test here drives the panel from a
+real `UncertaintyRouter` instead.
+
+**Deliberately not fixed.** `RouterStats.escalation_rate` has the identical
+`... else 0.0` shape and is fine as it stands: `to_dict` emits it immediately
+beside `total_routes`, so a reader sees `escalation_rate: 0.0, total_routes: 0`
+together and cannot misread it. The dashboard's `trip_rate` had no adjacent
+disambiguator, which is precisely what the new `errors` column supplies. Fixing
+both would be treating the shape rather than the harm.
+
+**Found in passing.** `per_signal_errors` appeared nowhere in the README or
+`docs/architecture.md`, and the architecture doc still described `to_dict` as
+carrying "two per-signal breakdowns". #184 shipped a counter and documented it
+nowhere. Both docs updated here.
+
+**Why this was prioritized.** `llm-cost-optimizer` is a priority-tier repo (D-009)
+and second in the §8 build sequence, and its whole open queue was JT-gated
+decision-revisits, so the issue came from a firsthand probe of the least-recently
+touched surface in the repo.
+
+**Tests.** 9 new (`tests/test_dashboard_router_panel_errors.py`) plus 2 rewritten;
+9 fail against a revert of `dashboard/`. Suite 710 → 719 green, ruff clean,
+mypy gate clean.
