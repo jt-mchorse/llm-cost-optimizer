@@ -168,7 +168,17 @@ class CacheRecord:
 
 
 class Storage(Protocol):
-    """Persistence + nearest-vector + tag-membership operations."""
+    """Persistence + nearest-vector + tag-membership operations.
+
+    **Payload contract** (#192). A `CacheRecord.payload` reaching an
+    implementation is guaranteed to survive a JSON round-trip unchanged --
+    `SemanticCache.put` enforces that at its own seam via `_validate_payload`,
+    so a backend may serialize freely and two conforming backends serve the
+    same object for the same record. This is the same "backends must not
+    disagree about the same cache" property `find_nearest`'s tie-break section
+    below spells out, at the level of what is stored rather than which record
+    wins.
+    """
 
     def put(self, record: CacheRecord) -> None: ...
     def find_nearest(
@@ -222,6 +232,12 @@ class InMemoryStorage:
         # retroactively corrupt the stored entry. `RedisStorage.put` gets this
         # for free by json.dumps-ing the payload; the dep-free in-memory backend
         # (the default) otherwise held the exact object by reference (#131).
+        #
+        # That equivalence is about *isolation* only. It was not true of
+        # *fidelity*: a `deepcopy` preserves a tuple and an int dict key, and a
+        # JSON round-trip does not, so the two backends served different objects
+        # for the same record until `SemanticCache.put` started rejecting
+        # payloads that don't round-trip (#192).
         # vector (tuple) / tags (frozenset) are already immutable — only the
         # arbitrary payload needs the copy.
         self._records[record.key] = replace(record, payload=copy.deepcopy(record.payload))
@@ -564,6 +580,81 @@ def _validate_embedding(vector: list[float], *, where: str) -> None:
         )
 
 
+def _validate_payload(payload: Any) -> None:
+    """Reject a payload the two shipped backends would not agree on (#192).
+
+    `SemanticCache.put` takes `payload: Any` and the backends disagree about
+    what that means. `InMemoryStorage` `deepcopy`s it, preserving exact types;
+    `RedisStorage` `json.dumps` it. Measured over twelve payload shapes through
+    the same public API, six diverged:
+
+        payload                 in-memory              redis
+        dict with tuple value   {'c': ('a', 'b')}      {'c': ['a', 'b']}
+        bare tuple              ('a', 'b')             ['a', 'b']
+        int-keyed dict          {1: 'one'}             {'1': 'one'}
+        nested tuple in list    {'xs': [('a', 1)]}     {'xs': [['a', 1]]}
+        set                     {'a', 'b'}             TypeError from put
+        bytes                   b'Paris'               TypeError from put
+        datetime                datetime(2026, 1, 1)   TypeError from put
+
+    Two harms, and the quiet one is worse. `payload[1]` on an int-keyed dict
+    works on the default backend and raises `KeyError: 1` on Redis, for an
+    entry the cache reported as a *hit* -- nothing raises at write time and the
+    cache is the last place anyone looks. The `set`/`bytes`/`datetime` rows at
+    least fail loudly, but they fail from inside `RedisStorage.put`, so a
+    request that would otherwise have succeeded fails *because it tried to
+    cache its own result* -- and only after the backend swap `RedisStorage`'s
+    own docstring recommends ("For larger caches use `RedisStorage`").
+
+    So the rule is: a payload must survive a JSON round-trip **unchanged**,
+    because a persistent backend has to serialize it. Enforced here, at the
+    `put` seam, before any backend is touched -- the same placement and the
+    same reasoning `put` already applies to `ttl_s` and `_validate_embedding`
+    applies to the BYO embedder.
+
+    Deliberately a structural walk, not `json.loads(json.dumps(x)) == x`.
+    `nan != nan`, so the equality form would reject a `NaN`/`Infinity` payload
+    value -- and those two shapes round-trip *identically* on both backends
+    today, so they are not part of this defect and must keep working.
+
+    Iterative rather than recursive: a payload is caller-supplied and can be
+    arbitrarily deep, and a `RecursionError` here is not the `ValueError` the
+    seam contracts to raise.
+    """
+    stack: list[tuple[str, Any]] = [("payload", payload)]
+    while stack:
+        path, node = stack.pop()
+        # `bool` before the `int` arm it is a subclass of, for the same reason
+        # every other guard in this module spells it out.
+        if node is None or isinstance(node, (bool, int, float, str)):
+            continue
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if not isinstance(k, str):
+                    raise ValueError(
+                        f"{path} has a non-string key {k!r} ({type(k).__name__}); cache "
+                        "payloads must survive a JSON round-trip unchanged, and JSON "
+                        "object keys are strings -- RedisStorage would store this key as "
+                        f"{str(k)!r} and serve back a dict the in-memory backend never "
+                        "would. Convert the key before caching."
+                    )
+                stack.append((f"{path}[{k!r}]", v))
+            continue
+        if isinstance(node, list):
+            for i, v in enumerate(node):
+                stack.append((f"{path}[{i}]", v))
+            continue
+        raise ValueError(
+            f"{path} is a {type(node).__name__} ({node!r}), which has no JSON "
+            "representation. Cache payloads must survive a JSON round-trip unchanged: "
+            "InMemoryStorage would store it as-is while RedisStorage raises "
+            "`TypeError: Object of type "
+            f"{type(node).__name__} is not JSON serializable` from inside `put`, so the "
+            "same code caches successfully on one backend and fails on the other. "
+            "Convert it to a JSON type before caching."
+        )
+
+
 # ----------------------------------------------------------------------
 # Telemetry
 # ----------------------------------------------------------------------
@@ -797,7 +888,16 @@ class SemanticCache:
         tags: Iterable[str] = (),
         ttl_s: float | None = None,
     ) -> str:
-        """Store `payload` under the embedding of `prompt`. Returns the cache key."""
+        """Store `payload` under the embedding of `prompt`. Returns the cache key.
+
+        `payload` must survive a JSON round-trip unchanged -- `str`, `int`,
+        `float`, `bool`, `None`, `list`, and `dict` with string keys, nested
+        arbitrarily. A persistent backend has to serialize it, so anything else
+        either changes type between backends (a `tuple` is served back as a
+        `list` by `RedisStorage`) or cannot be stored at all. Rejected here with
+        a path-naming `ValueError` rather than at whichever backend happens to
+        be configured (#192). See `_validate_payload`.
+        """
         # The per-call override takes precedence over `default_ttl_s`, so it needs
         # the same guard the constructor applies (#36/#85). An unchecked negative
         # ttl stores `expires_at = now + ttl` in the past → the entry is evicted on
@@ -817,6 +917,10 @@ class SemanticCache:
             raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s!r}")
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s
         expires_at = (self.now_fn() + ttl) if ttl is not None else None
+        # Third input to this function, same seam, same standard as the two
+        # above it: reject a payload the configured backend would silently
+        # reshape or choke on, rather than store it (#192).
+        _validate_payload(payload)
         raw_vector = self.embedder.embed(self._scoped_prompt(prompt, model))
         _validate_embedding(raw_vector, where="put embedder")
         vector = tuple(raw_vector)
