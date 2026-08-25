@@ -1748,3 +1748,49 @@ touched surface in the repo.
 **Tests.** 9 new (`tests/test_dashboard_router_panel_errors.py`) plus 2 rewritten;
 9 fail against a revert of `dashboard/`. Suite 710 → 719 green, ruff clean,
 mypy gate clean.
+
+## 2026-08-25 — the two cache backends were serving different payloads (#192, D-015)
+
+**What got done.** `SemanticCache.put` took `payload: Any` and validated nothing
+about it. Driving twelve payload shapes through the identical public API against
+both shipped `Storage` backends, six came back different. `InMemoryStorage`
+`deepcopy`s the payload and preserves exact types; `RedisStorage` `json.dumps`
+it. So a `tuple` was served back as a `list`, and an int-keyed dict came back
+str-keyed — `payload[1]` works on the default backend and raises `KeyError: 1`
+on Redis, for an entry the cache had just reported as a *hit*. A `set`, `bytes`,
+or `datetime` payload raised `TypeError` from inside `RedisStorage.put`, so a
+request failed *because it tried to cache its own result*. All of it appears only
+after the operator makes the backend swap `RedisStorage`'s own docstring
+recommends. `_validate_payload` now rejects a non-round-trippable payload at the
+`put` seam, so every backend fails the same way in the same place.
+
+**Why this was prioritized.** No `priority:high` issue existed anywhere in the
+portfolio, so the target was found firsthand in a priority-tier repo. The bench
+and pricing surfaces were swept thoroughly on 2026-08-21 and came back empty, so
+this run took the storage layer instead.
+
+**The lens.** `InMemoryStorage.put`'s own comment asserts the two backends are
+equivalent — "`RedisStorage.put` gets this for free by json.dumps-ing the
+payload." That is true of *isolation*, the property the comment is about, and
+false of *fidelity*. And the module already treats cross-backend agreement as a
+contract worth a whole issue: `Storage.find_nearest`'s docstring spends a
+paragraph on tie-breaking so that "two conforming backends" cannot "disagree
+about the same cache". Payload fidelity is a more basic form of that same
+property, and it was neither stated nor enforced.
+
+**Decision recorded.** D-015. This narrows a public input domain that was `Any`,
+so it is written down rather than left as a quiet enforcement: a caller storing a
+tuple payload on the in-memory backend now gets a `ValueError`. That is the
+intended outcome — that caller was one config change away from being served a
+`list`.
+
+**Open questions.** None. `NaN`/`Infinity` payload values are deliberately still
+accepted; they already round-trip identically on both backends and are not part
+of this defect, which is why the check is a structural walk rather than a
+`json.loads(json.dumps(x)) == x` comparison (`nan != nan` would have rejected
+them).
+
+**Tests.** 19 new (`tests/test_semantic_cache_payload_parity.py`), differential
+rather than unit — every row runs through both backends and the two verdicts are
+compared, so a rule that lived in only one implementation would show up as a
+disagreement. Suite 719 → 738 green, ruff clean, mypy clean.
