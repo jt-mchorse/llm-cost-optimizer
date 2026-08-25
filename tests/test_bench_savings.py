@@ -549,27 +549,48 @@ def test_router_panel_rows_emits_one_row_per_signal_in_sorted_order() -> None:
     assert e["trip_rate"] == 0.08
 
 
-def test_router_panel_rows_trip_rate_defaults_to_zero_when_measured_is_zero() -> None:
-    """A signal that's wired up but never reached (earlier signal short-
-    circuited every row) shows measured=0; trip_rate must be 0.0, not a
-    ZeroDivisionError."""
+def test_router_panel_rows_trip_rate_is_none_not_zero_when_measured_is_zero() -> None:
+    """A signal with `measured == 0` has no trip rate; it must be blank, not 0.00.
+
+    This test used to assert `trip_rate == 0.0`, with the stated reason "not a
+    ZeroDivisionError" — a reason `None` satisfies equally, while `0.0` sits at
+    the *bottom* of the rate range and is indistinguishable from a signal
+    measured 5,000 times that never tripped (#190). Once `per_signal_errors` is
+    unioned into the row set, `measured == 0` is the permanently-broken
+    signal's ordinary state, which is exactly where that reading is most wrong.
+
+    The old fixture was also a shape the producer cannot emit: both counter
+    dicts are written with `.get(name, 0) + 1`, so a key never exists with the
+    value 0. Rewritten to the reachable shape — a signal present only in
+    `per_signal_errors`.
+    """
     if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
         pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
     sys.path.insert(0, str(_REPO_ROOT))
     from dashboard.app import _router_panel_rows  # noqa: E402
 
-    router_stats = {
-        "per_signal_trips": {"unreached": 0},
-        "per_signal_measured": {"unreached": 0},
-    }
-    rows = _router_panel_rows(router_stats)
-    assert rows == [{"signal": "unreached", "trips": 0, "measured": 0, "trip_rate": 0.0}]
+    rows = _router_panel_rows({"per_signal_errors": {"broken": 7}})
+    assert rows == [
+        {
+            "signal": "broken",
+            "trips": 0,
+            "measured": 0,
+            "errors": 7,
+            "attempts": 7,
+            "trip_rate": None,
+            "error_rate": 1.0,
+        }
+    ]
 
 
 def test_router_panel_rows_handles_signal_in_only_one_dict() -> None:
-    """`per_signal_trips` and `per_signal_measured` can independently
-    list a signal — the union (sorted) is the row set, missing values
-    default to 0."""
+    """Each of the three counter dicts can independently list a signal — the
+    union (sorted) is the row set, missing *counts* default to 0.
+
+    A missing count really is 0 (the signal did not trip / was not measured /
+    did not raise), so those defaults are truthful. A missing *rate* is not 0;
+    see `test_router_panel_rows_trip_rate_is_none_not_zero_when_measured_is_zero`.
+    """
     if importlib.util.find_spec("streamlit") is None or importlib.util.find_spec("pandas") is None:
         pytest.skip("streamlit/pandas not installed (the [dashboard] extra)")
     sys.path.insert(0, str(_REPO_ROOT))
@@ -579,15 +600,20 @@ def test_router_panel_rows_handles_signal_in_only_one_dict() -> None:
         {
             "per_signal_trips": {"entropy": 5},
             "per_signal_measured": {"logprob": 10},
+            "per_signal_errors": {"judge": 3},
         }
     )
-    assert [r["signal"] for r in rows] == ["entropy", "logprob"]
+    assert [r["signal"] for r in rows] == ["entropy", "judge", "logprob"]
     e = next(r for r in rows if r["signal"] == "entropy")
     lp = next(r for r in rows if r["signal"] == "logprob")
+    j = next(r for r in rows if r["signal"] == "judge")
     assert e["measured"] == 0
-    assert e["trip_rate"] == 0.0
+    assert e["trip_rate"] is None
     assert lp["trips"] == 0
-    assert lp["trip_rate"] == 0.0
+    assert lp["trip_rate"] == 0.0  # measured=10, so 0/10 is a real, measured 0
+    assert lp["errors"] == 0
+    assert j["attempts"] == 3
+    assert j["error_rate"] == 1.0
 
 
 def test_router_panel_rows_on_real_savings_json_produces_expected_entropy_row() -> None:
