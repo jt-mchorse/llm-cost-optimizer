@@ -131,6 +131,15 @@ response back into the cache.
   llm-eval-harness Judge backend). Dep-free defaults
   (`HashEmbedder`, `InMemoryStorage`); production callers BYO via
   Protocol. Redis support is lazy-imported behind the `[redis]` extra.
+  Pluggability implies a **payload contract** (**D-015**): a `SemanticCache.put`
+  payload must survive a JSON round-trip unchanged (`str`, `int`,
+  `float`, `bool`, `None`, `list`, `dict` with string keys), because a
+  persistent backend has to serialize it. Enforced at the `put` seam by
+  `_validate_payload`, not at whichever backend happens to be
+  configured — otherwise `InMemoryStorage` (which `deepcopy`s) and
+  `RedisStorage` (which `json.dumps`) serve different objects for the
+  same record, and code written against the dep-free default breaks on
+  the swap this decision exists to make easy.
 - **D-005.** Cache keys include `model_id`. Same prompt to two
   models is two separate entries — otherwise a Haiku response could
   be served to an Opus caller, which is a quality bug, not a cost win.

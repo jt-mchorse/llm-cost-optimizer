@@ -176,3 +176,45 @@ Strategic decisions for this repo, with reasoning. Append-only — superseded de
 **Reversibility:** Cheap. The strictness bar is a few config lines; tighten or swap the checker in a follow-up.
 
 **Related issues:** #127, #129
+
+## D-015 — a cache payload must survive a JSON round-trip unchanged (2026-08-25)
+
+**Decision.** `SemanticCache.put` rejects any payload that is not built from
+`str`, `int`, `float`, `bool`, `None`, `list`, and `dict` with string keys,
+nested arbitrarily. The check runs at the `put` seam, before any backend is
+touched.
+
+**Why.** D-004 makes `Storage` a pluggable Protocol with a dep-free default and
+a Redis implementation for production. But `put` took `payload: Any` and
+validated nothing, and the two backends disagreed about what that meant:
+`InMemoryStorage` `deepcopy`s the payload, preserving exact types, while
+`RedisStorage` `json.dumps` it. Driving twelve payload shapes through the
+identical public API, six diverged. A `tuple` came back as a `list` and an
+int-keyed dict came back str-keyed — silently, so `payload[1]` worked on the
+default backend and raised `KeyError: 1` on Redis for an entry the cache had
+just reported as a *hit*. A `set`, `bytes`, or `datetime` payload raised
+`TypeError` from inside `RedisStorage.put`, meaning a request failed *because it
+tried to cache its own result* — and only after the operator made the backend
+swap that `RedisStorage`'s own docstring recommends. Code developed and tested
+against the default backend passed, and broke on the day of the switch.
+
+Validating at the `put` seam is the placement this function already uses for its
+other two arguments (`ttl_s`, and the embedder output via `_validate_embedding`),
+and it makes every backend fail the same way in the same place.
+
+**Alternatives considered.** *Normalize instead of reject* — run every payload
+through a JSON round-trip so both backends agree on `list`. Rejected: it
+silently changes what the default backend serves today, and `set`/`bytes`/
+`datetime` would still fail. *Document without enforcing* — rejected, because
+the failure is backend-conditional, so documentation alone leaves the break in
+production. *Validate inside each backend* — rejected; a rule living in two
+implementations is exactly what let them diverge. *Use
+`json.loads(json.dumps(x)) == x` as the test* — rejected, because `nan != nan`
+and `NaN`/`Infinity` payload values already agree across both backends, so that
+form would reject shapes that are not part of this defect.
+
+**Reversibility.** Cheap — delete one call site. Worth recording anyway because
+it narrows a public input domain that was `Any`: a caller storing a tuple
+payload on the in-memory backend now gets a `ValueError`. That is the intended
+outcome, not a side effect — that caller was one config change away from being
+served a `list`.
