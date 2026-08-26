@@ -207,7 +207,19 @@ class Storage(Protocol):
         """
 
     def invalidate_by_tag(self, tag: str) -> int:
-        """Drop every record tagged `tag`. Return count dropped."""
+        """Drop every record tagged `tag`. Return count dropped.
+
+        **Tagged means the record says so** (#194). A backend that keeps a
+        tag->keys index must treat that index as a hint and check
+        `tag in record.tags` before dropping anything, because an index entry
+        outlives the record it names -- through a sibling tag's invalidation,
+        and through TTL expiry -- while keys are reused, being a deterministic
+        hash of `(prompt, model)`. Acting on the index alone evicts live records
+        that do not carry the tag, which `InMemoryStorage` (no index, filters the
+        records directly) never does. Same "backends must not disagree about the
+        same cache" property as the payload contract above and `find_nearest`'s
+        tie-break below, at the level of which records a tag names.
+        """
 
     def purge_expired(self, now: float) -> int:
         """Drop expired records; return count dropped."""
@@ -474,10 +486,55 @@ class RedisStorage:
         return best
 
     def invalidate_by_tag(self, tag: str) -> int:
+        """Drop every record tagged `tag`, validating the index before acting (#194).
+
+        The `tag:<name>` SET is an *index*, not the truth. A key leaves a
+        record's world in two ordinary ways that this index never hears about:
+
+        - `invalidate_by_tag` on a *different* tag deletes the record and drops
+          only that one tag's SET, leaving the key inside every other SET it
+          belonged to.
+        - native Redis TTL expires the record. Nothing touches any SET.
+
+        `SemanticCache._make_key` is a deterministic hash of `(prompt, model)`,
+        so re-caching the same prompt reuses that exact key. The stale
+        membership then names a *live record that does not carry the tag*, and
+        deleting it on the strength of the index alone silently evicted an entry
+        `InMemoryStorage` -- which has no index and filters `tag in r.tags` on
+        the records themselves -- correctly kept. Measured through the public
+        API, on both roads::
+
+            c.put(P, tags=["v1", "geography"]); c.invalidate(tag="v1")
+            c.put(P, tags=["v2"]); c.invalidate(tag="geography")
+            mem   -> returned 0, still cached, len 1
+            redis -> returned 1, evicted,      len 0
+
+        The harm is a wrong eviction, which is a cache miss, which is a paid API
+        call -- the failure mode this package exists to prevent -- and it is
+        quiet, because `invalidate` reports `1` and looks like it worked.
+
+        `put` already names this hazard exactly ("a tag the record no longer has
+        would still point at this key -- and a later `invalidate_by_tag` on that
+        lost tag would wrongly evict the record"), but its pruning only runs on
+        the branch where `_load(existing)` returns a record. When the key was
+        deleted or expired there is nothing to diff against, so the hazard `put`
+        documents is left open by `put`'s own guard. Validating here covers both
+        branches with one rule, and is self-healing: a stale entry is `srem`-ed
+        the first time it is encountered, so the index converges instead of
+        growing forever.
+        """
         members = cast("set[bytes]", self.client.smembers(self._tag_key(tag))) or set()
         count = 0
         for member in members:
             key = member.decode("utf-8") if isinstance(member, bytes) else member
+            record = self._load(self._record_key(key))
+            # `record is None`: deleted or TTL-expired out from under this index.
+            # `tag not in record.tags`: the key was reused by a later `put` whose
+            # tag set does not include `tag`. Either way the index entry is stale
+            # -- drop the membership, and do not touch the record it names.
+            if record is None or tag not in record.tags:
+                self.client.srem(self._tag_key(tag), key)
+                continue
             if cast("int", self.client.delete(self._record_key(key))) > 0:
                 count += 1
         self.client.delete(self._tag_key(tag))
