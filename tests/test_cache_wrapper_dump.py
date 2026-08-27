@@ -57,15 +57,31 @@ class _FakeClient:
 # --- CacheTelemetry.to_dict ------------------------------------------------
 
 
+#: Keys ``to_dict`` emits that are NOT dataclass fields. Exactly one, and it is
+#: pinned here rather than the field-set assertion being loosened to a subset
+#: check (#196): ``net_dollars_saved`` is a *derived* property, so storing it
+#: would let it drift from its two inputs across ``merge``, and dropping it from
+#: the payload would leave a sink unable to compute it -- ``to_dict`` carries no
+#: rate, so ``dollars_saved`` (dollars) and ``tokens_written`` (tokens) are not
+#: inter-convertible there. Adding a second derived key must be a deliberate
+#: edit to this set, and a new *field* that ``to_dict`` forgets still fails.
+_DERIVED_KEYS = {"net_dollars_saved"}
+
+
 def test_to_dict_returns_full_field_set() -> None:
-    """Key set must match the dataclass fields exactly. If a new field
-    lands on ``CacheTelemetry`` without ``to_dict`` learning about it
-    the dict would silently drop the new value."""
+    """Key set must be exactly the dataclass fields plus the pinned derived
+    keys. If a new field lands on ``CacheTelemetry`` without ``to_dict``
+    learning about it the dict would silently drop the new value."""
     t = CacheTelemetry(
-        hits=3, misses=1, tokens_cached=2000, tokens_written=200, dollars_saved=0.012
+        hits=3,
+        misses=1,
+        tokens_cached=2000,
+        tokens_written=200,
+        dollars_saved=0.012,
+        dollars_write_premium=0.004,
     )
     payload = t.to_dict()
-    expected = {f.name for f in fields(t)}
+    expected = {f.name for f in fields(t)} | _DERIVED_KEYS
     assert set(payload) == expected
     assert payload == {
         "hits": 3,
@@ -73,7 +89,20 @@ def test_to_dict_returns_full_field_set() -> None:
         "tokens_cached": 2000,
         "tokens_written": 200,
         "dollars_saved": 0.012,
+        "dollars_write_premium": 0.004,
+        "net_dollars_saved": 0.008,
     }
+
+
+def test_field_set_lock_still_catches_a_dropped_field() -> None:
+    """Anti-vacuous for the loosened-looking assertion above: the guard is not
+    weaker for admitting a derived key. A field ``to_dict`` forgot is still a
+    failure, and the derived set is a hard pin, not a wildcard."""
+    payload_keys = set(CacheTelemetry.zero().to_dict())
+    field_names = {f.name for f in fields(CacheTelemetry)}
+    assert field_names <= payload_keys, "every dataclass field must reach to_dict"
+    assert payload_keys - field_names == _DERIVED_KEYS, "no unpinned extra keys"
+    assert {"net_dollars_saved"} == _DERIVED_KEYS
 
 
 def test_to_dict_round_trips_through_json_dumps() -> None:
@@ -97,6 +126,8 @@ def test_to_dict_on_zero_telemetry_is_all_zero_keys() -> None:
         "tokens_cached": 0,
         "tokens_written": 0,
         "dollars_saved": 0.0,
+        "dollars_write_premium": 0.0,
+        "net_dollars_saved": 0.0,
     }
 
 
@@ -119,7 +150,15 @@ def test_dump_aggregate_json_writes_file_with_aggregate_shape(tmp_path: Path) ->
     body = out.read_text(encoding="utf-8")
     assert body.endswith("\n"), "must end with a trailing newline"
     payload = json.loads(body)
-    assert set(payload) == {"hits", "misses", "tokens_cached", "tokens_written", "dollars_saved"}
+    assert set(payload) == {
+        "hits",
+        "misses",
+        "tokens_cached",
+        "tokens_written",
+        "dollars_saved",
+        "dollars_write_premium",
+        "net_dollars_saved",
+    }
     # Both calls flowed through, so the aggregate must reflect that.
     assert payload["misses"] == 1  # the cache-write call
     assert payload["hits"] == 1  # the cache-read call
@@ -175,6 +214,8 @@ def test_dump_aggregate_json_zero_telemetry_writes_empty_shape(tmp_path: Path) -
         "tokens_cached": 0,
         "tokens_written": 0,
         "dollars_saved": 0.0,
+        "dollars_write_premium": 0.0,
+        "net_dollars_saved": 0.0,
     }
 
 

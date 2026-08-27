@@ -11,6 +11,13 @@ wrapper:
 3. **Aggregates** telemetry across all calls made through the wrapper, so
    callers can read a single rolled-up number for dashboards or logs.
 
+Both sides of the caching trade are priced. A cache *read* bills at
+``cache_read_multiplier`` times the input rate (a saving) and a cache *write*
+at ``cache_write_multiplier`` times it (a surcharge), so a workload that writes
+more than it reads costs *more* than not caching -- and ``dollars_saved``,
+being ``read * rate * positive_discount``, can never say so. ``net_dollars_saved``
+is the one to put on a dashboard (#196).
+
 The client is duck-typed — the wrapper never imports ``anthropic``. Any
 object exposing ``client.messages.create(...)`` works, which keeps the
 wrapper testable with a fake client and importable without an API key.
@@ -37,10 +44,40 @@ class CacheTelemetry:
     tokens_cached: int
     tokens_written: int
     dollars_saved: float
+    dollars_write_premium: float = 0.0
+    """Extra dollars paid to *write* ``tokens_written`` into the cache (#196).
+
+    ``cache_creation_input_tokens`` bills at ``cache_write_multiplier`` times the
+    input rate **instead of** 1x, so the extra is ``(multiplier - 1.0)`` per
+    token -- 0.25x at Anthropic's documented 1.25x.
+
+    Defaulted so every existing construction of this dataclass, in this repo or
+    a caller's, stays valid. It is the counterweight to ``dollars_saved``, which
+    is gross read-side savings and, being ``read * rate * positive_discount``,
+    can never be negative -- so on its own it cannot express the case where the
+    caching lost money.
+    """
+
+    @property
+    def net_dollars_saved(self) -> float:
+        """``dollars_saved`` minus the write premium: the number an operator wants.
+
+        A **derived** property rather than a stored field, so it cannot drift
+        from its two inputs across ``merge`` / ``zero`` / a hand-built instance.
+
+        This is exactly ``scripts/bench_savings.py``'s cost model. That bench
+        prices a cached call as ``written * rate * write_mult + read * rate *
+        read_mult`` against an uncached baseline of ``(written + read) * rate``,
+        which rearranges to ``read * rate * (1 - read_mult) - written * rate *
+        (write_mult - 1)`` -- this expression, term for term.
+        ``tests/test_cache_wrapper_net_savings.py`` asserts the identity over a
+        table of streams rather than restating it.
+        """
+        return self.dollars_saved - self.dollars_write_premium
 
     @classmethod
     def zero(cls) -> CacheTelemetry:
-        return cls(0, 0, 0, 0, 0.0)
+        return cls(0, 0, 0, 0, 0.0, 0.0)
 
     def merge(self, other: CacheTelemetry) -> CacheTelemetry:
         return CacheTelemetry(
@@ -49,6 +86,7 @@ class CacheTelemetry:
             tokens_cached=self.tokens_cached + other.tokens_cached,
             tokens_written=self.tokens_written + other.tokens_written,
             dollars_saved=self.dollars_saved + other.dollars_saved,
+            dollars_write_premium=self.dollars_write_premium + other.dollars_write_premium,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -66,6 +104,13 @@ class CacheTelemetry:
             "tokens_cached": self.tokens_cached,
             "tokens_written": self.tokens_written,
             "dollars_saved": self.dollars_saved,
+            "dollars_write_premium": self.dollars_write_premium,
+            # Derived, not a dataclass field -- emitted anyway because this dict
+            # is the whole payload a sink receives, and it carries no rate. A
+            # consumer holding `dollars_saved` (dollars) and `tokens_written`
+            # (tokens) cannot convert between them, so before #196 the net was
+            # not merely un-reported here, it was un-derivable.
+            "net_dollars_saved": self.net_dollars_saved,
         }
 
 
@@ -197,6 +242,7 @@ class PromptCacheWrapper:
             tokens_cached=read,
             tokens_written=write,
             dollars_saved=self._dollars_saved(read=read),
+            dollars_write_premium=self._dollars_write_premium(written=write),
         )
 
     def _dollars_saved(self, *, read: int) -> float:
@@ -205,14 +251,52 @@ class PromptCacheWrapper:
         Each cached token would have cost ``input_per_mtok / 1e6`` without
         caching; with caching it costs ``read_multiplier ×`` that. The
         savings per token is therefore ``(1 - read_multiplier) ×`` the
-        input rate. Cache *writes* are a cost (1.25×), not a saving, and
-        are reported separately via ``tokens_written``.
+        input rate.
+
+        **Gross, not net, and deliberately unchanged (#196.)** This used to say
+        that cache writes "are reported separately via ``tokens_written``",
+        which is true of this method in isolation and false of the pair: the
+        benefit was in dollars and the cost was in tokens, and
+        ``CacheTelemetry.to_dict`` carries no rate, so a sink could not convert
+        one into the other. The write side now has its own dollar figure in
+        :meth:`_dollars_write_premium`, and :attr:`CacheTelemetry.net_dollars_saved`
+        is the difference. This method keeps its exact meaning and value so
+        nothing reading ``dollars_saved`` today changes.
         """
         if read <= 0:
             return 0.0
         rate = self._pricing.input_per_mtok / 1_000_000
         discount = 1.0 - self._pricing.cache_read_multiplier
         return read * rate * discount
+
+    def _dollars_write_premium(self, *, written: int) -> float:
+        """Extra dollars paid to write ``written`` tokens into the cache (#196).
+
+        ``cache_creation_input_tokens`` bills at ``cache_write_multiplier`` times
+        the input rate **instead of** 1x, so the extra over not caching at all is
+        ``(multiplier - 1.0)`` per token -- 0.25x at Anthropic's documented
+        1.25x. ``scripts/bench_savings.py`` has charged this since it was
+        written; the runtime wrapper did not, so the two halves of this repo
+        priced the same call differently off the same ``ModelPricing``.
+
+        Measured on ``claude-opus-4-8`` ($5.00/MTok) with a 20k-token prefix,
+        wrapper vs. the bench's own arithmetic::
+
+            1 write, 0 reads    +0.000000   true net -0.025000
+            1 write, 9 reads    +0.810000   true net +0.785000
+            8 writes, 2 reads   +0.180000   true net -0.020000   <- sign flip
+
+        **No clamp.** ``cache_write_multiplier`` is validated ``>= 0.0``, not
+        ``>= 1.0``, and ``tests/test_pricing.py`` already exercises ``0.0``. A
+        sub-1.0 multiplier means writing is genuinely *cheaper* than not
+        caching, and a ``max(0.0, ...)`` would launder that real saving into a
+        wrong zero -- the value would never reach the guard that would have
+        questioned it.
+        """
+        if written <= 0:
+            return 0.0
+        rate = self._pricing.input_per_mtok / 1_000_000
+        return written * rate * (self._pricing.cache_write_multiplier - 1.0)
 
 
 # ----- segment-marking helpers (no client coupling) -----
