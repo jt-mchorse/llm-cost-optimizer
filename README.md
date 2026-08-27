@@ -8,7 +8,7 @@
 
 LLM bills compound. A serious production app spends most of its tokens re-sending the same context — system prompts, tool definitions, long policy documents — to a stateless API on every call. Anthropic's prompt caching feature lets you mark a prefix as cacheable and pay a 90%-discounted read rate for subsequent calls that share that prefix. The savings are real, but using the feature correctly means juggling `cache_control` placement, reading the `cache_creation_input_tokens` / `cache_read_input_tokens` fields off every response, and converting those into something you can put in a cost dashboard.
 
-`llm-cost-optimizer` is a small toolkit that does that work for you. The runtime entry point is `PromptCacheWrapper` (#1): a duck-typed wrapper around the Anthropic SDK's `messages.create` that injects `cache_control: {"type": "ephemeral"}` on caller-chosen segments (system, tools, message prefix), reads the cache-usage fields off the response, and rolls them into a `CacheTelemetry` struct (`hits`, `misses`, `tokens_cached`, `tokens_written`, `dollars_saved`) — per call and aggregated across the wrapper's lifetime. Pricing is a small in-repo table per model so the `dollars_saved` number is always traceable to a documented rate rather than fabricated.
+`llm-cost-optimizer` is a small toolkit that does that work for you. The runtime entry point is `PromptCacheWrapper` (#1): a duck-typed wrapper around the Anthropic SDK's `messages.create` that injects `cache_control: {"type": "ephemeral"}` on caller-chosen segments (system, tools, message prefix), reads the cache-usage fields off the response, and rolls them into a `CacheTelemetry` struct (`hits`, `misses`, `tokens_cached`, `tokens_written`, `dollars_saved`, `dollars_write_premium`, and the derived `net_dollars_saved`) — per call and aggregated across the wrapper's lifetime. Pricing is a small in-repo table per model so the savings numbers are always traceable to a documented rate rather than fabricated, and both sides of the caching trade are priced: the 0.10x read discount *and* the 1.25x write surcharge, which is the same arithmetic `scripts/bench_savings.py` uses, asserted equal over a table of streams (#196).
 
 The wrapper is intentionally dependency-free: the Anthropic SDK is never imported, only duck-typed against `client.messages.create(...)`. That keeps the package importable without an API key, hermetically testable in CI, and embeddable inside other portfolio repos (notably `rag-production-kit` and `agent-orchestration-platform`) without forcing them to take an SDK dep.
 
@@ -60,10 +60,20 @@ result = wrapped.create(
     max_tokens=512,
 )
 
-print(result.response.content)          # the underlying SDK response
-print(result.telemetry)                 # per-call cache stats
-print(wrapped.aggregate.dollars_saved)  # cumulative across all calls
+print(result.response.content)              # the underlying SDK response
+print(result.telemetry)                     # per-call cache stats
+print(wrapped.aggregate.dollars_saved)      # gross read-side savings
+print(wrapped.aggregate.net_dollars_saved)  # after the cache-write premium
 ```
+
+Read `net_dollars_saved`, not `dollars_saved`, when you want to know whether
+caching is paying for itself. A cache *read* bills at 0.10x the input rate (a
+saving) and a cache *write* at 1.25x (a surcharge), so a workload that writes
+more prefixes than it reuses costs **more** than not caching — and
+`dollars_saved`, being reads times a positive discount, can never say so
+(#196). The cases where the write side wins are ordinary: short-lived
+processes, request gaps past the 5-minute ephemeral TTL, and per-tenant or
+per-document prefixes that churn.
 
 By default the system prompt is marked as cacheable. To cache other prefix segments:
 

@@ -40,8 +40,11 @@ other.
 - Optional integrations (`redis`, `streamlit`, `dashboard`) live behind
   PEP 621 extras so the core stays installable in restricted CI sandboxes.
 - Pricing math (`cost_optimizer/pricing.py`) is the single source of
-  truth for `dollars_saved` on every layer. No fabricated rates;
-  unknown models raise `UnknownModelError` rather than guessing.
+  truth for the savings figures on every layer. No fabricated rates;
+  unknown models raise `UnknownModelError` rather than guessing. A field
+  that table declares and validates is a field some layer must read — the
+  write multiplier sat validated and unread on the runtime path for a while
+  (#196).
 - Every layer is independently testable in CI without an API key. The
   *live*-API path is gated by `tests/integration/` + `workflow_dispatch`
   (§7).
@@ -54,8 +57,33 @@ other.
 `cache_control: {"type": "ephemeral"}` on caller-chosen segments
 (`system`, `tools`, `messages_prefix`), reads cache-usage fields off
 the response, and rolls them into a `CacheTelemetry` struct (`hits`,
-`misses`, `tokens_cached`, `tokens_written`, `dollars_saved`) per call
+`misses`, `tokens_cached`, `tokens_written`, `dollars_saved`,
+`dollars_write_premium`, and the derived `net_dollars_saved`) per call
 and aggregated across the wrapper's lifetime.
+
+**Both sides of the trade are priced (#196).** For a while only one was.
+`ModelPricing` declares, documents, defaults and validates
+`cache_write_multiplier = 1.25` — guarded for sign, finiteness, `bool`-ness
+and type across #71, #142 and #158 — and `scripts/bench_savings.py` was the
+only reader. The runtime wrapper charged the 0.10× read discount and not the
+1.25× write surcharge, so the number the README quickstart printed and the
+number the savings dashboard showed came from two different cost models over
+one pricing table. Measured on `claude-opus-4-8` with a 20k-token prefix, a
+stream of 8 writes and 2 reads reported **+$0.18 saved** on a run the bench
+prices at **−$0.02** — a sign flip, and a structural one: `dollars_saved` is
+reads times a positive discount, so it could not express a loss at all.
+
+The fix is additive, not a redefinition. `dollars_saved` keeps its exact
+meaning and value (gross read-side savings) so nothing reading it changes;
+`dollars_write_premium` carries `tokens_written × rate × (multiplier − 1)`,
+and `net_dollars_saved` is the difference — a derived property, so it cannot
+drift from its inputs across `merge`. That expression is algebraically
+identical to `_run_prompt_cache`'s, and
+`tests/test_cache_wrapper_net_savings.py` drives the real bench functions and
+asserts equality over a table of streams rather than restating the arithmetic.
+There is deliberately no `max(0.0, ...)` on the premium: the multiplier is
+validated `>= 0.0`, not `>= 1.0`, and a sub-1.0 value means writing is
+genuinely cheaper than not caching.
 
 **What it costs.** One wrapper call per API call. No persistent state
 besides the in-process aggregate. The first call to a new prefix pays
@@ -88,9 +116,13 @@ runtime stack and almost everything else flows through it.
   updated by hand from Anthropic's published rates, including the
   cache write/read multipliers (1.25× / 0.10×). Never fabricated.
 - `CacheTelemetry.to_dict()` and `PromptCacheWrapper.dump_aggregate_json(path)`
-  (#50) ship the observability shape: a stable JSON dict with all five
-  telemetry fields (`hits`, `misses`, `tokens_cached`, `tokens_written`,
-  `dollars_saved`) written atomically through the package-level
+  (#50) ship the observability shape: a stable JSON dict with every
+  telemetry field (`hits`, `misses`, `tokens_cached`, `tokens_written`,
+  `dollars_saved`, `dollars_write_premium`) plus the derived
+  `net_dollars_saved` — emitted even though it is not a dataclass field,
+  because the payload carries no rate, so before #196 a sink holding the
+  benefit in dollars and the cost in tokens could not convert between them —
+  written atomically through the package-level
   `atomic_write_text` helper at `cost_optimizer/io_utils.py`.
   `scripts/_io.py` remains as a backwards-compat re-export of the
   helper for `scripts/bench_savings.py` and `scripts/tune_threshold.py`.
