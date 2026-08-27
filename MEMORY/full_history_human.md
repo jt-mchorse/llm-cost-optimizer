@@ -1794,3 +1794,64 @@ them).
 rather than unit — every row runs through both backends and the two verdicts are
 compared, so a rule that lived in only one implementation would show up as a
 disagreement. Suite 719 → 738 green, ruff clean, mypy clean.
+
+## 2026-08-26 — the tag index outlived the records it pointed at (#194)
+
+**What got done.** `RedisStorage` keeps a `tag:<name>` SET as a tag→keys index,
+and `invalidate_by_tag` treated it as the truth: read the set, delete every key
+it names. Nothing kept it in sync. It now validates each member against the
+record it names — `None`, or `tag not in record.tags`, means the entry is stale,
+so drop the membership and leave the record alone.
+
+**The lens was counting issues per method, not per file.** The `Storage` Protocol
+has five methods. `put` had three issues against it (#131 isolation, #172 TTL
+clock, #192 payload) and `find_nearest` had two (#133 model filter, #188
+tie-break). Three methods had never been enumerated at all. That is the same
+shape as `vector-search-at-scale#131`, where three issues had all landed on
+`query` and nobody had looked at `ingest`.
+
+**An index is not the truth — ask what removes a record without telling it.**
+Here, two things did. An invalidation on a *different* tag deletes the record but
+drops only its own set. And native TTL expiry touches no set at all. Both leave
+the key named by every other tag it ever carried.
+
+**The second half of the lens is what makes it bite: are keys reused?** A stale
+pointer to a deleted key is just garbage. A stale pointer to a key that gets
+*reused* is a wrong action — and `_make_key` is a deterministic hash of
+`(prompt, model)`, so re-caching the same prompt lands on the same key every
+time. Measured: retire `v1`, re-cache as `v2`, invalidate `geography`, and the
+Redis backend evicted a live record that does not carry that tag while the
+in-memory backend correctly kept it. Road two needs no invalidation anywhere —
+just a TTL expiry and an ordinary re-cache.
+
+**The code told me where to look.** `put`'s own comment names the harm verbatim:
+"a tag the record no longer has would still point at this key — and a later
+`invalidate_by_tag` on that lost tag would wrongly evict the record." Its pruning
+only runs when `_load(existing)` returns a record. A guard whose comment states
+the general hazard but whose code covers one branch is an issue waiting.
+
+**A probe technique worth keeping.** The differential grid — two backends × eight
+cases, printed side by side with a DIVERGES marker — found it in one run, and it
+also told me what *not* to file: `purge_expired` returns 0 on Redis, which the
+method body documents as deliberate. That row is asserted in the test suite with
+its reason rather than omitted, so the next enumeration of this Protocol doesn't
+re-derive it as a finding.
+
+**A non-finding worth understanding.** My first TTL probe came back clean —
+because `fakeredis` uses real time while the cache uses the injected clock, so
+nothing had actually expired and `put`'s existing-record pruning handled it
+correctly. A probe that comes back clean under a fake clock may only mean the
+fake never expired anything. The shipped test simulates native TTL by deleting
+the record key, and says so and why in its docstring, rather than waiting on a
+wall clock.
+
+**No decision recorded, on purpose.** This narrows `invalidate_by_tag` to the
+semantics its own Protocol docstring already states — "Drop every record tagged
+`tag`". A fix that makes the code match its written contract is not a new
+decision. The README's claim at line 118 was likewise already correct; the code
+was the thing that disagreed, so no doc edit.
+
+**Tests.** 20 new. Neutering the staleness branch turns exactly the four defect
+rows red with no control affected — and the in-memory half of road 1 stays
+green, which is what shows the divergence is backend-specific. Suite 738 → 758
+green, ruff and mypy clean.
