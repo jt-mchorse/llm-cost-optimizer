@@ -1855,3 +1855,45 @@ was the thing that disagreed, so no doc edit.
 rows red with no control affected — and the in-memory half of road 1 stays
 green, which is what shows the divergence is backend-specific. Suite 738 → 758
 green, ruff and mypy clean.
+
+## 2026-08-27 — #196: the multiplier nobody multiplied by
+
+`ModelPricing.cache_write_multiplier` is declared, documented in the module's
+opening paragraph, defaulted to Anthropic's 1.25×, and validated for sign,
+finiteness, `bool`-ness and type across three separate issues. That is a lot of
+care for a number, and exactly one half of the repo ever used it.
+`scripts/bench_savings.py` — the bench behind `docs/savings.json`, the README
+table and the dashboard — charges it. `cache_wrapper._dollars_saved`, which the
+README calls the runtime entry point, did not. Same pricing table, two cost
+models, and the quickstart prints one while the dashboard shows the other.
+
+A twenty-line differential probe settled it. On `claude-opus-4-8` with a
+20 000-token prefix, a stream of eight cache writes and two reads reported
+**+$0.18 saved** on a run the bench prices at **−$0.02**. Not an inaccuracy — a
+sign flip, from the tool whose whole job is knowing which way that number
+points. And structural rather than situational: `dollars_saved` is reads times a
+rate times a positive discount, so the field could never have reported a loss at
+all. Worth asking of any metric: what is its range, and can it say the bad news?
+
+The docstring that kept it alive said cache writes "are a cost, not a saving,
+and are reported separately via `tokens_written`". True of the method in
+isolation and false of the pair, because the benefit was in dollars and the cost
+was in tokens, and `to_dict` — the documented observability payload — carries no
+rate. So the net wasn't merely un-reported at the sink; it was un-derivable
+there.
+
+The fix is additive on purpose. `dollars_saved` keeps its exact meaning and
+value, pinned by its own test, so nothing reading it today changes. Redefining a
+public field the README prints would have been a decision for JT; adding a
+sibling is a fix. `dollars_write_premium` is defaulted so a five-positional-arg
+construction still works, and `net_dollars_saved` is a property rather than a
+stored field so it cannot drift from its inputs across `merge`. No clamp on the
+premium either: the multiplier is validated `>= 0.0`, not `>= 1.0`, and the
+pricing tests already construct `0.0` — a sub-1.0 multiplier is a genuine
+saving, and a `max(0.0, ...)` would have laundered it into a wrong zero.
+
+The test that matters imports the other implementation. Rather than assert
+against a hand-computed constant — which would have been a third reading of the
+same arithmetic, and re-reading is how the gap survived in the first place — it
+drives the real `_run_baseline` and `_run_prompt_cache` and asserts their
+`saved_usd` equals the wrapper's `net_dollars_saved` to `rel=1e-12`.
