@@ -186,6 +186,54 @@ class BatchBackend(Protocol):
 # ----------------------------------------------------------------------
 
 
+def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str) -> None:
+    """The argument contract `BatchBackend.submit` owns, for *every* backend.
+
+    These three rules used to be hand-copied into each backend's ``submit``.
+    Both copies carried the first two verbatim; the third — duplicate
+    ``custom_id`` rejection — was only ever added to ``InMemoryBatchBackend``,
+    so the guard was enforced in CI and absent in production (#198). Results
+    correlate to the caller by ``custom_id`` (``BatchResultRow.custom_id``), so
+    a repeated one yields rows the caller cannot attribute, and #97's proposed
+    fix explicitly rests on ``custom_id``s being "already enforced at
+    ``submit``". One definition, called by both, so the next rule cannot land
+    in one place only.
+    """
+    if not requests:
+        raise ValueError("submit requires at least one request")
+    if not idempotency_key or not idempotency_key.strip():
+        raise ValueError("idempotency_key must be a non-empty string")
+    custom_ids = [r.custom_id for r in requests]
+    if len(set(custom_ids)) != len(custom_ids):
+        dups = sorted(c for c in set(custom_ids) if custom_ids.count(c) > 1)
+        raise ValueError(f"duplicate custom_ids within one batch: {dups}")
+
+
+def _is_not_found_error(exc: BaseException) -> bool:
+    """True when ``exc`` is an SDK "no such batch" failure.
+
+    Duck-typed by ``status_code`` and by class name, both of which avoid
+    importing ``anthropic`` — required by D-002, and the same import-free shape
+    the portfolio uses to classify transient and auth failures. Deliberately
+    narrow: anything that is not a 404 propagates unchanged, because turning an
+    arbitrary SDK error into ``JobNotFound`` would claim the job is absent when
+    the real answer is that we could not find out.
+
+    No ``bool`` guard here, unlike ``_is_malformed_count_part`` a few functions
+    down, and the asymmetry is the point. There, ``bool`` subclassing ``int``
+    was a live bug: ``succeeded=True`` *summed* to ``1`` and fabricated
+    ``n_requests=1`` (#166). Here the value is only ever compared for equality
+    against ``404``, and no ``bool`` equals ``404``, so a guard would be
+    unfalsifiable — it was written, then deleted when reverting it turned no
+    test red (#198). Read as: bools are hazardous where they are *arithmetic*,
+    not where they are *compared*.
+    """
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        return status == 404
+    return type(exc).__name__ == "NotFoundError"
+
+
 def _canonical_payload_hash(requests: Sequence[BatchRequest]) -> str:
     """Stable SHA-256 hash of the canonical batch payload.
 
@@ -247,14 +295,7 @@ class InMemoryBatchBackend:
     # ---- Backend protocol ---------------------------------------------------
 
     def submit(self, requests: Sequence[BatchRequest], *, idempotency_key: str) -> BatchJobMeta:
-        if not requests:
-            raise ValueError("submit requires at least one request")
-        if not idempotency_key or not idempotency_key.strip():
-            raise ValueError("idempotency_key must be a non-empty string")
-        custom_ids = [r.custom_id for r in requests]
-        if len(set(custom_ids)) != len(custom_ids):
-            dups = sorted(c for c in set(custom_ids) if custom_ids.count(c) > 1)
-            raise ValueError(f"duplicate custom_ids within one batch: {dups}")
+        _validate_submit_args(requests, idempotency_key)
 
         payload_hash = _canonical_payload_hash(requests)
         if idempotency_key in self._by_idempotency:
@@ -387,10 +428,7 @@ class AnthropicBatchBackend:
             ) from e
 
     def submit(self, requests: Sequence[BatchRequest], *, idempotency_key: str) -> BatchJobMeta:
-        if not requests:
-            raise ValueError("submit requires at least one request")
-        if not idempotency_key or not idempotency_key.strip():
-            raise ValueError("idempotency_key must be a non-empty string")
+        _validate_submit_args(requests, idempotency_key)
         sdk_requests = [_to_sdk_request(r) for r in requests]
         resp = self._batches.create(
             requests=sdk_requests,
@@ -399,7 +437,20 @@ class AnthropicBatchBackend:
         return _from_sdk_batch(resp, idempotency_key=idempotency_key)
 
     def poll(self, job_id: str) -> BatchJobMeta:
-        resp = self._batches.retrieve(job_id)
+        # `JobNotFound` is exported in `cost_optimizer.__all__` and is the
+        # documented unknown-job signal, but only the in-memory backend could
+        # ever raise it — so `except JobNotFound` passed its tests and let the
+        # raw SDK error through in production (#198). `results` inherits this
+        # translation because it polls first.
+        try:
+            resp = self._batches.retrieve(job_id)
+        except Exception as e:
+            if _is_not_found_error(e):
+                raise JobNotFound(f"unknown job_id={job_id!r}") from e
+            raise
+        # NOTE: nothing sets `_idempotency_key`, so this is always `''` on this
+        # backend — a stateless backend cannot recover the caller's key. Left
+        # as-is rather than half-fixed; that is #199.
         return _from_sdk_batch(resp, idempotency_key=getattr(resp, "_idempotency_key", "") or "")
 
     def results(self, job_id: str) -> list[BatchResultRow]:
