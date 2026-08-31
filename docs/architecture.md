@@ -310,7 +310,21 @@ as separate workload modes — they don't mix in a single request.
   count, custom ids, prompts, model, max_tokens, system, order-sensitive).
   Same payload + same key → returns the existing job id (retry-safe).
   Different payload + same key → raises `IdempotencyConflict` (loud
-  failure beats silent double-charging).
+  failure beats silent double-charging) — on `InMemoryBatchBackend`.
+  The production backend keeps no state and so cannot compare a prior
+  payload hash; that asymmetry is #199.
+- **Backend parity (#198).** The two `BatchBackend` implementations are
+  held to one argument contract by `_validate_submit_args`, rather than
+  each carrying its own copy of the guards. The copies had already
+  drifted: duplicate-`custom_id` rejection existed only in the in-memory
+  backend, so it was enforced in CI and absent in production, where
+  results correlate by `custom_id`. `JobNotFound` likewise reached only
+  one backend until `poll` learned to classify an SDK 404 —
+  `_is_not_found_error`, duck-typed by `status_code` / class name to stay
+  inside D-002. Any non-404 propagates unchanged: claiming one would
+  assert the job is absent when the real answer is that we could not find
+  out. The grid lives in `tests/test_batch_backend_parity.py`, agreeing
+  cells included so it cannot pass vacuously.
 - **D-003 (extended).** `compare_realtime_vs_batch` requires caller
   to supply prices — no defaults shipped. Multi-model workloads
   pass `model_of=lambda req: req.model`.

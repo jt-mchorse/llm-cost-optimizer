@@ -241,15 +241,42 @@ failure mode that would otherwise silently double-charge. The payload
 hash is content-only (request count, custom_ids, prompts, model,
 max_tokens, system).
 
+Conflict detection is `InMemoryBatchBackend`-only, because it needs the
+payload hash of a prior submission and `AnthropicBatchBackend` keeps no
+state; `submit` forwards an `Idempotency-Key` header and whatever the
+API decides comes back as an SDK error, not `IdempotencyConflict`. For
+the same reason `poll` on the production backend returns a `BatchJobMeta`
+whose `idempotency_key` is `''`. Both are tracked in #199.
+
 **Cost comparison.** Prices are caller-supplied — no list-price defaults
 ship, matching D-003. `BATCH_DISCOUNT_FACTOR = 0.5` is the documented
 Anthropic batch discount; override per call if your contract differs.
 The comparison skips failed rows (they aren't billed on either path)
 and supports multi-model batches via `model_of={custom_id → model}`.
 
-For local development and tests, use `InMemoryBatchBackend` — same
-protocol, dedupes on idempotency key, exposes `advance(job_id)` and
-`complete(job_id, results=…)` test helpers, zero dependencies.
+For local development and tests, use `InMemoryBatchBackend` — dedupes on
+idempotency key, exposes `advance(job_id)` and `complete(job_id,
+results=…)` test helpers, zero dependencies.
+
+It used to be described here as simply the "same protocol", which is the
+claim #198 ran as a differential grid — same input, both backends,
+verdicts side by side. Five cells diverged. Where they stand now:
+
+| case | `InMemoryBatchBackend` | `AnthropicBatchBackend` |
+| --- | --- | --- |
+| `submit`: no requests / blank key | `ValueError` | `ValueError` |
+| `submit`: duplicate `custom_id`s | `ValueError` | `ValueError` (before the network call) |
+| `poll` / `results`: unknown `job_id` | `JobNotFound` | `JobNotFound` |
+| `poll`: any non-404 SDK failure | n/a | propagates unchanged |
+| `submit`: same key, different payload | `IdempotencyConflict` | not detected (#199) |
+| `poll`: `.idempotency_key` | the caller's key | `''` (#199) |
+
+The first three rows are enforced by one shared validator and one
+duck-typed 404 classifier, so they cannot drift apart again; the last
+two are pinned as current behaviour in
+`tests/test_batch_backend_parity.py`. Duplicate `custom_id`s matter
+because results correlate by `custom_id`, not by row position — a
+repeated one yields rows the caller cannot attribute.
 
 ## Savings dashboard (#5)
 

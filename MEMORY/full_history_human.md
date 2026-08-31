@@ -1897,3 +1897,52 @@ against a hand-computed constant — which would have been a third reading of th
 same arithmetic, and re-reading is how the gap survived in the first place — it
 drives the real `_run_baseline` and `_run_prompt_cache` and asserts their
 `saved_usd` equals the wrapper's `net_dollars_saved` to `rel=1e-12`.
+
+## 2026-08-28 - issue #198: "same protocol" was a claim about eight cells, and five were wrong
+
+The repo had no actionable filed issue - two open ones are decision revisits waiting
+on JT, one of those already has a draft PR, and the third needs a video capture. So
+this was a hunt. I picked `batch.py` because it is 725 lines with no recent worked
+issue against it, while the semantic cache has had four.
+
+The entry point was a sentence, not a code read. The README tells operators to
+develop against `InMemoryBatchBackend` because it is the "same protocol" as the
+production backend. That is an assertion about every cell of a grid, so I ran it as
+one: same inputs, both backends, verdicts printed side by side. Five of eight cells
+diverged.
+
+The root cause of the worst one is a pattern I have hit before. Both `submit`
+methods open with the same two guards, copied verbatim. A third rule - rejecting
+duplicate `custom_id`s within a batch - was added to the in-memory copy and never to
+the other. So the guard was enforced in CI, where nothing is at stake, and absent in
+production, where results are correlated back to the caller by `custom_id`. A batch
+with a repeated id produces rows the caller cannot attribute. It is also the
+assumption another open issue's proposed fix rests on. I fixed it by deduplicating
+the three rules into one validator both backends call, rather than adding a third
+copy, because a third copy leaves the next rule free to drift the same way.
+
+The second was an exception the package exports and only one backend can raise.
+`JobNotFound` is in `__all__`, is the documented signal for an unknown job, and is
+asserted in the existing tests - against the in-memory backend. So a caller writing
+`except JobNotFound` had code that passed its tests and failed in production. The
+production backend now classifies an SDK 404 without importing the SDK, which the
+repo's duck-typing decision requires, and anything that is not a 404 still
+propagates untouched.
+
+The most useful thing that happened was that the anti-vacuous pass deleted a guard I
+had just written. I had added a `bool` check to the new classifier, mirroring one
+that exists a few functions down in the same file. Reverting it turned nothing red,
+because no boolean equals 404 - the guard could not fail, and neither could its test.
+The generalisation is worth more than the deletion: a bool is dangerous where it is
+*summed*, which is what the older guard prevents, and harmless where it is only
+compared. Copying it across was cargo cult. I kept the test but reframed it to assert
+the outcome, so it stays honest if that comparison ever becomes arithmetic.
+
+I also found that the production `poll` reads a private attribute nothing anywhere
+sets, so every production poll returns a job whose public idempotency key is an empty
+string, silently. That and the missing conflict detection share one cause - the
+production backend holds no state - so they went into a single follow-up rather than
+two, because deciding whether it may hold state answers both.
+
+Twice my grid was wrong, and both times the fake was at fault rather than the code.
+Printing the exception message instead of just its type is what caught both.
