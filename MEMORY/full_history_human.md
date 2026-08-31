@@ -1948,7 +1948,7 @@ Twice my grid was wrong, and both times the fake was at fault rather than the co
 Printing the exception message instead of just its type is what caught both.
 
 ## 2026-08-31 — Issue #201: the mypy gate now covers `scripts/`
-**Duration:** ~60 min · **Branch:** `session/2026-08-31-0812-issue-201`
+**Duration:** ~11 min · **Branch:** `session/2026-08-31-0812-issue-201`
 
 - `scripts/` sat outside the type gate, and not by preference: `mypy cost_optimizer scripts` stopped before checking anything with *"Source file found twice under different module names: `_io` and `scripts._io`"*. So nobody knew whether the two scripts that produce the README's savings table were clean — only that they were unchecked.
 - The error was a true finding. The suite imported `scripts/tune_threshold.py` under both `tune_threshold` and `scripts.tune_threshold`, and Python makes each a separate module object: measured, they are not the same object, their `main` functions are different objects, and a patch on one is invisible on the other. One test monkeypatches `_try_save_plot` on the copy it imported; nothing was failing only because the test that patches and the test that calls the other copy never overlap.

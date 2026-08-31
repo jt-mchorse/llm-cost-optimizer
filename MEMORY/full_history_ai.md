@@ -2208,7 +2208,7 @@ followups: ["#199"]
 
 ---
 session: 2026-08-31T08:12Z
-duration_min: 60
+duration_min: 11   # measured from wall clock, not estimated
 issue: 201
 focus: mypy_gate_covers_scripts_and_the_duplicate_module_that_blocked_it_is_gone_d_016
 phase: night_session_multi_issue_loop_issue_2
