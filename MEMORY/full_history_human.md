@@ -1946,3 +1946,18 @@ two, because deciding whether it may hold state answers both.
 
 Twice my grid was wrong, and both times the fake was at fault rather than the code.
 Printing the exception message instead of just its type is what caught both.
+
+## 2026-08-31 — Issue #201: the mypy gate now covers `scripts/`
+**Duration:** ~60 min · **Branch:** `session/2026-08-31-0812-issue-201`
+
+- `scripts/` sat outside the type gate, and not by preference: `mypy cost_optimizer scripts` stopped before checking anything with *"Source file found twice under different module names: `_io` and `scripts._io`"*. So nobody knew whether the two scripts that produce the README's savings table were clean — only that they were unchecked.
+- The error was a true finding. The suite imported `scripts/tune_threshold.py` under both `tune_threshold` and `scripts.tune_threshold`, and Python makes each a separate module object: measured, they are not the same object, their `main` functions are different objects, and a patch on one is invisible on the other. One test monkeypatches `_try_save_plot` on the copy it imported; nothing was failing only because the test that patches and the test that calls the other copy never overlap.
+- Fixed both halves — `mypy_path` + `explicit_package_bases` for the mapping, one canonical `scripts.<name>` spelling for the cause — matching `chunking-strategies-lab`'s D-014 so the two repos don't solve one problem two ways. Recorded here as D-016.
+- The widened gate then found five real errors, all fixed rather than silenced: two optional-`matplotlib` stubs (same per-module override `redis` already has), one `list`-invariance binding, and two `dict-item` errors where the cumulative-savings series was annotated as all-floats while two of its six keys carry strings.
+- 12 new tests, 810 → 822 green. mypy went from checking 7 source files to 11.
+
+**Why this work, this session:** `#201` was filed by a prior session's portfolio sweep — `chunking-strategies-lab` ran the same probe across the six repos with a `scripts/` directory and named this one rather than opening a second same-repo PR. That left a fully specified issue with the measurement already half-paid.
+
+**Open questions / blockers:** none. `tests/` stays outside the gate; widening to a third directory is a larger blast radius than this issue asks for.
+
+**Next session:** the rest of this repo's backlog (#199, #135, #97) is decision-gated on JT.
