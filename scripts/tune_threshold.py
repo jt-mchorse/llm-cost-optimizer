@@ -46,6 +46,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from cost_optimizer.router import (  # noqa: E402
     EntropySignal,
+    EscalationSignal,
     UncertaintyRouter,
 )
 from scripts._io import atomic_write_text, resolve_out_stem  # noqa: E402
@@ -187,7 +188,13 @@ def sweep(
         # a fixed 0.7 so this curve is exclusively about entropy. The
         # cross-signal interaction is its own follow-up plot.
         adapter = _StubCheapAdapter(items)
-        signals = [EntropySignal(threshold=t)]
+        # Annotated as the protocol, not inferred as the concrete class:
+        # `UncertaintyRouter.signals` is `list[EscalationSignal]` and `list` is
+        # invariant, so a `list[EntropySignal]` binding is rejected. The
+        # equivalent call in `bench_savings._cumulative_savings` passes the
+        # literal inline, where mypy infers from the parameter's type instead —
+        # which is why only this one surfaced once `scripts/` entered the gate.
+        signals: list[EscalationSignal] = [EntropySignal(threshold=t)]
         router = UncertaintyRouter(
             cheap_model="claude-haiku-4-5",
             strong_model="claude-opus-4-7",

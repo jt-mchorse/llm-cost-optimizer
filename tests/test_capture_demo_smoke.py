@@ -10,6 +10,7 @@ STAGE 2's cheat-sheet prints (or is suppressed, under the flag).
 
 from __future__ import annotations
 
+import importlib
 import io
 import sys
 from contextlib import redirect_stdout
@@ -19,22 +20,22 @@ from pathlib import Path
 def _load_capture_module():
     """Load ``scripts/capture_demo.py`` as a fresh module.
 
-    The repo's existing ``scripts/`` imports run from repo-root via
-    ``sys.path.insert``; this loader uses the same mechanism so the
-    smoke test exercises the same import path the script's own
-    ``_import_bench_main()`` helper does.
+    Now genuinely the same mechanism the script's own ``_import_bench_main()``
+    uses (#201). The old loader claimed that and did something else: it put
+    ``scripts/`` on ``sys.path`` and imported ``capture_demo`` bare, while
+    ``_import_bench_main`` inserts only the **repo root** and imports
+    ``scripts.bench_savings``. The stated reason was the wrong one, and the
+    ``scripts/`` insert it justified was the mechanism that let a bare
+    ``import tune_threshold`` resolve elsewhere in the suite — two module
+    objects for one file.
     """
     repo_root = Path(__file__).resolve().parent.parent
-    scripts_dir = repo_root / "scripts"
-    if str(scripts_dir) not in sys.path:
-        sys.path.insert(0, str(scripts_dir))
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
-    if "capture_demo" in sys.modules:
-        del sys.modules["capture_demo"]
-    import capture_demo  # noqa: WPS433 — dynamic import is the point here.
-
-    return capture_demo
+    # Fresh import so in-process invocations don't see stale module state,
+    # matching `_import_bench_main`'s `del sys.modules[...]` step.
+    sys.modules.pop("scripts.capture_demo", None)
+    return importlib.import_module("scripts.capture_demo")
 
 
 def test_capture_demo_runs_bench_and_writes_stable_artifacts(tmp_path: Path) -> None:

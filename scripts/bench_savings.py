@@ -52,7 +52,7 @@ import math
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
@@ -614,7 +614,32 @@ def _run_batch(workload: list[WorkloadRow], baseline: StrategyResult) -> Strateg
 # ----------------------------------------------------------------------
 
 
-def _cumulative_savings(workload: list[WorkloadRow], strategy: str) -> list[dict[str, float]]:
+#: One entry of the per-row cumulative series, as it appears in the JSON
+#: artifact under ``cumulative_savings_by_strategy[<strategy>]``.
+#:
+#: This was declared ``dict[str, float]`` while two of its six keys carry
+#: strings; nothing caught it because ``scripts/`` was outside the mypy gate
+#: (#201). Nothing was *breaking* — the dashboard reads only ``row_index`` and
+#: ``cumulative_saved_usd``, both numeric — but the annotation told a reader
+#: (and any future consumer) that ``row_id`` and ``class`` were numbers.
+#:
+#: Functional form rather than the class statement because ``class`` is a
+#: Python keyword and is the artifact's key name; renaming the key would move a
+#: published JSON field.
+CumulativeRow = TypedDict(
+    "CumulativeRow",
+    {
+        "row_index": int,
+        "row_id": str,
+        "class": str,
+        "baseline_total_usd": float,
+        "strategy_total_usd": float,
+        "cumulative_saved_usd": float,
+    },
+)
+
+
+def _cumulative_savings(workload: list[WorkloadRow], strategy: str) -> list[CumulativeRow]:
     """Per-row cumulative $ saved vs baseline for `strategy`.
 
     Done as an independent pass instead of accumulating during the
@@ -624,7 +649,7 @@ def _cumulative_savings(workload: list[WorkloadRow], strategy: str) -> list[dict
     """
     pricing = get_pricing(CHEAP_MODEL)
     rate = pricing.input_per_mtok / 1_000_000
-    cumulative: list[dict[str, float]] = []
+    cumulative: list[CumulativeRow] = []
 
     seen_prefix: dict[str, bool] = {}
     cache = SemanticCache(

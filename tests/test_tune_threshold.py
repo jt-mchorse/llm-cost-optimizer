@@ -7,18 +7,18 @@ deterministic surface we assert against.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-# Make `scripts/` importable so we can test `sweep()` directly without
-# spawning a subprocess.
-_SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
-if str(_SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(_SCRIPTS_DIR))
-
-from tune_threshold import (  # noqa: E402 - sys.path tweak above
+# One spelling, repo-root-relative (#201). This file used to put `scripts/` on
+# `sys.path` and import `tune_threshold` bare while `tests/test_atomic_write.py`
+# imported `scripts.tune_threshold` — two names for one file, which Python makes
+# two separate module objects. `test_main_plot_write_oserror_exits_two` below
+# `monkeypatch.setattr`s the module it imported, and that patch is invisible to
+# the other copy; nothing was failing only because each test happened to patch
+# and call the same one.
+from scripts.tune_threshold import (
     ThresholdSweepRow,
     _build_sample_items,
     main,
@@ -168,7 +168,7 @@ def test_main_plot_write_oserror_exits_two(tmp_path: Path, capsys, monkeypatch) 
     `main` as a raw traceback at exit 1). Sibling of the #156/#157 JSON-seam guard,
     which left `_try_save_plot` bare. Monkeypatching the plot fn keeps the lock
     matplotlib-free (it is absent from the `dev` extra / CI)."""
-    import tune_threshold
+    from scripts import tune_threshold
 
     def _raise_oserror(rows, out_png):
         raise OSError("read-only file system")

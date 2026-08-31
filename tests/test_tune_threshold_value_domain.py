@@ -28,16 +28,13 @@ the whole defect: the pre-fix run replaced the committed 8-row
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-_SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
-if str(_SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(_SCRIPTS_DIR))
-
-from tune_threshold import main  # noqa: E402 - sys.path tweak above
+# One spelling, repo-root-relative (#201) — see the note in
+# tests/test_tune_threshold.py.
+from scripts.tune_threshold import main
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
