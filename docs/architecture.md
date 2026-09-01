@@ -372,9 +372,31 @@ drift apart.
   are machine-checked by a non-strict `mypy` gate run in CI's lint job
   and locked by `tests/test_mypy_clean.py`, so they can't silently
   drift from the code. The `semantic_cache.py` redis calls use narrow
-  `cast()`s at the storage boundary (redis-py's `Awaitable | T` sync/async
-  union); the optional `redis` SDK is the one per-module override.
+  `cast()`s at the storage boundary (redis-py's `Awaitable | T`
+  sync/async union). Two per-module overrides, both genuinely-optional
+  SDKs: the `redis` extra, and `matplotlib`, which
+  `tune_threshold._try_save_plot` imports inside a `try/except
+  ImportError` and which is in no extra at all.
   (D-013 is reserved for the in-flight #97 batch-idempotency revisit.)
+- **D-016.** The `mypy` gate covers `scripts/` as well as
+  `cost_optimizer/`. It did not, and not by preference: `mypy
+  cost_optimizer scripts` stopped before checking anything with
+  "Source file found twice under different module names: `_io` and
+  `scripts._io`", so the repo did not know whether the scripts that
+  produce the README's savings table were clean — only that they were
+  unchecked. That error was a true finding: this suite imported
+  `scripts/tune_threshold.py` under both `tune_threshold` and
+  `scripts.tune_threshold`, and Python makes each name a separate
+  module object, so a `monkeypatch.setattr` on one was invisible to
+  the other. `mypy_path = "."` + `explicit_package_bases` fix the
+  file-to-module *mapping*; normalizing every test to the
+  `scripts.<name>` spelling removes the *cause*. Same resolution
+  chunking-strategies-lab took for the identical collision, so the two
+  repos do not solve it two ways. Adding an `__init__.py` under
+  `scripts/` was rejected: it changes how `python
+  scripts/bench_savings.py` resolves and would not have removed the
+  duplicate module.
+  `tests/test_scripts_single_module_identity.py` pins all of it.
 
 ---
 

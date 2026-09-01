@@ -218,3 +218,28 @@ it narrows a public input domain that was `Any`: a caller storing a tuple
 payload on the in-memory backend now gets a `ValueError`. That is the intended
 outcome, not a side effect — that caller was one config change away from being
 served a `list`.
+
+## D-016 — The mypy gate covers `scripts/` (2026-08-31)
+**Decision:** Extend the D-014 mypy gate to `scripts/` using `mypy_path = "."` plus `explicit_package_bases`, and normalize every test to the single `scripts.<name>` import spelling. No `scripts/__init__.py`.
+
+**Why:** `scripts/` was outside the gate, and not by preference. `mypy cost_optimizer scripts` did not merely report errors — it stopped before checking anything, with *"Source file found twice under different module names: `_io` and `scripts._io`"* and the note *"errors prevented further checking"*. So the repo did not know whether `scripts/` was clean, only that it was unchecked, while `bench_savings.py` and `tune_threshold.py` produce the JSON that the README's savings table and the Streamlit dashboard are built from.
+
+That error turned out to be a true finding rather than a layout quirk to configure away. The suite imported `scripts/tune_threshold.py` under both `tune_threshold` (after putting `scripts/` on `sys.path`) and `scripts.tune_threshold`, and Python makes each name a separate module object: measured in one interpreter, `tune_threshold is scripts.tune_threshold` is `False`, their `main` functions are different objects, and a marker set on one copy is invisible on the other. `test_main_plot_write_oserror_exits_two` monkeypatches `_try_save_plot` on the copy it imported; nothing was failing only because the test that patches and the test that calls the other copy never overlap — a property of which tests happen to exist, not one anyone enforced.
+
+Both halves are needed. `mypy_path` + `explicit_package_bases` fix the *mapping* (one file gets one module name, rooted at the repo); normalizing the imports removes the *cause*. That includes the capture-demo test loader, whose stated reason for putting `scripts/` on `sys.path` was simply wrong: it claimed to mirror `capture_demo._import_bench_main()`, which inserts the **repo root** and imports `scripts.bench_savings`.
+
+With the gate widened it reported five real errors, all fixed rather than silenced: two missing-`matplotlib` stubs (a genuinely optional, undeclared dependency guarded by `try/except ImportError`, so it gets the same per-module override `redis` already has), one `list` invariance where `signals` was bound to a variable before being passed — the equivalent inline literal in `bench_savings` infers from the parameter type and was always clean — and two `dict-item` errors where `_cumulative_savings` was annotated `list[dict[str, float]]` while two of its six keys carry strings.
+
+This is the same resolution `chunking-strategies-lab` took for the identical collision in its own D-014, deliberately, so the two repos don't solve one problem two ways.
+
+**Alternatives considered:**
+- `scripts/__init__.py` — rejected: it changes how `python scripts/bench_savings.py` resolves, and it would not have removed the duplicate module.
+- `explicit_package_bases` alone — rejected: fixes the mypy mapping and leaves the two module objects in place.
+- Normalizing the imports alone — rejected: mypy still cannot map `scripts/_io.py` unambiguously.
+- Silencing the five findings — rejected: the `[tool.mypy]` comment already argues against that, and the point of the issue was that nothing had checked these files.
+- Widening to `tests/` in the same change — rejected: a third directory and a larger blast radius than #201 asks for.
+- Changing `UncertaintyRouter.signals` to `Sequence[EscalationSignal]` — rejected: a library API change riding along in a scripts-coverage PR.
+
+**Reversibility:** Cheap.
+
+**Related issues:** #201, #129

@@ -71,12 +71,36 @@ norecursedirs = ["tests/integration"]
 # external import is the optional `redis` SDK, handled by the override
 # below (so it stays clean whether or not the `redis` extra is installed).
 python_version = "3.11"
-files = ["cost_optimizer"]
+# `scripts/` is in the gate (#201). It was out not by preference but because
+# `mypy cost_optimizer scripts` did not merely report errors — it stopped
+# before checking anything with "Source file found twice under different
+# module names: `_io` and `scripts._io`" ("errors prevented further
+# checking"), so the repo did not know whether `scripts/` was clean, only that
+# it was unchecked. `bench_savings.py` and `tune_threshold.py` produce the
+# JSON the README savings table and the dashboard are built from.
+#
+# `mypy_path` + `explicit_package_bases` fix the *mapping* — one file gets one
+# module name, rooted at the repo — matching chunking-strategies-lab's D-014
+# resolution for the identical collision, so the two repos don't solve it two
+# ways. The *cause* (tests importing one script under two names) is fixed in
+# `tests/` by normalizing to a single spelling.
+mypy_path = "."
+explicit_package_bases = true
+files = ["cost_optimizer", "scripts"]
 warn_unused_ignores = true
 warn_redundant_casts = true
 
 [[tool.mypy.overrides]]
 module = "redis.*"
+ignore_missing_imports = true
+
+# matplotlib is genuinely absent: it is in no extra, not in `dev`, and not in
+# CI. `tune_threshold._try_save_plot` imports it inside a `try/except
+# ImportError` and returns False when it is missing, so the plot is a bonus,
+# not a dependency. Same treatment as `redis.*` above — the import is optional
+# by design, so a missing stub is not a finding.
+[[tool.mypy.overrides]]
+module = "matplotlib.*"
 ignore_missing_imports = true
 
 [tool.ruff]
