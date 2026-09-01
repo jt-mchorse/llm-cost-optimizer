@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import datetime as dt
 import math
+from collections.abc import Callable
 from typing import Any
 
 import pytest
@@ -45,7 +46,22 @@ def _cache(backend: str) -> SemanticCache:
     return SemanticCache(embedder=HashEmbedder(), storage=storage)
 
 
-# (label, payload, accepted?) -- the probe that found the defect, kept verbatim.
+def _self_dict() -> dict[str, Any]:
+    d: dict[str, Any] = {"answer": "Paris"}
+    d["self"] = d
+    return d
+
+
+def _self_list() -> list[Any]:
+    xs: list[Any] = [1]
+    xs.append(xs)
+    return xs
+
+
+_SHARED = {"k": 1}
+
+# (label, payload, accepted?) -- the probe that found the defect, kept verbatim,
+# plus the three reference-graph rows added by #203.
 _TABLE: list[tuple[str, Any, bool]] = [
     ("str", "Paris", True),
     ("dict of str", {"answer": "Paris"}, True),
@@ -62,6 +78,19 @@ _TABLE: list[tuple[str, Any, bool]] = [
     ("set", {"a", "b"}, False),
     ("bytes", b"Paris", False),
     ("datetime", dt.datetime(2026, 1, 1), False),
+    # #203. A cycle is the shape the two backends disagree about most starkly --
+    # `InMemoryStorage.put` stores it intact because `copy.deepcopy` memoizes,
+    # while `RedisStorage.put` raises `Circular reference detected` from
+    # `json.dumps` -- and the validator could not reach a verdict on it at all:
+    # the walk ran to 5.7 GB resident. Rejecting at the seam makes both roads
+    # agree, which is what puts these rows in *this* table rather than only in
+    # tests/test_semantic_cache_payload_cycles.py.
+    ("self-referential dict", _self_dict(), False),
+    ("self-referential list", _self_list(), False),
+    # The negative half of the same rule, and the one a "reject any id seen
+    # twice" fix would break: `json.dumps` emits a shared node once per path and
+    # both backends round-trip it.
+    ("shared acyclic reference", {"a": _SHARED, "b": _SHARED}, True),
 ]
 
 _ACCEPTED = [(lbl, pl) for lbl, pl, ok in _TABLE if ok]
@@ -98,6 +127,9 @@ def _equalish(a: Any, b: Any) -> bool:
 def test_accepted_payloads_are_served_identically_by_both_backends(
     label: str, payload: Any
 ) -> None:
+    """No `bounded_work` here, unlike the rejected driver below: an *accepted*
+    payload is acyclic by construction, so it is not a candidate for the
+    non-termination this table's cyclic rows guard against."""
     served = {}
     for backend in ("mem", "redis"):
         cache = _cache(backend)
@@ -119,12 +151,23 @@ def test_accepted_payloads_are_served_identically_by_both_backends(
 
 
 @pytest.mark.parametrize(("label", "payload"), _REJECTED, ids=[r[0] for r in _REJECTED])
-def test_rejected_payloads_fail_identically_on_both_backends(label: str, payload: Any) -> None:
+def test_rejected_payloads_fail_identically_on_both_backends(
+    label: str, payload: Any, bounded_work: Callable[..., Any]
+) -> None:
     """Same exception type, same message, before any backend is touched."""
     messages = {}
     for backend in ("mem", "redis"):
         cache = _cache(backend)
-        with pytest.raises(ValueError, match="JSON round-trip") as exc:
+        # Bounded because two of these rows are cyclic (#203) and the walk that
+        # rejects them fails by *not returning*, not by returning wrongly --
+        # "did it raise" and "did it finish" are different questions. Every
+        # rejected row short-circuits inside `_validate_payload`, before the
+        # embedder or either backend is touched (which is the next assertion
+        # below), so the cheap default limit is the right one here.
+        with (
+            bounded_work(what=f"{label} through {backend}"),
+            pytest.raises(ValueError, match="JSON round-trip") as exc,
+        ):
             cache.put(prompt=PROMPT, payload=payload, model=MODEL)
         messages[backend] = str(exc.value)
         # Nothing was stored on the way to the error.
