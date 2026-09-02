@@ -1961,3 +1961,36 @@ Printing the exception message instead of just its type is what caught both.
 **Open questions / blockers:** none. `tests/` stays outside the gate; widening to a third directory is a larger blast radius than this issue asks for.
 
 **Next session:** the rest of this repo's backlog (#199, #135, #97) is decision-gated on JT.
+
+## 2026-09-01 — Issue #203: a payload that contains itself
+**Branch:** `session/2026-09-01-0721-issue-203`
+
+- `_validate_payload` exists to reject payload shapes the in-memory and Redis
+  backends disagree about. It had no cycle check, so the shape they disagree
+  about most starkly was the one it could not reach a verdict on: a
+  self-referential dict passed to `SemanticCache.put` neither raised nor
+  returned — 5.7 GB resident in four seconds on the default backend. At the
+  storage seam the in-memory backend stores the cycle intact (`deepcopy`
+  memoises) while Redis raises `Circular reference detected` from `json.dumps`.
+- The fix mirrors `json.dumps`'s own rule, since that is the behaviour the
+  payload contract is written against: a container that is its own *ancestor*
+  is refused, one merely reachable by two paths is not. The obvious shortcut —
+  "reject any object seen twice" — passes every cycle test and breaks payloads
+  that work today, so the shared-reference control arms are the ones carrying
+  the weight here.
+- The same walk shape exists in two other portfolio repos. `rag-production-kit`
+  already does it correctly, with an ancestor set and a depth cap; that was the
+  reference. `llm-eval-harness`'s is fed only `json.loads` output, and JSON has
+  no references, so a cycle cannot be constructed there. Neither needs work.
+
+**Why this work, this session:** the repo's four open issues are all decision
+revisits or need a contract call from JT, so the session hunted instead. Ranking
+the modules and then the `Storage` methods by how much issue traffic each had
+ever attracted put the search in the least-examined file, which is where this was.
+
+**Open questions / blockers:** none. An exponentially-shared (but acyclic)
+payload still blows the walk up — but `json.dumps` blows up on it too, so the
+validator is not worse than the backend it models. Bounding payload *size* is a
+different contract from bounding payload *type* and would want its own decision.
+
+**Next session:** #199 (batch idempotency) still needs a written decision.

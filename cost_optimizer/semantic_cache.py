@@ -677,14 +677,56 @@ def _validate_payload(payload: Any) -> None:
     Iterative rather than recursive: a payload is caller-supplied and can be
     arbitrarily deep, and a `RecursionError` here is not the `ValueError` the
     seam contracts to raise.
+
+    That reason is about unbounded *depth*, and the rewrite to an explicit
+    stack removed the only thing that bounded unbounded *revisits* (#203): a
+    recursive walk over a self-referential payload at least dies with
+    `RecursionError` in milliseconds, while the stack form ran until the
+    process died -- 5.7 GB resident in 4 seconds through `SemanticCache.put`,
+    because every pop of a cyclic container pushes its children back with a
+    longer `path` string. A cyclic payload is squarely this function's business:
+    at the storage seam `InMemoryStorage.put` accepts it (`copy.deepcopy`
+    memoizes, so the cycle survives) and `RedisStorage.put` raises
+    `ValueError: Circular reference detected` from `json.dumps` -- the exact
+    backend disagreement the validator exists to catch, and the one shape it
+    could not reach a verdict on.
+
+    Cycle detection mirrors `json.dumps`'s own `check_circular=True`, because
+    `json.dumps` *is* the reference behaviour this contract is written against:
+    a container that is its own **ancestor** is refused, while a container
+    reachable twice by different paths is not. `json.dumps({"a": x, "b": x})`
+    emits `x` twice and both backends round-trip it, so a blanket
+    "seen this id before -> reject" would fail payloads that work today. Hence
+    the on-path set with explicit exit frames, rather than a visited set: the id
+    is discarded on the way back up.
     """
-    stack: list[tuple[str, Any]] = [("payload", payload)]
+    # `(path, node, is_exit)`. An exit frame is pushed under a container's
+    # children so `on_path` is popped back down when the subtree is done.
+    stack: list[tuple[str, Any, bool]] = [("payload", payload, False)]
+    on_path: set[int] = set()
     while stack:
-        path, node = stack.pop()
+        path, node, is_exit = stack.pop()
+        if is_exit:
+            on_path.discard(id(node))
+            continue
         # `bool` before the `int` arm it is a subclass of, for the same reason
         # every other guard in this module spells it out.
         if node is None or isinstance(node, (bool, int, float, str)):
             continue
+        if isinstance(node, (dict, list)):
+            if id(node) in on_path:
+                raise ValueError(
+                    f"{path} is a {type(node).__name__} that contains itself; cache "
+                    "payloads must survive a JSON round-trip unchanged, and a circular "
+                    "reference has no JSON representation at all -- RedisStorage raises "
+                    "`ValueError: Circular reference detected` from inside `put` while "
+                    "InMemoryStorage stores the cycle intact, so the same payload caches "
+                    "on one backend and fails on the other. Break the cycle before "
+                    "caching. (A structure merely reachable by two different paths is "
+                    "fine and is not this error.)"
+                )
+            on_path.add(id(node))
+            stack.append((path, node, True))
         if isinstance(node, dict):
             for k, v in node.items():
                 if not isinstance(k, str):
@@ -695,11 +737,11 @@ def _validate_payload(payload: Any) -> None:
                         f"{str(k)!r} and serve back a dict the in-memory backend never "
                         "would. Convert the key before caching."
                     )
-                stack.append((f"{path}[{k!r}]", v))
+                stack.append((f"{path}[{k!r}]", v, False))
             continue
         if isinstance(node, list):
             for i, v in enumerate(node):
-                stack.append((f"{path}[{i}]", v))
+                stack.append((f"{path}[{i}]", v, False))
             continue
         raise ValueError(
             f"{path} is a {type(node).__name__} ({node!r}), which has no JSON "
