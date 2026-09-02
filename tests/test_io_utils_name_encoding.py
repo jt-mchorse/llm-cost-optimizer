@@ -27,6 +27,7 @@ the write succeeds) and a UTF-8-validating one (APFS, which returns `EILSEQ`).
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -42,7 +43,6 @@ from cost_optimizer.io_utils import (  # noqa: E402
     _cap_base_for_temp,
     atomic_write_text,
 )
-from scripts.bench_savings import main as bench_main  # noqa: E402
 
 # A lone low surrogate is what `surrogateescape` produces for the raw byte
 # 0xFF. Built from its codepoint rather than written literally so the character
@@ -182,9 +182,7 @@ def test_atomic_write_text_long_unencodable_target_name_is_capped_not_refused(
         assert list(tmp_path.iterdir()) == []
 
 
-def test_bench_savings_unencodable_out_stem_returns_an_exit_code(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_bench_savings_unencodable_out_stem_returns_an_exit_code(tmp_path: Path) -> None:
     """`--out` is operator input, and `sys.argv` decodes with `surrogateescape`.
 
     The sibling test `test_main_unwritable_out_exits_two` covers the
@@ -193,16 +191,36 @@ def test_bench_savings_unencodable_out_stem_returns_an_exit_code(
     failure that arm exists to prevent: the whole bench runs, then the process
     dies with a raw traceback at exit 1 — inside the "success" range.
 
-    Asserted as "returns an int, and if nothing was written that int is 2"
-    rather than a fixed code, because whether the write succeeds is the
-    filesystem's call, not this test's.
+    Run in a subprocess with **bytes** capture, not in-process with `capsys`,
+    and both halves of that matter:
+
+    * `capsys` substitutes a strict-encoding buffer for `sys.stdout`, while a
+      real process gets `errors="surrogateescape"` — so the script's own
+      `print(f"bench wrote {out_json}")` raises under the fixture and is
+      perfectly fine in production. Asserting through `capsys` would report a
+      failure the shipped script does not have.
+    * On a filesystem that accepts the name (ext4, i.e. CI) the write
+      *succeeds*, so the child prints the path and `surrogateescape` puts the
+      original raw byte on stdout. `text=True` would then decode that strictly
+      **in the parent** and blow up inside `subprocess`. Capture bytes and
+      decode with `errors="replace"` for the assertions.
+
+    Asserted as "returns a code with no traceback, and if nothing was written
+    that code is 2" rather than a fixed code, because whether the write
+    succeeds is the filesystem's call, not this test's.
     """
     stem = tmp_path / ("savings" + SURROGATE)
 
-    rc = bench_main(["--dry", "--n", "50", "--out", str(stem)])
-    captured = capsys.readouterr()
+    proc = subprocess.run(
+        [sys.executable, "scripts/bench_savings.py", "--dry", "--n", "50", "--out", str(stem)],
+        cwd=str(_REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    stderr = proc.stderr.decode("utf-8", errors="replace")
 
-    assert isinstance(rc, int)
+    assert "Traceback" not in stderr, stderr
+    assert "UnicodeEncodeError" not in stderr, stderr
     if not stem.with_suffix(".json").exists():
-        assert rc == 2, "an unusable --out is an I/O error: exit 2, not a traceback"
-        assert "could not write bench artifacts" in captured.err
+        assert proc.returncode == 2, "an unusable --out is an I/O error: exit 2, not a traceback"
+        assert "could not write bench artifacts" in stderr
