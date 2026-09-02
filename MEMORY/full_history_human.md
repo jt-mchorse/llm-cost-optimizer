@@ -1994,3 +1994,71 @@ validator is not worse than the backend it models. Bounding payload *size* is a
 different contract from bounding payload *type* and would want its own decision.
 
 **Next session:** #199 (batch idempotency) still needs a written decision.
+
+## 2026-09-02 — #205: the temp-name byte budget was counting the wrong bytes
+
+`io_utils._cap_base_for_temp` shortens a destination's basename before it goes
+into the temp filename `.<base>.<random>.tmp`, so a name already close to
+NAME_MAX doesn't push the temp name past the 255-byte limit. The comment above
+it says "Budget is in BYTES (NAME_MAX is a byte limit)", and that is true. The
+code under it counted `base.encode("utf-8")` with the strict error handler,
+which is a *different* set of bytes from the ones NAME_MAX limits.
+
+The two counts agree for every name that is valid UTF-8, which is why nobody
+noticed. They disagree for the rest by raising. POSIX path bytes — and
+`sys.argv` — decode through `surrogateescape`, so a byte that isn't valid UTF-8
+arrives as a lone surrogate in U+DC80–U+DCFF, and strict encoding refuses to
+encode it. `--out $'docs/savings\xff'` was enough: the cap raised
+`UnicodeEncodeError` before it ever got as far as measuring anything.
+
+**What that costs here is specific, and the code already wrote the sentence.**
+`bench_savings.py` and `tune_threshold.py` each wrap their writes in
+`except OSError`, with a comment explaining exactly what that arm is for: an
+unwritable `--out` used to escape `main` "as a raw traceback at exit 1 — the
+'success' range — *after* the bench already ran". `UnicodeEncodeError` is a
+`ValueError`, not an `OSError`, so a `--out` stem carrying a non-UTF-8 byte
+walks past the guard and reproduces that sentence verbatim: the whole bench (or
+the whole `tune_threshold` sweep) runs, then the process dies with a traceback
+in the exit range a caller reads as success. `resolve_out_stem` makes the same
+point about a neighbouring bad `--out` — "the failure lands *before* the work;
+`tune_threshold` used to run its whole sweep and only then crash on the suffix"
+— and the surrogate stem is the case that still did that.
+
+Unlike `llm-eval-harness`, this repo has no `UnicodeEncodeError` arm anywhere,
+so there is no backstop catching it under a misleading message. It is simply
+uncaught, including at the three library entry points — `SemanticCache`'s and
+`Router`'s `dump_stats_json` and `PromptCacheWrapper.dump_aggregate_json` —
+which hand it to an embedding application written against the `OSError` a plain
+`Path.write_text` of the same target raises.
+
+The fix is one line: measure with `os.fsencode`, the filesystem encoding
+together with its own error handler, which is exactly what the kernel receives.
+It returns the identical number for every valid-UTF-8 name, so no name that
+worked before changes budget, and it never raises.
+
+**Testing was harder than the fix, for one reason.** ext4 accepts any non-NUL
+byte in a filename, so on CI the write *succeeds*; APFS validates UTF-8 and
+returns `EILSEQ`. Both are correct, so asserting success is a Linux-only test
+and asserting failure is a macOS-only one. The property that holds on both is
+"if it fails, it fails as an `OSError`" — assert the class, not the outcome —
+and at the CLI seam, "it returns an int, and if nothing was written that int is
+2". The pure-function half is a variant table over short/long crossed with
+ASCII, multibyte, surrogate-bearing and mixed, asserting the capped name is a
+character-boundary prefix, within budget, and **maximal**. That last assertion
+exists because a cap returning `""` for everything satisfies the first two.
+
+Reverting the single measurement line turns 9 of the 15 new assertions red and
+leaves the 6 encodable-name controls green.
+
+**Why this work, this session:** found by grepping the portfolio for
+`_MAX_TEMP_BASE_BYTES` after hitting the same defect in `llm-eval-harness#226`.
+Nine repos carry a verbatim copy of this helper. The fix is the same line every
+time; the work per repo is establishing what the local write-seam callers
+actually catch, and here they catch strictly less than they think.
+
+**Open questions / blockers:** none.
+
+**Next session:** the remaining copies live in `rag-production-kit`,
+`chunking-strategies-lab`, `prompt-regression-suite`, `embedding-model-shootout`,
+`vector-search-at-scale`, `python-async-llm-pipelines`, and
+`mcp-server-cookbook`'s `filesystem-sandbox-py`.
