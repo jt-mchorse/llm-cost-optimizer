@@ -2290,3 +2290,30 @@ context_for_next_session:
 decisions_made: []
 followups: []
 ---
+
+---
+session: 2026-09-03T07:21Z
+issue: 207
+focus: validate_payload_gated_on_isinstance_so_every_subclass_of_a_json_type_was_accepted_and_the_two_backends_diverged
+phase: night_session_multi_issue_loop_issue_2
+delta:
+  files_changed: 3
+  tests_added: 40
+  suite: 858_to_898_green
+measured:
+  differential: "11 subclass shapes through BOTH backends via the public API - 10 accepted and diverged. IntEnum/StrEnum/bare-IntEnum/defaultdict/Counter/OrderedDict/dict-sub/list-sub/str-sub/int-sub. namedtuple was the ONLY one already rejected, by the accident of subclassing tuple"
+  consumer_harm: "served['answers']['q2'] -> [] on mem, KeyError on redis (defaultdict). served['status'].name -> 'OK' on mem, AttributeError on redis (IntEnum). Neither raises at put"
+  message_accuracy: "json.dumps(('a','b')) -> '[\"a\", \"b\"]'; json.dumps(defaultdict(list)) -> '{}'; json.dumps(OrderedDict()) -> '{}'; json.dumps(Status.OK) -> '1'; only set/bytes/datetime actually raise TypeError"
+  anti_vacuous: "FOUR variants each red on its own assertion - isinstance revert 25 red; over-tightened set dropping bool+None 3 red; base-instead-of-round-trip-type in the message 1 red (this was MY OWN first draft); single-old-message-for-everything 5 red"
+context_for_next_session:
+  - THE_LENS_IS_isinstance_ANSWERS_IS_A_AND_THE_RULE_WAS_IS_EXACTLY_a_guard_whose_stated_rule_is_about_IDENTITY_OF_TYPE_cannot_be_written_with_isinstance_and_the_gap_is_EXACTLY_THE_SUBCLASS_LATTICE_grep_the_portfolio_for_isinstance_guards_whose_docstring_says_unchanged_or_round_trip_or_canonical_or_byte_stable
+  - THE_OLD_CODE_CARRIED_ITS_OWN_TELL_it_needed_a_comment_saying_bool_BEFORE_the_int_arm_it_is_a_subclass_of_A_GUARD_THAT_HAS_TO_EXPLAIN_ITS_SUBCLASS_ORDERING_IS_A_GUARD_ASKING_THE_WRONG_QUESTION_the_exact_type_form_has_no_ordering_to_get_wrong_and_the_comment_deletes_itself
+  - I_SHIPPED_A_BUG_IN_MY_OWN_FIX_AND_THE_VARIANT_TABLE_CAUGHT_IT_first_draft_built_the_message_from_the_json_DISPATCH_BASE_so_a_tuple_was_told_json_dumps_encodes_it_as_a_plain_TUPLE_JSON_HAS_ONE_ARRAY_TYPE_so_the_base_it_dispatches_on_is_not_the_type_it_comes_back_as_the_map_is_now_base_to_ROUND_TRIP_TYPE_and_tuple_maps_to_list
+  - SECOND_FINDING_INSIDE_THE_FIRST_THE_REJECTION_MESSAGE_NAMED_A_MECHANISM_THAT_DOES_NOT_HAPPEN_it_claimed_RedisStorage_raises_TypeError_for_EVERY_rejected_shape_and_json_dumps_of_a_tuple_RETURNS_AN_ARRAY_so_THE_ROWS_WHOSE_HARM_IS_THE_SILENT_ONE_THE_DOCSTRING_CALLS_WORSE_WERE_THE_ROWS_BEING_TOLD_THEY_WOULD_FAIL_LOUDLY_when_one_raise_serves_two_opposite_mechanisms_ONE_OF_THE_MESSAGES_IS_WRONG
+  - DECIDE_THE_MECHANISM_FROM_TYPE_DISPATCH_NOT_BY_PROBING_json_dumps_ON_THE_PAYLOAD_probing_would_serialize_an_arbitrarily_large_caller_structure_ON_AN_ERROR_PATH_and_json_dumps_RECURSES_which_is_the_exact_failure_the_iterative_walk_exists_to_survive_A_CHEAP_STRUCTURAL_RULE_IN_PROD_PLUS_AN_EMPIRICAL_TEST_THAT_RUNS_THE_REAL_CALL_is_the_shape
+  - THE_ARCH_DOC_ALREADY_HAD_IT_RIGHT_it_listed_str_int_float_bool_None_list_dict_AN_EXACT_TYPE_LIST_and_the_code_under_enforced_the_doc_A_DOC_STATING_A_SET_AND_CODE_STATING_A_PREDICATE_IS_A_DIFF_WORTH_RUNNING
+  - I_ALMOST_WEAKENED_A_LOCK_TO_LAND_A_DOC_SENTENCE_the_arch_doc_symbol_test_flagged_IntEnum_and_offered_EXTERNAL_SYMBOLS_as_the_escape_hatch_which_is_HARD_PINNED_by_its_own_test_ON_PURPOSE_REWORDING_THE_PROSE_WAS_THE_RIGHT_MOVE_an_allowlist_grown_to_fit_an_EXAMPLE_is_the_escape_hatch_shape_i_filed_leh_228_about
+  - THE_namedtuple_ROW_IS_THE_CONTROL_it_was_already_rejected_by_ACCIDENT_of_subclassing_tuple_so_keeping_it_in_the_table_stops_we_got_this_class_already_from_being_true_by_coincidence
+decisions_made: []
+followups: []
+---

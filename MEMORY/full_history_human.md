@@ -2062,3 +2062,62 @@ actually catch, and here they catch strictly less than they think.
 `chunking-strategies-lab`, `prompt-regression-suite`, `embedding-model-shootout`,
 `vector-search-at-scale`, `python-async-llm-pipelines`, and
 `mcp-server-cookbook`'s `filesystem-sandbox-py`.
+
+## 2026-09-03 — #207: the payload validator asked "is-a" when the rule was "is exactly"
+
+D-015 says a `SemanticCache.put` payload must survive a JSON round-trip
+*unchanged*, because `InMemoryStorage` `deepcopy`s it and `RedisStorage`
+`json.dumps` it. `_validate_payload` enforced that with `isinstance`.
+
+`isinstance` answers "is-a". The rule is about "is exactly". Every subclass of
+an accepted type sits in the gap, and `json.dumps` writes a subclass as its
+base — so the two backends served different objects for the same record, which
+is the precise defect D-015 exists to prevent. Driven through both backends via
+the public API, ten of eleven subclass shapes were accepted and diverged:
+`IntEnum`, `StrEnum`, `defaultdict`, `Counter`, `OrderedDict`, and plain
+`dict`/`list`/`str`/`int`/`float` subclasses. The one that was already rejected,
+`namedtuple`, was rejected by the accident of subclassing `tuple` — so it stays
+in the table as a control, to stop "we already cover that class" from being true
+by coincidence.
+
+Both harms are the quiet kind. `served["answers"]["q2"]` returns `[]` on the
+default backend and raises `KeyError` on Redis for a `defaultdict` payload;
+`served["status"].name` returns `'OK'` on one and raises `AttributeError` on the
+other for an `IntEnum`. Nothing raises at write time on either road, and the
+break only shows up after the backend swap `RedisStorage`'s own docstring
+recommends — the same sentence D-015 was written around.
+
+The old code carried its own tell. It needed a comment explaining that `bool`
+came before the `int` arm *because `bool` subclasses `int`*. A guard that has to
+explain its subclass ordering is a guard asking the wrong question; the
+exact-type form has no ordering to get wrong, and the comment deletes itself.
+
+**A second defect turned up inside the first.** One `raise` served two opposite
+mechanisms, and the message described only one of them. It told the operator
+"RedisStorage raises `TypeError: not JSON serializable`" for every rejected
+shape — which is false for `tuple`, the first row of the module's own table:
+`json.dumps(("a","b"))` returns `'["a", "b"]'`. So the shapes whose harm is the
+silent one, the one the docstring itself calls worse, were the shapes being told
+they would fail loudly. The message now splits by mechanism.
+
+I then shipped a bug in my own fix and the variant table caught it. The first
+draft built the message from the base `json` dispatches on, so a `tuple` was
+told it "encodes as a plain tuple" — JSON has a single array type, so the base
+is not the type the value comes back as. The map is now base → round-trip type,
+and a `tuple` is correctly told it becomes a `list`.
+
+The mechanism is decided from json's type dispatch rather than by calling
+`json.dumps` on the payload. Probing for real would serialize an arbitrarily
+large caller-supplied structure on an error path, and `json.dumps` recurses —
+which is exactly the failure the iterative walk exists to survive. The parity
+tests run the real `json.dumps` over every rejected row instead, so the cheap
+production rule stays honest without production paying for it.
+
+One near-miss worth recording: the architecture-doc symbol lock flagged
+`IntEnum` in my new doc sentence and offered its `EXTERNAL_SYMBOLS` allowlist as
+the escape hatch. That allowlist is hard-pinned by its own test on purpose.
+Growing it to fit a prose *example* would have been the escape-hatch shape;
+rewording the sentence was the right move, and the lock stayed intact.
+
+**Next session:** the remaining open issues here (#199, #135, #97) are all
+`decision-revisit` and JT-gated; #18 is the demo capture.
