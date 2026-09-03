@@ -166,7 +166,11 @@ response back into the cache.
   Pluggability implies a **payload contract** (**D-015**): a `SemanticCache.put`
   payload must survive a JSON round-trip unchanged (`str`, `int`,
   `float`, `bool`, `None`, `list`, `dict` with string keys), because a
-  persistent backend has to serialize it. Enforced at the `put` seam by
+  persistent backend has to serialize it. Those are *exact* types, not
+  base classes: `json.dumps` writes a subclass as its base, so an
+  int-valued enum member, a `defaultdict` or a `Counter` diverges the
+  same way a `tuple` does, and the validator classifies on `type(...)`
+  rather than `isinstance` for that reason (#207). Enforced at the `put` seam by
   `_validate_payload`, not at whichever backend happens to be
   configured — otherwise `InMemoryStorage` (which `deepcopy`s) and
   `RedisStorage` (which `json.dumps`) serve different objects for the
