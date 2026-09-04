@@ -637,6 +637,89 @@ def _validate_embedding(vector: list[float], *, where: str) -> None:
         )
 
 
+#: The exact types a JSON round-trip preserves. Membership is tested with
+#: ``type(node) in`` rather than ``isinstance``, so a subclass is *not* a
+#: member -- see ``_validate_payload`` (#207).
+_JSON_SCALAR_TYPES: frozenset[type] = frozenset({type(None), bool, int, float, str})
+
+#: ``(base json.JSONEncoder dispatches on, type the value comes back as)``.
+#:
+#: Anything matching none of these bases is handed to ``default()``, which
+#: raises ``TypeError``. This is a *type-dispatch* question, deliberately
+#: answered without calling ``json.dumps``: see ``_unrepresentable_message``.
+#:
+#: The second element is not decoration and is not always the first: JSON has
+#: one array type, so a ``tuple`` is written as an array and read back as a
+#: ``list``. Naming the base would tell an operator their ``tuple`` comes back
+#: as a ``tuple``, which is the whole defect. Order matters -- ``bool`` before
+#: ``int``, since ``bool`` is an ``int`` subclass and the first match wins.
+_JSON_ENCODABLE_BASES: tuple[tuple[type, str], ...] = (
+    (dict, "dict"),
+    (list, "list"),
+    (tuple, "list"),
+    (str, "str"),
+    (bool, "bool"),
+    (int, "int"),
+    (float, "float"),
+)
+
+
+def _unrepresentable_message(path: str, node: Any) -> str:
+    """The rejection message for a node that is not an exact JSON type.
+
+    Two mechanisms reach this line and they are opposites, so one message
+    cannot describe both. `json.dumps` **converts** a `tuple`, and every
+    subclass of an encodable base, to its base type; it **raises** `TypeError`
+    for a `set`, `bytes`, or a `datetime`. The single message this function
+    replaces claimed the `TypeError` for everything, which was wrong for the
+    very first row of the module docstring's own table::
+
+        json.dumps(("a","b"))         -> '["a", "b"]'   # no TypeError
+        json.dumps(defaultdict(list)) -> '{}'           # no TypeError
+        json.dumps({"a"})             -> TypeError      # only here
+
+    So the shapes whose harm is the *silent* one -- the one the docstring above
+    calls worse -- were the shapes being told they would fail loudly.
+
+    The mechanism is decided from `json`'s own **type dispatch**
+    (`_JSON_ENCODABLE_BASES`) rather than by calling `json.dumps(node)` on the
+    payload. Probing for real would answer this one question by serializing an
+    arbitrarily large caller-supplied structure on an error path, and
+    `json.dumps` recurses -- which is the failure mode the iterative walk in
+    `_validate_payload` exists to avoid, and would turn a rejection into a
+    `RecursionError`. `tests/test_semantic_cache_payload_parity.py` checks this
+    classifier against real `json.dumps` calls over every shape in the table
+    instead, so the cheap rule stays honest without production paying for it.
+
+    One acknowledged imprecision: a *cyclic* subclass of an encodable base
+    (`d = MyDict(); d["s"] = d`) is reported as "converts", while `json.dumps`
+    would refuse it with `ValueError: Circular reference detected`. It is
+    rejected either way and the type is the reason worth naming; the cycle is
+    reported on its own message when the container is an exact `dict`/`list`.
+    """
+    kind = type(node).__name__
+    for base, round_trips_as in _JSON_ENCODABLE_BASES:
+        if isinstance(node, base):
+            return (
+                f"{path} is a {kind} ({node!r}), which does not survive a JSON round-trip "
+                f"unchanged. `json.dumps` encodes it as a plain {round_trips_as}, so "
+                f"RedisStorage stores and serves back a {round_trips_as} while "
+                f"InMemoryStorage deepcopies and serves the {kind} -- the same code gets "
+                "different objects depending on which backend is configured, and nothing "
+                f"raises at write time on either. Convert it to a {round_trips_as} before "
+                "caching."
+            )
+    return (
+        f"{path} is a {kind} ({node!r}), which has no JSON "
+        "representation. Cache payloads must survive a JSON round-trip unchanged: "
+        "InMemoryStorage would store it as-is while RedisStorage raises "
+        "`TypeError: Object of type "
+        f"{kind} is not JSON serializable` from inside `put`, so the "
+        "same code caches successfully on one backend and fails on the other. "
+        "Convert it to a JSON type before caching."
+    )
+
+
 def _validate_payload(payload: Any) -> None:
     """Reject a payload the two shipped backends would not agree on (#192).
 
@@ -699,6 +782,18 @@ def _validate_payload(payload: Any) -> None:
     "seen this id before -> reject" would fail payloads that work today. Hence
     the on-path set with explicit exit frames, rather than a visited set: the id
     is discarded on the way back up.
+
+    Classification is on **exact type**, not `isinstance` (#207). The rule above
+    is "is exactly a JSON type"; `isinstance` answers "is-a", and the two differ
+    for every subclass of an accepted type. `json.dumps` encodes a subclass by
+    its base, so an `IntEnum`, a `defaultdict`, a `Counter`, an `OrderedDict` or
+    a plain `class MyDict(dict)` passed the old gate and then diverged exactly
+    as `tuple` and the int-keyed dict did -- ten of eleven measured shapes.
+    Both consequences are the quiet kind this docstring calls worse:
+    `served["answers"]["q2"]` returns `[]` on the in-memory backend and raises
+    `KeyError` on Redis for a `defaultdict` payload, and `served["status"].name`
+    returns `'OK'` on one and raises `AttributeError` on the other for an
+    `IntEnum`. Nothing raises at write time on either road.
     """
     # `(path, node, is_exit)`. An exit frame is pushed under a container's
     # children so `on_path` is popped back down when the subtree is done.
@@ -709,11 +804,14 @@ def _validate_payload(payload: Any) -> None:
         if is_exit:
             on_path.discard(id(node))
             continue
-        # `bool` before the `int` arm it is a subclass of, for the same reason
-        # every other guard in this module spells it out.
-        if node is None or isinstance(node, (bool, int, float, str)):
+        # `type(...) in`, not `isinstance(...)` (#207). `bool` is listed as
+        # itself rather than inherited from the `int` arm -- which is also why
+        # the exact-type form is the simpler one to state here: the old code
+        # needed a comment explaining that `bool` came before `int` on purpose,
+        # and an exact-type set has no subclass ordering to get wrong.
+        if type(node) in _JSON_SCALAR_TYPES:
             continue
-        if isinstance(node, (dict, list)):
+        if type(node) is dict or type(node) is list:
             if id(node) in on_path:
                 raise ValueError(
                     f"{path} is a {type(node).__name__} that contains itself; cache "
@@ -727,31 +825,38 @@ def _validate_payload(payload: Any) -> None:
                 )
             on_path.add(id(node))
             stack.append((path, node, True))
-        if isinstance(node, dict):
+        if type(node) is dict:
             for k, v in node.items():
-                if not isinstance(k, str):
+                # Exact type here too: `json.dumps` writes a `str` subclass key
+                # as a plain `str`, so a `MyStr("a")` key diverges the same way
+                # an `int` key does -- and unlike an `int` key it does not even
+                # change the key's *text*, only its type, which makes it the
+                # quieter half of the same defect (#207).
+                if type(k) is not str:
+                    # A `str` subclass key keeps its text through `json.dumps`
+                    # and loses only its type, so the "would store this key as
+                    # {str(k)!r}" clause -- written for the int-keyed case,
+                    # where the text visibly changes -- reads as a no-op there.
+                    # Name the type change instead when that is what happens.
+                    changed = (
+                        f"store this key as {str(k)!r}"
+                        if not isinstance(k, str)
+                        else f"store this key as a plain str rather than a {type(k).__name__}"
+                    )
                     raise ValueError(
                         f"{path} has a non-string key {k!r} ({type(k).__name__}); cache "
                         "payloads must survive a JSON round-trip unchanged, and JSON "
-                        "object keys are strings -- RedisStorage would store this key as "
-                        f"{str(k)!r} and serve back a dict the in-memory backend never "
+                        f"object keys are strings -- RedisStorage would {changed} "
+                        "and serve back a dict the in-memory backend never "
                         "would. Convert the key before caching."
                     )
                 stack.append((f"{path}[{k!r}]", v, False))
             continue
-        if isinstance(node, list):
+        if type(node) is list:
             for i, v in enumerate(node):
                 stack.append((f"{path}[{i}]", v, False))
             continue
-        raise ValueError(
-            f"{path} is a {type(node).__name__} ({node!r}), which has no JSON "
-            "representation. Cache payloads must survive a JSON round-trip unchanged: "
-            "InMemoryStorage would store it as-is while RedisStorage raises "
-            "`TypeError: Object of type "
-            f"{type(node).__name__} is not JSON serializable` from inside `put`, so the "
-            "same code caches successfully on one backend and fails on the other. "
-            "Convert it to a JSON type before caching."
-        )
+        raise ValueError(_unrepresentable_message(path, node))
 
 
 # ----------------------------------------------------------------------
