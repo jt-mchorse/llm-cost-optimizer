@@ -355,12 +355,53 @@ def _mark_messages_prefix(messages: list[Any]) -> list[Any]:
 
 
 def _get_usage(response: Any) -> Any:
-    """Return the usage object from the response, tolerating dict shape."""
+    """Return an attribute-readable usage view, tolerating dict shape at *both* levels.
+
+    "Dict-shaped" is a property of the response and, independently, of the
+    ``usage`` it carries. That is four combinations, and until #209 this
+    function decided once for both: it returned ``response.usage`` raw off the
+    attribute road and wrapped ``response["usage"]`` unconditionally off the
+    dict road. Only the two combinations where the levels *agree* read
+    correctly; the two mixed ones both reported zero, and neither raised:
+
+    - object response + dict usage -> the dict was returned raw, and the
+      caller's ``getattr(usage, "cache_read_input_tokens", 0)`` found no such
+      *attribute* and took the default.
+    - dict response + object usage -> the object was wrapped in
+      :class:`_DictAttr`, whose ``__getattr__`` calls ``self._d.get(...)`` and
+      raises ``AttributeError`` on a non-mapping — which the caller's
+      three-argument ``getattr`` then **swallows**, landing on the same ``0``.
+
+    Zero is not a diagnostic on this path. ``_coerce_token_count`` is
+    documented to *abstain* to ``0`` on a malformed usage field, so a
+    well-formed field in the other container is indistinguishable from a call
+    that genuinely did no caching: ``hits`` and ``misses`` both ``0``,
+    ``dollars_saved`` ``$0.00``, folded into ``aggregate`` (which only ever
+    adds, so it never recovers) and out through ``dump_aggregate_json`` onto
+    the savings dashboard.
+
+    So resolve ``usage`` by either road first, then make the wrapping decision
+    once, against the thing being wrapped. Precedence between the two roads is
+    unchanged — attribute first — so a dict subclass carrying a ``.usage``
+    attribute still resolves the way it did.
+
+    A ``usage`` that is neither a mapping nor an object carrying the token
+    attributes (a list, a string, ``None``, a missing key) still abstains to
+    ``0`` via the caller's ``getattr`` default. That is the same
+    "abstain, don't crash on malformed SDK shapes" contract #114/#136 set, and
+    it is deliberately *not* what this fixes: the bug was a well-formed value
+    being read as absent, not a malformed one being tolerated.
+    """
+    usage: Any = None
     if hasattr(response, "usage"):
-        return response.usage
-    if isinstance(response, dict) and "usage" in response:
-        return _DictAttr(response["usage"])
-    return _DictAttr({})
+        usage = response.usage
+    elif isinstance(response, dict):
+        usage = response.get("usage")
+    if usage is None:
+        return _DictAttr({})
+    if isinstance(usage, dict):
+        return _DictAttr(usage)
+    return usage
 
 
 class _DictAttr:

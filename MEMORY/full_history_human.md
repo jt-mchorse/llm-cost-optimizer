@@ -2121,3 +2121,45 @@ rewording the sentence was the right move, and the lock stayed intact.
 
 **Next session:** the remaining open issues here (#199, #135, #97) are all
 `decision-revisit` and JT-gated; #18 is the demo capture.
+
+## 2026-09-04 — Issue #209: the usage read tolerated dict shape at one of two levels
+**Branch:** `session/2026-09-04-0716-issue-209` · **PR:** #210
+
+`_get_usage`'s docstring said it returns the usage object "tolerating dict
+shape", and that reads as complete because there *is* a dict branch. But
+"dict-shaped" is a property of the response and, independently, of the `usage`
+it carries. That's four combinations, and the function made one decision stand
+in for both: it returned `response.usage` raw off the attribute road and
+wrapped `response["usage"]` unconditionally off the dict road. Only the two
+combinations where the levels agree read correctly.
+
+Measured on `claude-opus-4-8` with a 20 000-token cache read, both mixed rows
+reported zero hits and `$0.00` saved, and neither raised. The `dict` response
+with an `object` usage is the quieter of the two: `_DictAttr.__getattr__` calls
+`.get` on a non-mapping and raises `AttributeError`, which the caller's
+three-argument `getattr` swallows — a defensive call eating its own evidence
+and turning a crash into a plausible zero.
+
+Zero is the worst possible wrong answer here precisely because it is also a
+legitimate one. `_coerce_token_count` is documented to *abstain* to `0` on a
+malformed usage field, so a well-formed value in the other container produces
+telemetry byte-identical to a call that genuinely did no caching. `merge` only
+ever adds, so the aggregate never recovers, and `dump_aggregate_json` puts
+`$0.00 saved` on the dashboard — a cost-savings tool reporting that its own
+product does nothing.
+
+The fix resolves `usage` by either road first and then makes the wrapping
+decision once, against the thing being wrapped. Road precedence is unchanged
+and pinned by a test using a dict subclass that carries a `.usage` attribute,
+since both roads are open for that object and the attribute road won before.
+
+Two half-fixes were available and each reads as complete: teaching `_DictAttr`
+to fall back to `getattr`, and adding an `isinstance(dict)` check on the
+attribute road. Each closes exactly one mixed row. Both were patched into the
+real module and the suite run against them; they fail on *different* rows,
+which is why both rows had to be in the table.
+
+The module was chosen by counting open+closed issues per module and working the
+one with the least traffic: `cache_wrapper` is 375 lines with six, and one of
+those six is JT-gated. All three of this repo's open `priority:med` issues are
+decision-revisits, so there was no workable backlog and the hunt was the work.
