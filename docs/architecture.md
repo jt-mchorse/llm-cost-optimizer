@@ -332,6 +332,29 @@ as separate workload modes — they don't mix in a single request.
 - **D-003 (extended).** `compare_realtime_vs_batch` requires caller
   to supply prices — no defaults shipped. Multi-model workloads
   pass `model_of=lambda req: req.model`.
+- **D-017 (#211).** A succeeded result row whose *nested* values are
+  not the attribute shape `_from_sdk_result_row` reads reports an
+  `error` rather than empty text and/or zero tokens with `error=None`.
+  A dict *entry* already failed loudly at the first hop; a dict-shaped
+  value **inside** an object-shaped entry — what a gateway/proxy
+  client or a `model_dump()`-style payload produces — did not. It
+  yielded `response_text=''` (every block failing
+  `isinstance(getattr(block, "text", None), str)`) or `0/0` tokens
+  (both `getattr` defaults taken), on a row still claiming success.
+  The token half prices a batch that did work as if it did none.
+  The guard discriminates on **shape, never on outcome**: "a succeeded
+  row with empty `response_text` is malformed" reads as the obvious
+  fix and flags two correct rows — a `tool_use`-only response has
+  object blocks carrying no `.text`, and an empty `content` is a
+  legitimate empty completion. It also does not claim a value that
+  *was* read and found unreasonable: a not-a-number, `"abc"` or `-3`
+  keeps its
+  #136 abstention to `0`. Unreadable is a shape problem, unreasonable
+  is a value problem, and only the first hides work that happened.
+  The alternative — a shared attribute-or-key helper widening the supported
+  shape surface to dicts, matching what `cache_wrapper` does at its
+  own two levels (#209) — was rejected because it grows the contract,
+  where this issue is about a contract that was silently unenforced.
 
 ---
 

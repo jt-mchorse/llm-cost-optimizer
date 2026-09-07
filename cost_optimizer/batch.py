@@ -35,7 +35,7 @@ import datetime
 import hashlib
 import json
 import math
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
@@ -588,6 +588,20 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
             error=str(getattr(result, "error", None) or getattr(result, "type", "unknown")),
         )
     message = getattr(result, "message", None)
+    # A succeeded row whose *nested* values are not the attribute shape this
+    # function reads used to report empty text and/or zero tokens with
+    # `error=None` — a row claiming success while carrying no answer, or
+    # pricing as if it did no work (#211, D-017). Surface it as an error
+    # instead, the same call `_sdk_request_total`/`_is_malformed_count_part`
+    # make for request counts one screen up.
+    if (shape_error := _succeeded_row_shape_error(message)) is not None:
+        return BatchResultRow(
+            custom_id=custom_id,
+            response_text=None,
+            prompt_tokens=0,
+            completion_tokens=0,
+            error=shape_error,
+        )
     content = getattr(message, "content", []) or []
     text_parts: list[str] = []
     for block in content:
@@ -600,6 +614,13 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
     # results() maps every row through here. Same "abstain, don't crash on
     # malformed SDK shapes" contract #114 set for the cache-wrapper usage
     # tokens (the bare int(... or 0) below crashed on NaN/inf/"abc"). #136.
+    #
+    # The guard above does not touch that contract, and the line between them
+    # is the whole of D-017: it fires when the field could not be *read* (a
+    # Mapping where an object is expected, an absent `usage`), while this
+    # abstention is for a field that was read and held garbage. "Unreadable"
+    # and "unreasonable" are different failures and only the first one is
+    # silent about work that actually happened.
     prompt_tokens = _coerce_token_count(getattr(usage, "input_tokens", 0))
     completion_tokens = _coerce_token_count(getattr(usage, "output_tokens", 0))
     return BatchResultRow(
@@ -608,6 +629,77 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
     )
+
+
+#: Token attributes every succeeded row's ``usage`` must expose. Absence is a
+#: shape failure, not a zero: a request that succeeded consumed input tokens.
+_USAGE_TOKEN_ATTRS = ("input_tokens", "output_tokens")
+
+
+def _succeeded_row_shape_error(message: Any) -> str | None:
+    """Reason a succeeded row's ``message`` cannot be read, or ``None`` (#211).
+
+    ``_from_sdk_result_row`` reads a succeeded row entirely through ``getattr``.
+    That is a *consistent* contract — unlike ``cache_wrapper._get_usage`` there
+    is no dict road to be asymmetric with — and a dict *entry* already fails
+    loudly at the first hop. What had no guard at all was a dict-shaped value
+    **nested inside** an object-shaped entry, which is what a gateway/proxy
+    client, a ``model_dump()``-style payload, or a downstream consumer's
+    hand-built fake produces. Measured on the unfixed code:
+
+    ======================  ================  ====  =====  =======
+    content                 ``response_text``  in    out    error
+    ======================  ================  ====  =====  =======
+    object block            ``'hello'``        10     5     None
+    **dict** block          ``''``             10     5     None
+    object + **dict** usage ``'hello'``         0     0     None
+    object + **no** usage   ``'hello'``         0     0     None
+    ======================  ================  ====  =====  =======
+
+    **This discriminates on shape, never on outcome, and that is the load-bearing
+    choice.** The tempting guard — "a succeeded row with empty
+    ``response_text`` is malformed" — passes every row in that table and then
+    flags two correct ones: a ``tool_use``-only response has object blocks that
+    carry no ``.text`` at all, and an empty ``content`` list is a legitimate
+    empty completion. Both must keep ``error=None``.
+
+    And it deliberately does **not** claim a value that was read and found
+    unreasonable. ``_MalformedUsage(NaN, "abc")`` still abstains to ``0`` with
+    no error, per #136: token accounting is best-effort observability gathered
+    after the row already succeeded. Unreadable is a shape problem; unreasonable
+    is a value problem, and only the first one hides work that actually
+    happened.
+
+    Returns a field-named reason so the ``error`` string says which nested
+    value broke, matching how the two branches above it name theirs.
+    """
+    if message is None:
+        return "succeeded result carried no message"
+
+    content = getattr(message, "content", None)
+    # A `str` iterates into characters and a `Mapping` into its keys; both then
+    # take the `getattr(block, "text", None)` road, contribute nothing, and
+    # join to `''`. Neither is a sequence of content blocks, and both were
+    # silent.
+    if content is not None and (isinstance(content, (str, bytes, Mapping))):
+        return f"content is {type(content).__name__}-shaped, expected a sequence of blocks"
+    if content is not None and not isinstance(content, Sequence):
+        return f"content is not a sequence of blocks; got {type(content).__name__}"
+    for index, block in enumerate(content or ()):
+        if isinstance(block, Mapping):
+            return f"content block {index} is dict-shaped, expected an object with .text"
+
+    usage = getattr(message, "usage", None)
+    if usage is None:
+        return "succeeded result carried no usage"
+    if isinstance(usage, Mapping):
+        return "usage is dict-shaped, expected an object with .input_tokens/.output_tokens"
+    missing = [name for name in _USAGE_TOKEN_ATTRS if not hasattr(usage, name)]
+    if missing:
+        # Absent, not garbage: `getattr(usage, name, 0)` would have returned a
+        # fabricated 0 for a request that demonstrably consumed tokens.
+        return f"usage is missing {', '.join(missing)}"
+    return None
 
 
 # ----------------------------------------------------------------------
