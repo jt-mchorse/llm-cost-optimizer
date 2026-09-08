@@ -2163,3 +2163,38 @@ The module was chosen by counting open+closed issues per module and working the
 one with the least traffic: `cache_wrapper` is 375 lines with six, and one of
 those six is JT-gated. All three of this repo's open `priority:med` issues are
 decision-revisits, so there was no workable backlog and the hunt was the work.
+
+## 2026-09-07 — Issue #211: a succeeded batch row priced as if it did no work
+**Duration:** ~21 min · **Branch:** `session/2026-09-07-0724-issue-211`
+
+- A dict-shaped value nested inside an object-shaped result entry made
+  `_from_sdk_result_row` report `response_text=''` and/or `0/0` tokens with
+  `error=None` — a row claiming success while carrying no answer, or pricing a
+  batch that did work as if it did none. D-017 takes option 2 from the issue:
+  keep the `getattr`-only contract, make the failure loud, the same call
+  `_sdk_request_total` already makes one screen up in the same file.
+- **Reproducing the issue's own table first added four members it didn't have**:
+  `usage=None`, `message=None`, and a `content` that is a `str` or a `Mapping`
+  (both iterate — into characters, into keys — and join to `''`). The population
+  is "nested values whose shape means we read nothing", not "dict-shaped values".
+- **The two rows that decided the design** are the ones that must stay correct:
+  a `tool_use`-only response and an empty `content` both legitimately produce
+  `response_text=''` on a succeeded row. So the obvious guard — "empty text on a
+  succeeded row is malformed" — flags correct rows, *and* misses the
+  `object content + dict usage` row entirely, since `'hello'` is non-empty. The
+  guard discriminates on shape, never on outcome.
+- I first built that wrong-fix neighbour by wrapping the shipped function, and
+  it inherited the guard it was supposed to lack — the test caught it. A
+  simulated wrong fix has to be written out from the unfixed code.
+
+**Why this work, this session:** #211 was the only open issue here not labelled
+`decision-revisit`, and it was the direct sibling of #209, merged in this
+session's Phase A — the freshest surface in the repo.
+
+**Open questions / blockers:** none. Option 1 (a shared attribute-or-key helper
+widening the shape surface to dicts) is recorded under D-017 with the condition
+that should reopen it: a gateway/proxy client becoming a deliberately supported
+integration.
+
+**Next session:** #199, #135 and #97 are all `decision-revisit` and JT-gated;
+#18 is the demo capture. This repo has no other unblocked code work today.

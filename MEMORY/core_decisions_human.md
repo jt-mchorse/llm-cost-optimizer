@@ -243,3 +243,53 @@ This is the same resolution `chunking-strategies-lab` took for the identical col
 **Reversibility:** Cheap.
 
 **Related issues:** #201, #129
+
+## D-017 — A succeeded batch row with an unreadable shape reports an error, not a zero (2026-09-07)
+**Decision:** `_from_sdk_result_row` keeps its `getattr`-only contract, and a
+succeeded row whose *nested* values are not that attribute shape now sets
+`error` instead of reporting empty text and/or zero tokens with `error=None`.
+
+**Why:** The function reads a succeeded row entirely through `getattr`, which is
+a *consistent* contract — unlike `cache_wrapper._get_usage` (#209) there is no
+dict road to be asymmetric with — and a dict *entry* already fails loudly at the
+first hop. What had no guard at all was a dict-shaped value **nested inside** an
+object-shaped entry: what a gateway/proxy client, a `model_dump()`-style payload,
+or a downstream consumer's hand-built fake produces. A dict content block has no
+`.text` *attribute*, so every block contributed nothing and the parts joined to
+`''`; a dict usage took the `getattr(..., 0)` default on both token reads. In
+both cases the row still reported `error=None` — claiming success while carrying
+no answer, or pricing a batch that did work as if it did none.
+
+This is option 2 from the issue: keep the contract, make the failure loud. It is
+the same call `_sdk_request_total` / `_is_malformed_count_part` already make one
+screen up in the same file, and their docstring gives the reason.
+
+**The load-bearing choice — shape, never outcome.** "A succeeded row with an
+empty `response_text` is malformed" reads as the obvious fix, needs no shape
+reasoning, and is wrong twice over. It flags two *correct* rows: a `tool_use`-only
+response has object blocks that carry no `.text` at all, and an empty `content`
+list is a legitimate empty completion. And it misses half the issue, because
+object content with a dict usage yields `'hello'` — non-empty — and sails through
+with `prompt_tokens=0`. Both halves are pinned by tests that build the neighbour
+and run it.
+
+**The line against #136.** The guard fires when a field could not be *read*. It
+does not fire for a field that was read and held garbage: `NaN`, `"abc"`, `-3`
+keep their documented abstention to `0`, because token accounting is best-effort
+observability gathered after the row already succeeded. Unreadable is a shape
+problem, unreasonable is a value problem, and only the first hides work that
+actually happened.
+
+**Alternatives considered:**
+- Option 1, a shared attribute-or-key helper widening the supported shape surface
+  to dicts, matching `cache_wrapper` — rejected because it grows the contract,
+  where this issue is about a contract that was silently unenforced. Revisit if a
+  gateway/proxy client ever becomes a deliberately supported integration, at
+  which point it deserves its own parity grid.
+- Option 3, leave it and document that `results()` requires SDK-object-shaped
+  rows — rejected: documentation does not stop a gateway client putting a wrong
+  dollar number on the savings dashboard.
+
+**Reversibility:** Cheap.
+
+**Related issues:** #211, #209, #136, #166
