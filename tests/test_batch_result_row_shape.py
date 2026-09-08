@@ -31,7 +31,9 @@ first one hides work that actually happened.
 
 from __future__ import annotations
 
+import json
 import math
+from collections.abc import Mapping
 from types import SimpleNamespace
 from typing import Any
 
@@ -65,6 +67,17 @@ def _object_block(text: str = "hello") -> Any:
 
 def _dict_block(text: str = "hello") -> dict[str, str]:
     return {"type": "text", "text": text}
+
+
+def _message_without_content(usage: Any) -> Any:
+    """A succeeded message with no `content` attribute at all.
+
+    Distinct from `_message(None, usage)` only in how it is built, and both
+    reach the guard as `getattr(message, "content", None) is None`. Both rows
+    are in the table because a reader asked "can this really happen" should see
+    the two producers.
+    """
+    return SimpleNamespace(usage=usage)
 
 
 def _tool_use_block() -> Any:
@@ -103,6 +116,32 @@ _UNREADABLE = [
         _message([_object_block()], SimpleNamespace(input_tokens=3)),
         "output_tokens",
     ),
+    # --- #213: the rows D-017's population rule names and its guard did not
+    # implement. The block check swept one type where the container check
+    # above it swept the whole space, and an absent `content` answered the
+    # opposite of an absent `usage` to the same question.
+    ("str-content-block", _message(["hello"], _object_usage()), "content block 0 is str-shaped"),
+    (
+        "bytes-content-block",
+        _message([b"hello"], _object_usage()),
+        "content block 0 is bytes-shaped",
+    ),
+    ("int-content-block", _message([7], _object_usage()), "content block 0 is int-shaped"),
+    ("bool-content-block", _message([True], _object_usage()), "content block 0 is bool-shaped"),
+    ("float-content-block", _message([1.5], _object_usage()), "content block 0 is float-shaped"),
+    ("none-content-block", _message([None], _object_usage()), "content block 0 is None"),
+    (
+        "list-content-block",
+        _message([[_object_block()]], _object_usage()),
+        "content block 0 is list-shaped",
+    ),
+    (
+        "str-block-second-position",
+        _message([_object_block(), "hello"], _object_usage()),
+        "content block 1 is str-shaped",
+    ),
+    ("content-is-none", _message(None, _object_usage()), "carried no content"),
+    ("content-absent", _message_without_content(_object_usage()), "carried no content"),
 ]
 
 
@@ -126,7 +165,7 @@ def test_an_unreadable_succeeded_row_reports_an_error_not_a_success(
 
 def test_the_unreadable_population_is_not_empty() -> None:
     """Anti-vacuous: an empty parametrize list passes on nothing."""
-    assert len(_UNREADABLE) >= 10
+    assert len(_UNREADABLE) >= 21
     assert len({c for c, _, _ in _UNREADABLE}) == len(_UNREADABLE)
 
 
@@ -302,3 +341,160 @@ def test_a_failed_row_never_reaches_the_shape_guard() -> None:
 
     missing = SimpleNamespace(custom_id="r-none", result=None)
     assert _from_sdk_result_row(missing).error == "missing result"
+
+
+# --- #213: the two halves D-017's population rule already named -----------
+
+
+def test_an_absent_content_and_an_empty_content_are_different_rows() -> None:
+    """The pair that has to stay apart, asserted together.
+
+    `[]` is a legitimate empty completion and keeps `error=None`. An absent
+    `content` is a row we could not read, and reports — the same answer its
+    `usage` sibling has always given to the same question. They are
+    distinguishable because `getattr(message, "content", None)` returns `[]`
+    for the one and `None` for the other; a fix that collapsed them would
+    either re-open this hole or start flagging correct rows.
+    """
+    empty = _from_sdk_result_row(_entry(_message([], _object_usage())))
+    assert empty.error is None
+    assert empty.response_text == ""
+    assert (empty.prompt_tokens, empty.completion_tokens) == (10, 5)
+
+    for label, message in (
+        ("content=None", _message(None, _object_usage())),
+        ("content absent", _message_without_content(_object_usage())),
+    ):
+        row = _from_sdk_result_row(_entry(message))
+        assert row.error is not None, label
+        assert "carried no content" in row.error, label
+
+
+def test_absent_content_is_worded_as_the_sibling_of_absent_usage() -> None:
+    """Same question, same answer, same sentence shape.
+
+    The asymmetry this closes was not only behavioural: the guard already said
+    of the token attributes that "absence is a shape failure, not a zero". The
+    two reasons now read as a pair, which is how the next reader sees that they
+    are one rule.
+    """
+    no_content = _succeeded_row_shape_error(_message_without_content(_object_usage()))
+    no_usage = _succeeded_row_shape_error(_message([_object_block()], None))
+    assert no_content == "succeeded result carried no content"
+    assert no_usage == "succeeded result carried no usage"
+
+
+def test_no_value_a_json_decoder_produces_is_accepted_as_a_content_block() -> None:
+    """The partition, discovered rather than restated.
+
+    The silent set was never "dict" — it was "a decoded payload where a
+    modelled object is expected", which is what a `model_dump()` payload, a
+    gateway/proxy client or a `json.loads` of a raw response hands over. So the
+    population is the JSON alphabet, and this test *reads it off a decoder*
+    instead of hand-listing the types again — a hand-list growing one entry at
+    a time is precisely what left the block check at one type while the
+    container check above it had a catch-all.
+    """
+    decoded = json.loads(
+        '{"o": {"k": 1}, "a": [1, 2], "s": "x", "i": 7, "f": 1.5, "t": true, "n": null}'
+    )
+    values = [decoded, *decoded.values()]
+    assert len(values) >= 8, "the sample must actually exercise the alphabet"
+    seen = {type(v).__name__ for v in values}
+    assert {"dict", "list", "str", "int", "float", "bool", "NoneType"} <= seen
+
+    for value in values:
+        reason = _succeeded_row_shape_error(_message([value], _object_usage()))
+        assert reason is not None, value
+        assert "content block 0" in reason, (value, reason)
+
+
+def test_an_object_block_is_never_flagged_however_empty() -> None:
+    """The other side of the partition, and the reason it is on shape.
+
+    Every one of these is a modelled object with no readable `.text`, which is
+    exactly what a `tool_use` block is. None may report.
+    """
+    for block in (
+        _tool_use_block(),
+        SimpleNamespace(),
+        SimpleNamespace(type="thinking", thinking="..."),
+        SimpleNamespace(type="text", text=None),
+        SimpleNamespace(type="text", text=7),
+    ):
+        assert _succeeded_row_shape_error(_message([block], _object_usage())) is None, block
+
+
+# --- the neighbours for *this* change, built and run ----------------------
+
+
+def _block_without_text_neighbour(block: Any) -> bool:
+    """The tempting block-level fix: flag a block that yields no text.
+
+    It is the outcome-based guard from #211 moved one level down, and it fails
+    the same way — `tool_use` is an object block that carries no `.text` by
+    design.
+    """
+    return not isinstance(getattr(block, "text", None), str)
+
+
+def test_the_block_without_text_neighbour_flags_the_tool_use_row() -> None:
+    assert _block_without_text_neighbour("hello")  # would catch the real defect
+    assert _block_without_text_neighbour(_tool_use_block())  # and a correct row
+    # What shipped separates them.
+    assert _succeeded_row_shape_error(_message(["hello"], _object_usage())) is not None
+    assert _succeeded_row_shape_error(_message([_tool_use_block()], _object_usage())) is None
+
+
+def _mapping_and_str_only_neighbour(block: Any) -> bool:
+    """The hand-list grown by exactly one entry.
+
+    "The comment names `str` and `Mapping`, so check `str` and `Mapping`" is
+    the smallest change that satisfies the row this issue leads with, and it
+    leaves every other decoded value silent — the same one-at-a-time growth
+    that produced the gap.
+    """
+    return isinstance(block, (str, Mapping))
+
+
+def test_the_str_plus_mapping_neighbour_still_misses_four_decoded_shapes() -> None:
+    missed = [b for b in (b"x", 7, 1.5, None, [1]) if not _mapping_and_str_only_neighbour(b)]
+    assert len(missed) == 5, missed
+    for block in missed:
+        assert _succeeded_row_shape_error(_message([block], _object_usage())) is not None, block
+
+
+def _absent_content_is_empty_neighbour(entry: Any) -> BatchResultRow:
+    """The unfixed content read, written out rather than wrapped.
+
+    `content = getattr(message, "content", []) or []` treats absence and
+    emptiness as the same thing, which is how the absent row reported a
+    successful empty answer with full token charges.
+    """
+    result = getattr(entry, "result", None)
+    message = getattr(result, "message", None)
+    content = getattr(message, "content", []) or []
+    usage = getattr(message, "usage", None)
+    return BatchResultRow(
+        custom_id=getattr(entry, "custom_id", ""),
+        response_text="".join(
+            block_text
+            for block in content
+            if isinstance(block_text := getattr(block, "text", None), str)
+        ),
+        prompt_tokens=_coerce_token_count(getattr(usage, "input_tokens", 0)),
+        completion_tokens=_coerce_token_count(getattr(usage, "output_tokens", 0)),
+    )
+
+
+def test_the_absent_is_empty_neighbour_reports_a_successful_empty_answer() -> None:
+    """The defect, reproduced against the neighbour rather than described."""
+    entry = _entry(_message_without_content(_object_usage()))
+    stale = _absent_content_is_empty_neighbour(entry)
+    assert stale.error is None
+    assert stale.response_text == ""
+    assert (stale.prompt_tokens, stale.completion_tokens) == (10, 5)  # charged in full
+
+    fixed = _from_sdk_result_row(entry)
+    assert fixed.error is not None
+    assert fixed.response_text is None

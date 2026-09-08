@@ -356,6 +356,24 @@ as separate workload modes — they don't mix in a single request.
   own two levels (#209) — was rejected because it grows the contract,
   where this issue is about a contract that was silently unenforced.
 
+  **Widened to the whole of its own population (#213).** D-017 states
+  that population as "nested values whose shape means we read
+  nothing", and its first implementation left two members of it
+  silent. The *container* check swept the type space — `str`,
+  `Mapping`, then a catch-all for anything that is not a `Sequence` —
+  while the *block* check named one type, so `content=["hello"]` was a
+  successful empty answer where `content="hello"` was an error. And an
+  absent `content` returned `error=None` while an absent `usage`
+  reported, though the guard already stated the principle for the
+  token attributes: absence is a shape failure, not a zero. A
+  succeeded request produced content the way it consumed tokens. The
+  block check is now partitioned on the property that actually names
+  the silent set — the value is what a JSON decoder produces rather
+  than a block object the SDK models, which is the same producer set
+  D-017 names — rather than a type list grown one entry at a time.
+  Neither correct row moves: `[]` is not `None`, and a `tool_use`
+  block is still an object.
+
 ---
 
 ## 5. Savings dashboard + bench harness
