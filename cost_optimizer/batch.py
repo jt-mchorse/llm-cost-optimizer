@@ -636,6 +636,36 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
 _USAGE_TOKEN_ATTRS = ("input_tokens", "output_tokens")
 
 
+#: What a JSON decoder produces. A content block that is one of these is a
+#: *decoded payload* rather than a block object the SDK models — the shape a
+#: `model_dump()`-style payload, a gateway/proxy client, or a `json.loads` of a
+#: raw response hands over, which is the same producer set D-017 names.
+#:
+#: Partitioned on that property rather than hand-listed type by type, because
+#: the list that grows one entry at a time is exactly what left this half open:
+#: the *container* check above names two silent shapes (`str`, `Mapping`) and
+#: has a catch-all beneath it, while the block check named one and had none
+#: (#213). `Mapping`/`Sequence` rather than `dict`/`list` so the JSON alphabet's
+#: near relatives — a tuple of blocks' worth of decoded values, a
+#: `MappingProxyType` — land on the same side; a modelled block object is
+#: neither.
+_DECODED_JSON_TYPES: tuple[type, ...] = (bool, int, float, str, bytes, bytearray, Mapping, Sequence)
+
+
+def _is_decoded_json_value(block: Any) -> bool:
+    """True when *block* cannot be a content block because it is a decoded value.
+
+    `None` is a member of the JSON alphabet and is checked separately because
+    `isinstance(None, ...)` is never true for a type in that tuple.
+
+    What this deliberately does **not** flag is an *object* block that carries
+    no ``.text`` — a ``tool_use`` block is exactly that, and it is correct. The
+    partition is on the shape of the value, never on whether reading it
+    produced text; D-017's load-bearing choice, applied one level down.
+    """
+    return block is None or isinstance(block, _DECODED_JSON_TYPES)
+
+
 def _succeeded_row_shape_error(message: Any) -> str | None:
     """Reason a succeeded row's ``message`` cannot be read, or ``None`` (#211).
 
@@ -677,17 +707,27 @@ def _succeeded_row_shape_error(message: Any) -> str | None:
         return "succeeded result carried no message"
 
     content = getattr(message, "content", None)
+    # The sibling of "carried no usage", and it is the same argument: absence
+    # is a shape failure, not an empty answer. A succeeded request produced
+    # content the way it consumed tokens, so a message with no `content` at all
+    # is a row we could not read — not a row that legitimately said nothing
+    # (#213). `getattr(..., None)` returns `None` for the absent attribute and
+    # `[]` for the empty list, so this cannot reach the legitimate empty
+    # completion, which keeps `error=None` and has its own row in the matrix.
+    if content is None:
+        return "succeeded result carried no content"
     # A `str` iterates into characters and a `Mapping` into its keys; both then
     # take the `getattr(block, "text", None)` road, contribute nothing, and
     # join to `''`. Neither is a sequence of content blocks, and both were
     # silent.
-    if content is not None and (isinstance(content, (str, bytes, Mapping))):
+    if isinstance(content, (str, bytes, Mapping)):
         return f"content is {type(content).__name__}-shaped, expected a sequence of blocks"
-    if content is not None and not isinstance(content, Sequence):
+    if not isinstance(content, Sequence):
         return f"content is not a sequence of blocks; got {type(content).__name__}"
-    for index, block in enumerate(content or ()):
-        if isinstance(block, Mapping):
-            return f"content block {index} is dict-shaped, expected an object with .text"
+    for index, block in enumerate(content):
+        if _is_decoded_json_value(block):
+            shape = "None" if block is None else f"{type(block).__name__}-shaped"
+            return f"content block {index} is {shape}, expected an object with .text"
 
     usage = getattr(message, "usage", None)
     if usage is None:

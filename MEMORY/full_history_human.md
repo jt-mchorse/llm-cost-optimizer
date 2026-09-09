@@ -2198,3 +2198,48 @@ integration.
 
 **Next session:** #199, #135 and #97 are all `decision-revisit` and JT-gated;
 #18 is the demo capture. This repo has no other unblocked code work today.
+
+## 2026-09-08 — Issue #213: D-017's population rule was wider than its guard
+**Duration:** ~30 min · **Branch:** `session/2026-09-08-1435-issue-213`
+
+- D-017 shipped this morning and states its population as "nested values whose
+  shape means we read nothing". Two members of that population were still
+  silent, and the decision record had already *named* them.
+- A content **block** that is a `str`, `bytes`, `int`, `bool`, `float`, `None`
+  or `list` yielded `response_text=''` with `error=None` and full token
+  charges. One level up, `content="hello"` was correctly an error — the
+  container check swept the whole type space (`str`, `Mapping`, then a
+  catch-all for anything that is not a `Sequence`) and the block check named
+  exactly one type.
+- An absent or `None` `content` did the same, while an absent `usage` reported.
+  Same function, same question, opposite answers — and the guard had already
+  written the principle down, in the token-attribute comment: "absence is a
+  shape failure, not a zero: a request that succeeded consumed input tokens."
+  A request that succeeded also produced content.
+- The guard's own comment was the repro. "A `str` iterates into characters and
+  a `Mapping` into its keys; both then take the `getattr(block, "text", None)`
+  road" is a sentence about the *block* read, not the container read. It
+  applies one level down verbatim, and half of it had been applied there.
+- The block check is now partitioned on the property that names the silent set
+  — the value is what a JSON decoder produces rather than a block object the
+  SDK models, the same producer set D-017 names — and the test reads that
+  alphabet off `json.loads` rather than restating the types. A hand-list grown
+  one entry at a time is exactly what left the gap.
+- Four neighbours built and run: absent-content-treated-as-empty (6 red), the
+  block check back at `Mapping`-only (12 red), "flag any block with no readable
+  `.text`" (6 red, **including the two correct rows** — D-017's shape-not-
+  outcome choice has to be re-made at every level it is extended to), and
+  `str` added to the hand-list only (9 red). Suite 940 → 957.
+- No new decision. The decision did not change; its implementation caught up to
+  it. A new `D-NNN` would have claimed a policy change that did not happen.
+
+**Why this work, this session:** llm-cost-optimizer's three open `priority:med`
+issues are all `decision-revisit` and JT-gated, so the hunt was the work — and
+the entry point was the PR merged in this session's own Phase A, twenty minutes
+earlier.
+
+**Open questions / blockers:** none.
+
+**Next session:** `custom_id` falls back to `""` when absent off the entry. That
+is a row-to-request *matching* failure rather than a fabricated answer — a
+different consequence needing a different guard, and unmeasured so far.
