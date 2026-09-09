@@ -482,6 +482,17 @@ llm-eval-harness).
 ## Where to look next
 
 - **Per-layer code** — `cost_optimizer/{cache_wrapper,semantic_cache,router,batch}.py`.
+- **JSON-shape vocabulary** — `cost_optimizer/shapes.py`. `is_block_sequence`
+  and `is_decoded_json_value`, shared by `batch.py` and `cache_wrapper.py`
+  (#215). Both modules read nested values off a duck-typed SDK response and had
+  to decide what kind of thing each one is; `batch.py` argued in #213 for
+  `Mapping`/`Sequence` over `dict`/`list` — "so the JSON alphabet's near
+  relatives … land on the same side" — while `cache_wrapper.py` still said
+  `dict`/`list` at four sites. A `collections.UserDict` response (not a `dict`
+  subclass, but a `Mapping`) reported `$0.00 saved` on 20 000 cached tokens,
+  which is #209's harm reached through the container instead of the level
+  mismatch. A rule stated in prose in one module is not a rule the sibling
+  module has.
 - **Pricing table** — `cost_optimizer/pricing.py`. Update when
   Anthropic publishes new rates.
 - **Bench harness** — `scripts/bench_savings.py`; workload at

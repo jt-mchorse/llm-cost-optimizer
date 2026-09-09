@@ -40,6 +40,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from cost_optimizer.pricing import _coerce_token_count
+from cost_optimizer.shapes import is_block_sequence, is_decoded_json_value
 
 # Anthropic's public batch API charges 50% of standard input/output
 # rates on both axes; the same factor applies across the current Claude
@@ -636,34 +637,12 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
 _USAGE_TOKEN_ATTRS = ("input_tokens", "output_tokens")
 
 
-#: What a JSON decoder produces. A content block that is one of these is a
-#: *decoded payload* rather than a block object the SDK models — the shape a
-#: `model_dump()`-style payload, a gateway/proxy client, or a `json.loads` of a
-#: raw response hands over, which is the same producer set D-017 names.
-#:
-#: Partitioned on that property rather than hand-listed type by type, because
-#: the list that grows one entry at a time is exactly what left this half open:
-#: the *container* check above names two silent shapes (`str`, `Mapping`) and
-#: has a catch-all beneath it, while the block check named one and had none
-#: (#213). `Mapping`/`Sequence` rather than `dict`/`list` so the JSON alphabet's
-#: near relatives — a tuple of blocks' worth of decoded values, a
-#: `MappingProxyType` — land on the same side; a modelled block object is
-#: neither.
-_DECODED_JSON_TYPES: tuple[type, ...] = (bool, int, float, str, bytes, bytearray, Mapping, Sequence)
-
-
-def _is_decoded_json_value(block: Any) -> bool:
-    """True when *block* cannot be a content block because it is a decoded value.
-
-    `None` is a member of the JSON alphabet and is checked separately because
-    `isinstance(None, ...)` is never true for a type in that tuple.
-
-    What this deliberately does **not** flag is an *object* block that carries
-    no ``.text`` — a ``tool_use`` block is exactly that, and it is correct. The
-    partition is on the shape of the value, never on whether reading it
-    produced text; D-017's load-bearing choice, applied one level down.
-    """
-    return block is None or isinstance(block, _DECODED_JSON_TYPES)
+# The JSON-shape vocabulary moved to `cost_optimizer/shapes.py` (#215). It was
+# argued out here in #213 — "`Mapping`/`Sequence` rather than `dict`/`list` so
+# the JSON alphabet's near relatives … land on the same side" — and
+# `cache_wrapper.py` was still saying `dict`/`list` at four sites, with the
+# silent-`$0.00` consequence #209's docstring describes. A rule stated in prose
+# in one module is not a rule the sibling module has.
 
 
 def _succeeded_row_shape_error(message: Any) -> str | None:
@@ -722,10 +701,13 @@ def _succeeded_row_shape_error(message: Any) -> str | None:
     # silent.
     if isinstance(content, (str, bytes, Mapping)):
         return f"content is {type(content).__name__}-shaped, expected a sequence of blocks"
-    if not isinstance(content, Sequence):
+    # `is_block_sequence` excludes `str`/`bytes`/`Mapping` too, which the branch
+    # directly above has already diagnosed with its own (different) message — so
+    # this stays exactly the test it was, spelled from the shared vocabulary.
+    if not is_block_sequence(content):
         return f"content is not a sequence of blocks; got {type(content).__name__}"
     for index, block in enumerate(content):
-        if _is_decoded_json_value(block):
+        if is_decoded_json_value(block):
             shape = "None" if block is None else f"{type(block).__name__}-shaped"
             return f"content block {index} is {shape}, expected an object with .text"
 
