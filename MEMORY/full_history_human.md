@@ -2296,3 +2296,67 @@ its own look; deliberately not folded in.
 
 **Next session:** that router question, and whether the abstain contract makes
 the `list` spelling correct there or merely harmless.
+
+---
+
+## 2026-09-10 — the shape rule reached two modules of three (#217)
+
+**Focus:** `router.py`'s signal extractors, and `cost_optimizer/shapes.py`.
+
+**What got done.** #215 opened with a sentence that reads as a survey claim:
+"a rule stated in prose in one module is not a rule the sibling module has."
+It then fixed one sibling. There was a third. `router.py` reads nested values
+off the same duck-typed SDK response and still said `dict` and `list` at six
+sites — after #216 the only module in the package that did. A grep across
+`cost_optimizer/` for `isinstance(..., dict)` and `isinstance(..., list)` found
+it immediately.
+
+The consequence turned out to be a rung above the one it was inherited from. In
+`cache_wrapper` the harm was a wrong number on a dashboard. Here it is a wrong
+decision. Measured with `EntropySignal(threshold=0.5)` against a genuinely
+uncertain distribution — two near-equal tokens, entropy 0.693 nats — and
+varying nothing but the container and node types: `list` containers with either
+object or dict nodes trip and escalate; a `tuple` container, a
+`collections.UserDict` node, a `types.MappingProxyType` node and a direct
+`tuple` of logprobs all read as absent, abstain the signal, and keep the cheap
+model's answer on a response the signal exists to escalate. `_extract_text`
+had the sixth site and does the same thing to `JudgeConfidenceSignal`.
+
+`trip=False` is also what a *confident* response produces. There is no error and
+no log line; nothing separates a suppressed escalation from a correctly-cheap
+one. So the tests assert the entropy *value* against an exact oracle (`ln 2`)
+rather than the trip flag — an assertion on the outcome alone cannot tell this
+bug from correct operation.
+
+`_read_field` is the clearest single case and a textbook over-broad exclusion
+with a true reason. Its comment says it "never calls `.get` on a non-dict", and
+#69 fixed a real `AttributeError` behind that. The reason is correct; `dict` is
+simply not the partition the reason implies. `Mapping` is the protocol that
+*guarantees* a `.get`, and `UserDict` is a `Mapping` that is not a `dict`
+subclass — the member #215 had already identified as the sharp one, one module
+over.
+
+**The measurement that changed my mind about something.** #215 describes the
+`str`/`bytes` exclusion in the shared predicate as "redundant with statement
+order". In this module it is not redundant at all — for exactly one member.
+Dropping the exclusion entirely turns a *single* row red, the `bytes` one.
+Iterating a `str` or a `Mapping` yields strings, so `float("a")` raises and the
+existing #140 non-numeric abstain catches them downstream, by accident.
+Iterating `bytes` yields *ints*: `float(97)` is `97.0`, `math.isfinite` is
+happy, and a `bytes` distribution would be quietly measured as byte values with
+nothing left to object to. The exclusion stays, and the comment now gives the
+reason that is actually true. A row saved by a downstream guard is not a row
+the exclusion protects, and only running the over-broad neighbour and reading
+which rows survived would have shown that.
+
+**Why this was prioritized.** `llm-cost-optimizer` has no open `priority:high`
+issue — the remainder are JT-gated decision-revisits — and the freshest surface
+in the portfolio is the diff merged twenty minutes earlier in the same run.
+
+**Open questions / blockers:** none. Two things noted and deliberately not
+done: `scripts/bench_savings.py:303` reads a stats dict this package
+constructs, not an SDK response, so widening it on the same reflex would be the
+false parity `shapes.py`'s own docstring warns against; and `RouterStats` still
+has no "signal abstained" counter, so a suppressed escalation from a genuinely
+malformed distribution remains invisible — an observability gap rather than a
+correctness one.
