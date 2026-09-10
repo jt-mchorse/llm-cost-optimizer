@@ -493,6 +493,35 @@ llm-eval-harness).
   which is #209's harm reached through the container instead of the level
   mismatch. A rule stated in prose in one module is not a rule the sibling
   module has.
+
+  **And there was a third module (#217).** `router.py` reads the same
+  duck-typed response and still said `dict`/`list` at six sites — after #216
+  the only module in the package that did. The consequence is a rung above
+  #215's: there the harm was a wrong *number* on a dashboard, here it is a
+  wrong *decision*. Measured with `EntropySignal(threshold=0.5)` against a
+  distribution of entropy 0.693 nats, varying only the container and node
+  types, a `tuple` `content`, a `tuple` `first_token_logprobs`, a `collections.UserDict`
+  logprob node and a `types.MappingProxyType` node all read as absent, abstained the
+  signal to `trip=False`, and kept the cheap model's answer on a response the
+  signal exists to escalate. `trip=False` is also what a *confident* response
+  produces, so there is nothing — no error, no log line — that separates a
+  suppressed escalation from a correctly-cheap one. `_read_field`'s guard is
+  the clearest case: its stated reason (#69, never call `.get` on an object
+  that has none) is true, and `dict` is not the partition that reason implies —
+  `Mapping` is the protocol that *guarantees* a `.get`, and `collections.UserDict` is a
+  `Mapping` that is not a `dict` subclass. `is_item_sequence` is now the
+  definition and `is_block_sequence` delegates to it, keeping the domain name
+  the batch and cache-wrapper messages use without a second implementation. It
+  returns a `TypeGuard`, not a `bool`, because the `isinstance` calls it
+  replaced were narrowing calls — three `union-attr` errors said so.
+
+  One measured correction worth carrying: the `str`/`bytes`/`Mapping`
+  exclusion is load-bearing for exactly **one** member here. Dropping it turns
+  a single row red, the `bytes` one. Iterating a `str` or a `Mapping` yields
+  strings, so `float("a")` raises and the #140 non-numeric abstain catches them
+  downstream by accident; iterating `bytes` yields *ints*, which `float()`
+  accepts and `math.isfinite` passes, so a `bytes` distribution would be
+  measured as byte values with nothing left to object to.
 - **Pricing table** — `cost_optimizer/pricing.py`. Update when
   Anthropic publishes new rates.
 - **Bench harness** — `scripts/bench_savings.py`; workload at

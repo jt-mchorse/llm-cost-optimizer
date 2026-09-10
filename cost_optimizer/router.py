@@ -37,11 +37,13 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
 
 from cost_optimizer.io_utils import atomic_write_text
+from cost_optimizer.shapes import is_item_sequence
 
 
 @dataclass(frozen=True)
@@ -237,7 +239,14 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
     None for anything else so signals can stay defensive.
     """
     direct = getattr(response, "first_token_logprobs", None)
-    if isinstance(direct, list):
+    # `is_item_sequence` and not `isinstance(..., list)` (#217). A tuple of
+    # logprobs — what a frozen or proxying adapter hands back — read as absent
+    # and abstained the whole signal to `trip=False`, which is exactly what a
+    # *confident* response produces, so the suppression is invisible. The
+    # predicate is the one `batch.py` and `cache_wrapper.py` already share; the
+    # `str`/`bytes`/`Mapping` exclusion it carries is what keeps a string
+    # `first_token_logprobs` from iterating into characters here.
+    if is_item_sequence(direct):
         # A present-but-None element (a malformed/truncated SDK distribution) hit
         # `float(None)` and raised a raw TypeError that escaped `measure` and
         # `route()` — aborting the request instead of abstaining. The nested path
@@ -269,13 +278,16 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
             return None
         return floats
     content = getattr(response, "content", None)
-    if isinstance(content, list) and content:
+    # Same widening as the direct path above (#217), at all three levels of the
+    # nest: a tuple at ANY of them abstained the signal. Widening only the
+    # outermost would leave the other two, which is the shape #215 was.
+    if is_item_sequence(content) and content:
         first = content[0]
         logprobs = getattr(first, "logprobs", None)
-        if isinstance(logprobs, list) and logprobs:
+        if is_item_sequence(logprobs) and logprobs:
             top = logprobs[0]
             top_logprobs = _read_field(top, "top_logprobs")
-            if isinstance(top_logprobs, list):
+            if is_item_sequence(top_logprobs):
                 # A `top_logprobs` entry without a `logprob` field is a malformed
                 # or truncated SDK node. Defaulting it to 0.0 fabricated a token
                 # with probability exp(0)=1.0, which `_shannon_entropy_nats`
@@ -311,13 +323,22 @@ def _read_field(obj: Any, name: str, default: Any = None) -> Any:
     `AttributeError` when `obj` was an object that had neither the attribute
     nor a `.get` method — defeating the "returns None for anything else so
     signals can stay defensive" contract of `_extract_first_token_logprobs`
-    (#69). This reads attr-first, then dict-key only when `obj` is actually a
-    `dict`, and never calls `.get` on a non-dict.
+    (#69). This reads attr-first, then the mapping key, and never calls
+    `.get` on something that has none.
+
+    `Mapping` and not `dict` (#217). #69's reason is right — do not call `.get`
+    on an object without one — but `dict` is not the partition that reason
+    implies: `Mapping` IS the protocol that guarantees a `.get`, and
+    `collections.UserDict` is a `Mapping` that is *not* a `dict` subclass. It
+    is also the ordinary base for a gateway or proxy client's response wrapper,
+    and #215 had already named it the sharp member of this class one module
+    over. A `UserDict` logprob node read as a field-less object, took the
+    missing-field abstain, and suppressed the escalation silently.
     """
     attr = getattr(obj, name, None)
     if attr is not None:
         return attr
-    if isinstance(obj, dict):
+    if isinstance(obj, Mapping):
         return obj.get(name, default)
     return default
 
@@ -452,7 +473,10 @@ def _extract_text(response: Any) -> str:
     if isinstance(direct, str):
         return direct
     content = getattr(response, "content", None)
-    if isinstance(content, list):
+    # #217, and this one feeds `JudgeConfidenceSignal` rather than the entropy
+    # path: a tuple `content` returned "" and the empty-text guard in `measure`
+    # abstained to value=None/trip=False — the same invisible suppression.
+    if is_item_sequence(content):
         # Keep only str `.text` values, mirroring the `isinstance(direct, str)`
         # guard on the direct path above. A truncated/malformed SDK block can
         # carry `text=None`; without this filter that None reached `"".join(...)`
