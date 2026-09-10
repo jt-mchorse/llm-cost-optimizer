@@ -26,13 +26,14 @@ wrapper testable with a fake client and importable without an API key.
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
 from cost_optimizer.io_utils import atomic_write_text
 from cost_optimizer.pricing import ModelPricing, _coerce_token_count, get_pricing
+from cost_optimizer.shapes import is_block_sequence
 
 
 @dataclass(frozen=True)
@@ -314,9 +315,19 @@ def _mark_system(system: Any) -> Any:
     ``cache_control``; for blocks we add ``cache_control`` to the last
     block (the conventional "cache up to here" marker).
     """
+    # `str` first, and that ordering is load-bearing: a `str` IS a `Sequence`,
+    # so the promote-to-a-single-text-block branch has to win before the block
+    # branch sees it. `is_block_sequence` excludes it on the other side too, so
+    # the two agree rather than depending on line order alone (#215).
     if isinstance(system, str):
         return [{"type": "text", "text": system, "cache_control": _ephemeral_cache_control()}]
-    if isinstance(system, list) and system:
+    # Was `isinstance(system, list)`. A tuple of blocks — what a frozen or
+    # decoded payload hands over — was returned UNMARKED and unreported: the API
+    # then caches nothing and the resulting `$0.00` is arithmetically honest and
+    # diagnostically useless. `_mark_tools`, three functions down, iterates
+    # without a type test and has handled a tuple correctly all along; it is the
+    # same job done properly in the same file.
+    if is_block_sequence(system) and system:
         new = [dict(b) for b in system]
         new[-1] = {**new[-1], "cache_control": _ephemeral_cache_control()}
         return new
@@ -346,7 +357,9 @@ def _mark_messages_prefix(messages: list[Any]) -> list[Any]:
         target["content"] = [
             {"type": "text", "text": content, "cache_control": _ephemeral_cache_control()}
         ]
-    elif isinstance(content, list) and content:
+    # Was `isinstance(content, list)`; see `_mark_system` (#215). Same silent
+    # no-op on a tuple of blocks, one level further in.
+    elif is_block_sequence(content) and content:
         new_content = [dict(b) for b in content]
         new_content[-1] = {**new_content[-1], "cache_control": _ephemeral_cache_control()}
         target["content"] = new_content
@@ -395,21 +408,33 @@ def _get_usage(response: Any) -> Any:
     usage: Any = None
     if hasattr(response, "usage"):
         usage = response.usage
-    elif isinstance(response, dict):
+    # `Mapping`, not `dict` (#215). `collections.UserDict` is not a `dict`
+    # subclass but is a `Mapping`, and it is the ordinary base for a
+    # gateway/proxy client's response wrapper; `MappingProxyType` is what a
+    # frozen payload looks like. Both took this branch's `else` and resolved to
+    # no usage at all — the same silent `$0.00` this function's docstring is
+    # about, reached through the container instead of the level mismatch.
+    elif isinstance(response, Mapping):
         usage = response.get("usage")
     if usage is None:
         return _DictAttr({})
-    if isinstance(usage, dict):
+    if isinstance(usage, Mapping):
         return _DictAttr(usage)
     return usage
 
 
 class _DictAttr:
-    """Lightweight attribute view over a dict, for dict-shaped responses."""
+    """Lightweight attribute view over a mapping, for mapping-shaped responses.
+
+    Typed over ``Mapping`` rather than ``dict`` (#215): the only thing this
+    class ever does with it is ``.get``, which every ``Mapping`` has, and
+    narrowing the annotation to ``dict`` is what made the two call sites above
+    reach for ``isinstance(..., dict)`` in the first place.
+    """
 
     __slots__ = ("_d",)
 
-    def __init__(self, d: dict[str, Any]) -> None:
+    def __init__(self, d: Mapping[str, Any]) -> None:
         self._d = d
 
     def __getattr__(self, name: str) -> Any:

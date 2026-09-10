@@ -2243,3 +2243,56 @@ earlier.
 **Next session:** `custom_id` falls back to `""` when absent off the entry. That
 is a row-to-request *matching* failure rather than a fabricated answer — a
 different consequence needing a different guard, and unmeasured so far.
+
+## 2026-09-09 — Issue #215: a rule argued out in one module was not a rule its sibling had
+**Branch:** `session/2026-09-09-0755-issue-215`
+
+`batch.py` shipped `_DECODED_JSON_TYPES` at 07:05 this morning, in the PR this
+run merged during Phase A, and the constant carries a paragraph explaining
+itself: "`Mapping`/`Sequence` rather than `dict`/`list` so the JSON alphabet's
+near relatives — a tuple of blocks' worth of decoded values, a
+`MappingProxyType` — land on the same side."
+
+`cache_wrapper.py`, next door, still said `dict` and `list`, at four sites.
+
+The harm paragraph was already written too, by #209, about this exact function:
+"Zero is not a diagnostic on this path […] a well-formed field in the other
+container is indistinguishable from a call that genuinely did no caching […]
+folded into `aggregate` (which only ever adds, so it never recovers) and out
+through `dump_aggregate_json` onto the savings dashboard." That fix closed the
+level-mismatch axis and left the container-type axis open. A `UserDict`
+response — not a `dict` subclass, but a `Mapping`, and the ordinary base for a
+gateway client's wrapper — reported `$0.00` on 20 000 cached tokens.
+
+Four of eight container pairings read zero. One level over, a tuple of content
+blocks was returned unmarked and unreported by `_mark_system` and
+`_mark_messages_prefix`, while `_mark_tools` three functions down iterates with
+no type test and has handled a tuple correctly all along. The same job done
+properly in the same file.
+
+The vocabulary now lives in `cost_optimizer/shapes.py` and both modules import
+it. I shared only what is genuinely the same question: `batch.py`'s two content
+branches keep their own distinct messages, because they diagnose different
+things, and only the second — which by then means exactly "not a block
+sequence" — is spelled from the shared predicate.
+
+One prediction was wrong and the test corrected it. I expected the over-broad
+neighbour (drop the `str`/`bytes` exclusion) to break the promote-to-a-text-block
+branch. It does not: all three call sites test `str` on an earlier line, so that
+branch wins by statement order and the neighbour turns only the predicate's own
+rows red. Both docstrings now say what the measurement says, and the exclusion
+stays on the honest ground — a guarantee that depends on statement order is not
+a guarantee, and the fourth call site is the one that will not know to check.
+
+**Why this work, this session:** the priority tier crossed its freshness floor
+and this repo's four open issues were all maintainer-gated, so the hunt was the
+work. The surface was the PR this same run merged 55 minutes earlier.
+
+**Open questions / blockers:** none. `router.py`'s `_extract_text` and
+`_extract_first_token_logprobs` carry the same `isinstance(content, list)`
+spelling but a different contract — both are documented to abstain, and an
+abstention there is a routing decision, not a fabricated dollar figure. Worth
+its own look; deliberately not folded in.
+
+**Next session:** that router question, and whether the abstain contract makes
+the `list` spelling correct there or merely harmless.
