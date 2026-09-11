@@ -39,7 +39,7 @@ questions is worse than two honest rules.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, TypeGuard
 
 #: What a JSON decoder produces. A value that is one of these is a *decoded
 #: payload* rather than an object the SDK models — the shape a
@@ -82,7 +82,45 @@ def is_decoded_json_value(value: Any) -> bool:
     return value is None or isinstance(value, DECODED_JSON_TYPES)
 
 
-def is_block_sequence(value: Any) -> bool:
+def is_item_sequence(value: Any) -> TypeGuard[Sequence[Any]]:
+    """True when *value* is a sequence you can iterate for its elements.
+
+    The general form. ``Sequence`` and not one of the decoded types that
+    iterate into something misleading — a ``str``/``bytes`` into characters or
+    bytes, a ``Mapping`` into its keys.
+
+    Two callers ask this question about two different kinds of element, so the
+    predicate is named for the shape and not for the payload:
+    ``is_block_sequence`` below is this same test asked about content blocks,
+    and ``router.py`` asks it about logprob nodes and about bare floats
+    (``#217``). The router had a third copy spelled ``isinstance(x, list)`` at
+    five sites, and the copy is what made a ``tuple`` of content blocks — what
+    a frozen or proxying SDK wrapper returns — abstain the escalation signal to
+    ``trip=False``, which is indistinguishable from a confident response.
+
+    Which member of the exclusion is load-bearing was measured, not assumed
+    (``#217``). Dropping it entirely turns exactly **one** row red, and it is
+    the ``bytes`` one. ``#215`` had already noted that all three of its call
+    sites test ``str`` on an earlier line; the router's guards are downstream
+    rather than upstream, and they cover ``str`` and ``Mapping`` by accident:
+    iterating either yields *strings* (characters, or a mapping's keys), and
+    ``float("a")`` raises, so the ``#140`` non-numeric abstain fires anyway.
+    Iterating ``bytes`` yields **ints** — ``float(97)`` is ``97.0`` and
+    ``math.isfinite`` is happy — so a ``bytes`` ``first_token_logprobs`` is
+    measured as a distribution of byte values with nothing to object to. That
+    is the only row the exclusion saves, and it is the reason it stays rather
+    than being trimmed to what looks redundant.
+
+    Returns a ``TypeGuard`` rather than a bare ``bool`` because the
+    ``isinstance(x, list)`` calls it replaces were *narrowing* calls: mypy
+    knew ``x`` was not ``None`` inside the branch, and a plain predicate does
+    not carry that. Three ``union-attr`` errors in ``router.py`` are what said
+    so, and they are the reason this annotation is not cosmetic.
+    """
+    return isinstance(value, Sequence) and not isinstance(value, _NOT_A_BLOCK_SEQUENCE)
+
+
+def is_block_sequence(value: Any) -> TypeGuard[Sequence[Any]]:
     """True when *value* is a sequence of content blocks, as opposed to a
     decoded scalar, a string, or a mapping.
 
@@ -99,5 +137,11 @@ def is_block_sequence(value: Any) -> bool:
     on statement order is not a guarantee, and the fourth call site is the one
     that will not know to check. Measured: dropping the exclusion turns only
     this function's own rows red, not the promote branch's.
+
+    Delegates to ``is_item_sequence`` rather than restating the test: this name
+    carries the domain meaning the ``batch.py`` and ``cache_wrapper.py`` call
+    sites have — their error messages say "blocks" — and that is worth a name,
+    but not worth a second implementation. A second correct copy is exactly
+    what left the first half of this open (``#215``).
     """
-    return isinstance(value, Sequence) and not isinstance(value, _NOT_A_BLOCK_SEQUENCE)
+    return is_item_sequence(value)
