@@ -515,6 +515,37 @@ llm-eval-harness).
   returns a `TypeGuard`, not a `bool`, because the `isinstance` calls it
   replaced were narrowing calls — three `union-attr` errors said so.
 
+  **And the sweep above was one rule of two (#219).** #217 swept the
+  *container* rule across all three levels of the nested read — its own
+  comment says so — and the *field-read* rule across one. Counting every
+  duck-typed read in `router.py`, 9 of 11 bypassed `_read_field`: the response
+  itself, the content block (`first.logprobs`, `b.type`, `b.text`), the
+  `prompt`, and the judge `verdict.score`. Only `top.top_logprobs` and
+  `v.logprob` went through it. A **plain `dict`** is enough to fire it, which
+  is the ordinary wire shape and what `model_dump()` produces, where #217
+  needed a `tuple` or a `collections.UserDict`. #217's own control row is
+  labelled "dict nodes" and is green, because it makes a `dict` of the one
+  position already covered — a control named after a shape, exercising one of
+  the three places that shape occurs. The table in
+  `tests/test_router_read_position_vocabulary.py` is indexed by *position* for
+  that reason, and a lock over the module AST now asserts no bare `getattr`
+  survives outside `_read_field`, so a read site added later cannot join the
+  gap silently.
+
+  Two things that measurement settled. One harm was hidden behind another: with
+  a `Mapping` response `_extract_text` returned `""`, `measure` took its
+  empty-text abstain and the judge was never called, so the lost `prompt` was
+  latent — and fixing the text read alone makes it live, handing the judge `""`
+  and getting a score back, which is a *wrong measurement* driving a routing
+  decision rather than an abstain. The sites move together for that reason. And
+  `_read_field` reads the attribute before the `Mapping` key (#69's ordering,
+  whose reason still holds), so a field named like a `Mapping` attribute would
+  resolve to the bound method; no current name collides, and a lock discovered
+  from the call sites now stops the next one being added silently. Reordering
+  the lookup instead turns exactly **one** assertion red out of 1128 — the one
+  written for it — which is how little of the suite can tell the two orderings
+  apart.
+
   One measured correction worth carrying: the `str`/`bytes`/`Mapping`
   exclusion is load-bearing for exactly **one** member here. Dropping it turns
   a single row red, the `bytes` one. Iterating a `str` or a `Mapping` yields

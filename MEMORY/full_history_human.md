@@ -2360,3 +2360,58 @@ false parity `shapes.py`'s own docstring warns against; and `RouterStats` still
 has no "signal abstained" counter, so a suppressed escalation from a genuinely
 malformed distribution remains invisible — an observability gap rather than a
 correctness one.
+
+## 2026-09-11 — #217 swept one rule of two (#219)
+
+**What got done.** #217 widened `router.py`'s nested read off a duck-typed SDK
+response, and its own comment is precise about what it swept: "at all three levels
+of the nest". That is true of the *container* rule — accepting a tuple where the
+code said `list`. The *field-read* rule, going through `_read_field` rather than a
+bare `getattr`, was at one level out of three. Counting every duck-typed read in
+the module, nine of eleven bypassed it: the response itself, the content block,
+the `prompt`, and the judge's `verdict.score`.
+
+A differential probe that turns one read position at a time into a plain `dict`
+shows it cleanly: the position `_read_field` already covered measures the entropy
+correctly, and the other two read as absent and abstain the escalation signal to
+`trip=False` — which is also what a confident response produces, so nothing
+distinguishes a suppressed escalation from a correctly-cheap one.
+
+Two details matter more than the count. The first is that a **plain `dict`** is
+enough. #217 needed a tuple, a `UserDict` or a `MappingProxyType` to show its gap;
+this one fires on the most ordinary shape there is — a dict content block is what
+the API returns on the wire and what `model_dump()` produces. A later gap in the
+same family can have a *more* ordinary trigger than the earlier one, so "the first
+one needed something exotic" is not a reason to rank the rest as unlikely.
+
+The second is why #217 did not see it. Its measured table has a green row labelled
+"dict nodes" — and that row makes a dict of the one position already covered. A
+control named after a shape, exercising one of the three places that shape occurs,
+reads as coverage. The new table is indexed by position for exactly that reason.
+
+**One harm was hidden behind another.** With a Mapping response, `_extract_text`
+returned `""`, so `measure` took its empty-text abstain and the judge was never
+called — which made the lost `prompt` invisible. Fixing the text read alone makes
+it live, and then the judge receives an empty prompt and returns a score anyway:
+a wrong measurement driving a routing decision, rather than an abstain. That is
+strictly worse than what it replaces, and it is why all nine sites moved in one
+change. The neighbour that fixes the text read but not the prompt read was built
+and run; it is red on exactly the assertion written for it.
+
+**A number worth keeping.** `_read_field` reads the attribute before the Mapping
+key, which means a field named like a Mapping attribute would resolve to the bound
+method instead of the value. No current field name collides. I left #69's ordering
+alone — its reason still holds — and pinned the hazard instead, with a lock that
+discovers the field names from the call sites so a colliding one cannot be added
+quietly. Reordering the lookup instead turns exactly one assertion red out of
+1128: the one written for it. That ratio is the honest measure of how unpinned the
+ordering was.
+
+**Why this was prioritized.** All three of `llm-cost-optimizer`'s open issues are
+decision-revisits waiting on JT, so the work came from hunting, and the richest
+surface was the fix merged forty minutes earlier in the same run.
+
+**Open questions / blockers:** none. `batch.py` and `semantic_cache.py` were
+checked for the same gap; `semantic_cache` deliberately classifies on exact type
+(#207) and does not read the SDK response surface, and `batch.py` already imports
+the shared vocabulary.

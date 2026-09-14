@@ -238,7 +238,7 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
     shape `response.content[0].logprobs` used by some SDKs. Returns
     None for anything else so signals can stay defensive.
     """
-    direct = getattr(response, "first_token_logprobs", None)
+    direct = _read_field(response, "first_token_logprobs")
     # `is_item_sequence` and not `isinstance(..., list)` (#217). A tuple of
     # logprobs — what a frozen or proxying adapter hands back — read as absent
     # and abstained the whole signal to `trip=False`, which is exactly what a
@@ -277,13 +277,13 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
         if any(not math.isfinite(f) for f in floats):
             return None
         return floats
-    content = getattr(response, "content", None)
+    content = _read_field(response, "content")
     # Same widening as the direct path above (#217), at all three levels of the
     # nest: a tuple at ANY of them abstained the signal. Widening only the
     # outermost would leave the other two, which is the shape #215 was.
     if is_item_sequence(content) and content:
         first = content[0]
-        logprobs = getattr(first, "logprobs", None)
+        logprobs = _read_field(first, "logprobs")
         if is_item_sequence(logprobs) and logprobs:
             top = logprobs[0]
             top_logprobs = _read_field(top, "top_logprobs")
@@ -428,7 +428,7 @@ class JudgeConfidenceSignal:
 
     def measure(self, response: Any) -> SignalReading:
         text = _extract_text(response)
-        prompt = getattr(response, "prompt", None)
+        prompt = _read_field(response, "prompt")
         if not text:
             return SignalReading(value=None, trip=False)
         verdict = self.judge.score(prompt or "", text, rubric=self.rubric)
@@ -442,7 +442,7 @@ class JudgeConfidenceSignal:
         # both honor. A genuine finite 0.0 is a real measurement and still
         # trips. Non-finite is rejected for the same reason as the #36/#71
         # finiteness sweeps: NaN/inf isn't a valid [0, 1] judge score.
-        raw = getattr(verdict, "score", None)
+        raw = _read_field(verdict, "score")
         if raw is None:
             return SignalReading(value=None, trip=False)
         # A present-but-non-numeric score — a string label ("high"), a JSON-decoded
@@ -469,10 +469,10 @@ def _extract_text(response: Any) -> str:
     Accepts `response.text` directly (test fakes), and `response.content[i].text`
     for the SDK shape. Returns "" for anything else.
     """
-    direct = getattr(response, "text", None)
+    direct = _read_field(response, "text")
     if isinstance(direct, str):
         return direct
-    content = getattr(response, "content", None)
+    content = _read_field(response, "content")
     # #217, and this one feeds `JudgeConfidenceSignal` rather than the entropy
     # path: a tuple `content` returned "" and the empty-text guard in `measure`
     # abstained to value=None/trip=False — the same invisible suppression.
@@ -487,8 +487,8 @@ def _extract_text(response: Any) -> str:
         parts = [
             t
             for b in content
-            if getattr(b, "type", "") == "text"
-            for t in (getattr(b, "text", ""),)
+            if _read_field(b, "type", "") == "text"
+            for t in (_read_field(b, "text", ""),)
             if isinstance(t, str)
         ]
         return "".join(parts)
