@@ -2417,7 +2417,7 @@ checked for the same gap; `semantic_cache` deliberately classifies on exact type
 the shared vocabulary.
 
 ## 2026-09-15 — Issue #221: an empty class reported the floor of the quality range
-**Duration:** ~35 min · **Branch:** `session/2026-09-15-0711-issue-221`
+**Duration:** 12 min (measured) · **Branch:** `session/2026-09-15-0711-issue-221`
 
 **How it was found.** I ran the README's documented command for both of this
 repo's generated artifacts — `scripts/bench_savings.py --dry --out docs/savings`
