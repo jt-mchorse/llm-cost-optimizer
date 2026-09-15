@@ -2492,7 +2492,7 @@ followups: []
 
 ---
 session: 2026-09-15T07:11Z
-duration_min: 35
+duration_min: 12   # MEASURED plan-comment 07:11:39Z to close-comment 07:23:38Z; I first wrote 35 from ESTIMATION and caught it against date -u at close
 issue: 221
 focus: the_mean_of_an_empty_class_was_published_as_the_FLOOR_of_the_quality_range_on_three_of_the_eight_committed_rows
 delta:
