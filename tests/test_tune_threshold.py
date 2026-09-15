@@ -58,9 +58,12 @@ def test_sweep_at_very_high_threshold_never_escalates() -> None:
     rows = sweep(items, [100.0], cheap_dollars=0.001, strong_dollars=0.01)
     assert rows[0].escalation_rate == 0.0
     assert rows[0].dollars_per_request == pytest.approx(0.001, rel=1e-6)
-    # When nothing escalates, escalated-mean is 0 (no rows), overall ==
-    # cheap mean.
-    assert rows[0].mean_quality_escalated == 0.0
+    # When nothing escalates the escalated class has no rows, so it has no
+    # mean: `None`, which reaches the JSON as `null`. This assertion used to
+    # read `== 0.0` with a comment saying "escalated-mean is 0 (no rows)" —
+    # pinning the floor of a [0, 1] judge score as if it were a measurement.
+    # See #221 / D-018 and tests/test_tune_threshold_empty_class.py.
+    assert rows[0].mean_quality_escalated is None
     assert rows[0].mean_quality_overall == rows[0].mean_quality_cheap
 
 
