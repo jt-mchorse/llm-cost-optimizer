@@ -2415,3 +2415,60 @@ surface was the fix merged forty minutes earlier in the same run.
 checked for the same gap; `semantic_cache` deliberately classifies on exact type
 (#207) and does not read the SDK response surface, and `batch.py` already imports
 the shared vocabulary.
+
+## 2026-09-15 — Issue #221: an empty class reported the floor of the quality range
+**Duration:** 12 min (measured) · **Branch:** `session/2026-09-15-0711-issue-221`
+
+**How it was found.** I ran the README's documented command for both of this
+repo's generated artifacts — `scripts/bench_savings.py --dry --out docs/savings`
+and `scripts/tune_threshold.py --out docs/threshold_demo` — expecting a
+regeneration diff. Both came back byte-identical. The check I set out to run
+passed twice, and the defect was only visible by *reading the cells*:
+`mean_quality_cheap` was `0.0` on the row where `escalation_rate` was `1.0`, so
+no row had stayed cheap and there was nothing to take a mean of. A reproducible
+artifact is not a correct one, and a diff can never say so.
+
+**The defect.** `sweep()` computed each per-class mean as
+`sum(q) / len(q) if q else 0.0`. The comment above it claimed `0.0` let "the
+per-class fields reflect" the missing rows; it does not. Quality here is a judge
+score on `[0, 1]`, so `0.0` is the floor of the metric's own range — the worst
+outcome it can express. A default at an extreme of a comparison doesn't abstain,
+it ranks.
+
+That branch is reached routinely, not exceptionally. Both ends of a threshold
+sweep empty a class by construction: everything escalates at `0.0`, nothing
+escalates at a high threshold. So the endpoints of every sweep this script will
+ever produce were the fabricated rows — three of the eight in the committed
+`docs/threshold_demo.json`, which is the artifact the README's own documented
+command writes.
+
+**What made the fix easy to justify.** `docs/savings.json` already publishes
+`"router_stats": null` for the four strategies where no router ran. Same repo,
+same directory, same "this class was not exercised" semantics — one artifact
+said `null` and the other said `0.0`. And `main()` already refused a fabricated
+*dollar* at JSON egress via the `--cheap-dollars` / `--strong-dollars` guard.
+The rule had reached half the fields of the same serialized row.
+
+**Why nobody had noticed.** `mean_quality_overall` divides by the whole
+population, so it is correct in every row — and it is the only series the plot
+draws. The picture was right; only the table was wrong. Worse,
+`test_sweep_at_very_high_threshold_never_escalates` asserted
+`mean_quality_escalated == 0.0`: the test written to pin the behaviour was
+certifying the fabrication as the spec.
+
+**Shipped.** Both per-class means are now `float | None` and reach the JSON as
+`null`. The artifact was regenerated with the documented command and exactly
+three cells moved, every other byte unchanged. `tests/test_tune_threshold_empty_class.py`
+adds twelve arms, including two that exist purely to reject the one-token
+neighbour: appending `or None` to the unfixed line produces a byte-identical
+artifact, because `sum([0.0]) / 1` is falsy and the sample set contains no
+measured zero — so that fix silently turns a real worst-case score into `null`.
+Abstention keys off the class being empty, never off the value being zero.
+
+**What I deliberately did not do.** The repo has eight other `if n else 0.0`
+sites. None were swept: their denominator is the whole population, so the empty
+branch needs a degenerate empty workload, where a conditional mean over a subset
+empties routinely on the happy path. The same shape is not the same bug.
+
+**Decision.** D-018. **Suite:** 1128 → 1140 green; ruff, `ruff format --check`
+and mypy clean.
