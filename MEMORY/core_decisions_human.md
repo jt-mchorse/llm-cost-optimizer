@@ -293,3 +293,83 @@ actually happened.
 **Reversibility:** Cheap.
 
 **Related issues:** #211, #209, #136, #166
+
+---
+
+## D-018 — The mean of an empty class is `null`, not `0.0`
+**Date:** 2026-09-15 · **Reversibility:** cheap
+
+**Decision.** `ThresholdSweepRow.mean_quality_cheap` and
+`mean_quality_escalated` are `float | None`, and `scripts/tune_threshold.py`
+publishes `null` when the corresponding class has no rows. Nothing else in the
+payload changes: `mean_quality_overall`, `escalation_rate`,
+`dollars_per_request` and `n` keep their values, and the seven-field `to_dict`
+contract from #54 is unchanged.
+
+**Why.** `sweep()` computed each per-class mean as
+`sum(q) / len(q) if q else 0.0`, under a comment claiming that `0.0` let "the
+per-class fields reflect" the missing rows. It does not. These are judge scores
+on `[0, 1]`, so `0.0` is the floor of the metric's own range — the worst
+outcome it can express. A default at an extreme of a comparison doesn't
+abstain, it ranks.
+
+That branch is not an edge case here. Both ends of a threshold sweep empty a
+class by construction: at threshold `0.0` everything escalates, so no row stays
+cheap; at a high threshold nothing escalates, so no row is escalated. The
+endpoints of *every* sweep this script produces were the fabricated ones — and
+three of the eight rows of the committed `docs/threshold_demo.json`, the file
+the README's own documented command writes, carried a number that was never
+measured.
+
+**The in-repo precedent is most of the argument.** `docs/savings.json` already
+publishes `"router_stats": null` for the four strategies where no router ran,
+and a dict for the one where it did. Same repo, same `docs/` directory, same
+"this class was not exercised" semantics — one artifact said `null` and the
+other said `0.0`. And `main()` already refuses a fabricated *dollar* at JSON
+egress: `--cheap-dollars` / `--strong-dollars` are rejected at exit 2 if
+non-finite or negative, with a comment citing the portfolio's no-fabricated-
+dollar rule. The rule had reached the dollar fields and not the quality fields
+in the same payload.
+
+**What is not claimed.** The artifact was not strictly ambiguous.
+`escalation_rate == 1.0` implies the cheap class is empty and `== 0.0` implies
+the escalated one is, so a consumer who knows that invariant could recover the
+truth. But the invariant is documented nowhere — not in the README, not in
+`architecture.md`, not in the payload — and the one comment that discussed the
+case asserted the opposite of what the code did. The defect is a published,
+unmeasured number sitting at the worst end of its range, not an unrecoverable
+one.
+
+**Why it survived.** `mean_quality_overall` is computed over the whole
+population (`overall_total / n`), so it is correct in every row — and it is the
+only series `_try_save_plot` draws. The picture was right; only the table was
+wrong. Worse, `test_sweep_at_very_high_threshold_never_escalates` asserted
+`mean_quality_escalated == 0.0` with the comment "when nothing escalates,
+escalated-mean is 0 (no rows)": the test written to pin the behaviour certified
+the fabrication as correct. It is updated by this change.
+
+**Alternatives considered:**
+- Add explicit `n_cheap` / `n_escalated` fields so `0.0` is disambiguable —
+  rejected. It leaves the fabricated number in place and merely annotates it,
+  breaks the deliberate seven-field `to_dict` contract from #54, and the counts
+  are already derivable from `escalation_rate` and `n`.
+- Omit the key entirely when the class is empty — rejected. A key set that
+  varies row to row is worse for consumers than a stable nullable one.
+- Document the `escalation_rate` invariant and keep `0.0` — rejected, on the
+  same reasoning D-017 used against its own option 3: documentation does not
+  stop a consumer plotting the series from getting a curve that dives to the
+  floor.
+- `NaN` — rejected. Bare `NaN` is not valid JSON, and this repo already refuses
+  non-finite values at JSON egress.
+
+**The neighbour that had to be rejected.** The one-token patch on the unfixed
+line — appending `or None` — produces a *byte-identical*
+`docs/threshold_demo.json`, because the five-row sample set happens to contain
+no measured zero. But `sum([0.0]) / 1` is `0.0`, which is falsy, so that fix
+launders a real worst-case judge score into `null`. A third variant that leaves
+`sweep()` alone and writes `self.mean_quality_cheap or None` in `to_dict()`
+does the same thing at egress. Abstention must key off the class being *empty*,
+never off the value being zero. Both neighbours were built from the unfixed code
+and run; `tests/test_tune_threshold_empty_class.py` exists to reject them.
+
+**Related issues:** #221, #54
