@@ -2472,3 +2472,67 @@ empties routinely on the happy path. The same shape is not the same bug.
 
 **Decision.** D-018. **Suite:** 1128 → 1140 green; ruff, `ruff format --check`
 and mypy clean.
+
+## 2026-09-21 — Issue #223: the same rule, one script over
+**Duration:** 11 min (measured) · **Branch:** `session/2026-09-21-0727-issue-223`
+
+**How it was found.** lco had no pickable issue — three decision-revisits and an
+operator demo capture — so this was hunted, starting from the PR this session had
+merged twenty minutes earlier. D-018 had just ruled that the mean of an empty
+class is `null`, not `0.0`. A grep for `else 0.0` across `scripts/` returned four
+`mean_quality` sites in the sibling bench script carrying exactly that shape.
+
+The sharpest part is that D-018's own comment names this file as the precedent
+for doing it right: "`docs/savings.json` is the in-repo precedent for the shape:
+it publishes `"router_stats": null` for the strategies where no router ran."
+Within one payload, `router_stats` abstained while `mean_quality` published the
+floor of the judge range.
+
+**An existing test pinned it as correct, for the second time in two issues.**
+`test_run_bench_handles_zero_row_workload_without_crashing` asserted
+`hit_rate == 0.0`, under a comment calling the `mean_quality` divisions "already
+guarded". They were guarded against *crashing*, by substituting the floor.
+
+**The split is what makes five patches one rule.** Ratios abstain; sums do not.
+`n_rows`, `total_usd` and `saved_usd` over zero rows genuinely are zero, and a
+blanket "null every zero" fix destroys that. I wrote the arm for it and then
+built the neighbour that nulls a sum, to prove the arm wasn't vacuous.
+
+**The presentation half, which D-018's script never had to face.** This payload
+has two human sinks, and both formatted these fields with `:.1%` / `:.3f`, which
+raise `TypeError` on `None`. Fixing the computation alone converts a fabricated
+number into a crash at every sink — the neighbour that does exactly that goes two
+arms red with the `TypeError`. One shared `_fmt_ratio` now serves both.
+
+A smaller version of the same trap: `extra` is joined with `f"{k}={v}"`, so a
+`None` there renders as the literal string `"None"`. The columns with a format
+spec were the obvious ones; the column without one was not.
+
+**A constant that stops being constant.** `_run_baseline` hard-codes
+`saved_pct=0.0` because the baseline is graded against itself — a real
+measurement whenever there is a population. On an empty workload there is none,
+and `0.0%` sitting beside a `null` mean quality in the same row is incoherent
+about whether anything ran.
+
+**Severity, scoped down deliberately.** `main` has refused `--n < 1` since #157,
+so no committed artifact can carry this; it is reachable through `run_bench()`,
+the documented library entry point. Filed `priority:med`, not high. Checking that
+reachability is what turned up the stale `--n 0` comment in `_run_batch`: #80
+built the branch when that flag was accepted, #157 closed the door, and nobody
+updated the sign.
+
+**Shipped.** Two helpers keyed off the denominator (never the value — `round(0.0,
+4)` is falsy, which is the neighbour D-018 rejected), one shared formatter, ten
+tests, D-019. `docs/savings.json` and `docs/savings.md` both regenerate
+byte-identically at `n=500`, pinned by a test.
+
+**Deferred to #224.** `tune_threshold.sweep([], …)` raises `ZeroDivisionError` on
+the same input class, so the two scripts now disagree — one crashes, one
+abstains. Both defensible; only "fabricate the floor" was ruled out.
+
+**Anti-vacuity.** A worktree at the pre-change sha with the three new helpers
+grafted in — an un-grafted run is a collection error, which says nothing. 4
+feature arms red, 6 helper/invariant arms green. Six wrong neighbours built and
+run, each caught.
+
+**Suite:** 1140 → 1150 green. ruff, `ruff format --check` and mypy clean.
