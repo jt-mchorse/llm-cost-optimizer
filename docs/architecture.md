@@ -259,6 +259,23 @@ through their own `PromptCacheWrapper` (or none).
   the value being **zero**: `sum([0.0]) / 1` is falsy, so the one-token
   `or None` neighbour regenerates a byte-identical artifact while
   laundering a real worst-case score into `null`.
+- **D-019 (#223).** The same rule in `scripts/bench_savings.py`, which
+  had it in five places: `mean_quality` (four `if n else 0.0` sites plus
+  a hard-coded one in the batch strategy's early return), `saved_pct`,
+  and `extra["hit_rate"]` / `["escalation_rate"]` /
+  `["compare_savings_pct_with_outputs"]`. Every one is a ratio, and each
+  published the floor of its own range on an empty workload — `0.0`
+  hit-rate reads "every lookup missed", not "nothing was looked up". The
+  sums stay real: `n_rows`, `total_usd` and `saved_usd` over zero rows
+  genuinely are `0`. An existing test pinned the fabrication as correct,
+  asserting `hit_rate == 0.0` under a comment calling the `mean_quality`
+  divisions "already guarded" — they were guarded against *crashing*, by
+  substituting the floor. Unlike D-018's script this payload has two
+  human sinks, and both formatted these with `:.1%` / `:.3f`, which raise
+  on `None`; `_fmt_ratio` serves both so they cannot drift. Nothing
+  shipped moves: `main` has refused `--n < 1` since #157, so the branch
+  is reachable only through `run_bench()`, and `docs/savings.{json,md}`
+  regenerate byte-identically at `n=500`.
 - **RouterStats observability (#62).** `RouterStats.to_dict()` and
   `UncertaintyRouter.dump_stats_json(path)` ship the same observability
   shape the two cache layers expose (#50 / #52): a stable JSON dict

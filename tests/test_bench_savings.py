@@ -637,16 +637,30 @@ def test_router_panel_rows_on_real_savings_json_produces_expected_entropy_row() 
 
 
 def test_run_bench_handles_zero_row_workload_without_crashing() -> None:
-    # An empty workload (--n 0) must not crash. The semantic-cache hit_rate and
-    # router escalation_rate divisions used to raise ZeroDivisionError while the
-    # mean_quality divisions one line above were already guarded.
+    """An empty workload must complete, and must not invent measurements.
+
+    This test used to assert `hit_rate == 0.0` and `escalation_rate == 0.0`,
+    with a comment calling the `mean_quality` divisions "already guarded". They
+    were guarded against *crashing*, by substituting the floor of each metric's
+    range — so the test written to pin the behaviour pinned the fabrication.
+    `0.0` is not "nothing was looked up", it is "every lookup missed" (D-019,
+    #223; the same shape D-018 found in `tune_threshold.py`).
+
+    The original intent — an empty workload completes rather than raising —
+    still holds and is still asserted; only the published values changed.
+    """
     payload = run_bench(n=0)
     assert payload["n_rows"] == 0
     by_name = {s["strategy"]: s for s in payload["strategies"]}
     sem = next(s for s in by_name.values() if "semantic cache" in s["strategy"])
     router = next(s for s in by_name.values() if "router" in s["strategy"])
-    assert sem["extra"]["hit_rate"] == 0.0
-    assert router["extra"]["escalation_rate"] == 0.0
+    assert sem["extra"]["hit_rate"] is None
+    assert router["extra"]["escalation_rate"] is None
+    # The counts those rates are derived from are real zeros: nothing was looked
+    # up and nothing escalated, which is a measurement, not an abstention.
+    assert sem["extra"]["hits"] == 0
+    assert sem["extra"]["misses"] == 0
+    assert router["extra"]["escalated"] == 0
 
 
 # ----- stemless --out (#174) -------------------------------------------------
