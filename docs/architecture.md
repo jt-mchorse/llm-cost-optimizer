@@ -238,6 +238,27 @@ through their own `PromptCacheWrapper` (or none).
   mode with a 5-row canned dataset; real-API threshold tuning is
   explicitly an operator step, not a CI step, to avoid silent
   per-row API spend on every test run.
+- **D-018 (#221).** In a sweep row, the mean quality of an **empty**
+  class is `null`, not `0.0`. `mean_quality_cheap` and
+  `mean_quality_escalated` are nullable; `mean_quality_overall`,
+  `escalation_rate`, `dollars_per_request` and `n` are not, and the
+  seven-field `to_dict` contract (#54) is unchanged. These are judge
+  scores on `[0, 1]`, so `0.0` is the floor of the metric's own range
+  — a default at an extreme of a comparison doesn't abstain, it ranks.
+  And the branch is not an edge case: both ends of a sweep empty a
+  class by construction (everything escalates at threshold `0.0`;
+  nothing escalates at a high one), so the *endpoints of every sweep*
+  were the fabricated rows — three of the eight in the committed
+  `docs/threshold_demo.json`, the file the README's own documented
+  command writes. The shape has an in-repo precedent: `docs/savings.json`
+  already publishes `"router_stats": null` for the strategies where no
+  router ran. It survived because `mean_quality_overall` divides by the
+  whole population and is correct in every row — and it is the only
+  series the plot draws, so the picture was right and only the table
+  was wrong. Abstention keys off the class being **empty**, never off
+  the value being **zero**: `sum([0.0]) / 1` is falsy, so the one-token
+  `or None` neighbour regenerates a byte-identical artifact while
+  laundering a real worst-case score into `null`.
 - **RouterStats observability (#62).** `RouterStats.to_dict()` and
   `UncertaintyRouter.dump_stats_json(path)` ship the same observability
   shape the two cache layers expose (#50 / #52): a stable JSON dict

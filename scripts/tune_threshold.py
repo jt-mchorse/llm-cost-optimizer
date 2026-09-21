@@ -56,8 +56,16 @@ from scripts._io import atomic_write_text, resolve_out_stem  # noqa: E402
 class ThresholdSweepRow:
     threshold: float
     escalation_rate: float
-    mean_quality_cheap: float
-    mean_quality_escalated: float
+    # `None` means "this class had no rows at this threshold", not "quality was
+    # zero". Quality is a judge score on [0, 1], so 0.0 is the floor of the
+    # metric's own range — the worst measurable outcome, not an abstention.
+    # Both ends of a sweep empty a class by construction (nothing escalates at a
+    # high threshold; everything escalates at 0.0), so the endpoints of every
+    # sweep are where this fires. See D-018 and `sweep` below.
+    mean_quality_cheap: float | None
+    mean_quality_escalated: float | None
+    # Not Optional: computed over the whole population (`overall_total / n`), so
+    # it is a real measurement in every row regardless of how the classes split.
     mean_quality_overall: float
     dollars_per_request: float
     n: int
@@ -216,13 +224,24 @@ def sweep(
                 total_dollars += cheap_dollars
 
         n = len(items)
-        # Mean quality on the rows where we stayed cheap, and on the
-        # rows where we escalated. Either list may be empty; treat
-        # missing as 0.0 for the mean and let the per-class fields
-        # reflect that with the n divisor still meaningful overall.
-        mean_cheap = sum(cheap_qualities) / len(cheap_qualities) if cheap_qualities else 0.0
+        # Mean quality on the rows where we stayed cheap, and on the rows where
+        # we escalated. Either list may be empty, and an empty class has no
+        # mean — so report `None`, which reaches the JSON as `null`.
+        #
+        # This previously used `... if cheap_qualities else 0.0`, with a comment
+        # claiming 0.0 let "the per-class fields reflect that". It did not:
+        # these are judge scores on [0, 1], so 0.0 is the *floor of the metric's
+        # own range*, indistinguishable in kind from a real worst-case
+        # measurement and pulling any plot or aggregate of the series to the
+        # bottom. `main()` already refuses a fabricated dollar at JSON egress
+        # (the --cheap-dollars/--strong-dollars finite/non-negative guard); this
+        # applies the same rule to the quality fields in the same payload.
+        # `docs/savings.json` is the in-repo precedent for the shape: it
+        # publishes `"router_stats": null` for the strategies where no router
+        # ran. (#221, D-018)
+        mean_cheap = sum(cheap_qualities) / len(cheap_qualities) if cheap_qualities else None
         mean_escalated = (
-            sum(escalated_qualities) / len(escalated_qualities) if escalated_qualities else 0.0
+            sum(escalated_qualities) / len(escalated_qualities) if escalated_qualities else None
         )
         overall_total = sum(cheap_qualities) + sum(escalated_qualities)
         rows.append(
