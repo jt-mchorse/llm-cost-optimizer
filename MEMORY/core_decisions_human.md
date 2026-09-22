@@ -373,3 +373,74 @@ never off the value being zero. Both neighbours were built from the unfixed code
 and run; `tests/test_tune_threshold_empty_class.py` exists to reject them.
 
 **Related issues:** #221, #54
+
+---
+
+## D-019 — a ratio over an empty population abstains; a sum over one does not
+**Date:** 2026-09-21 · **Applies:** D-018 · **Reversibility:** cheap
+
+**Decision.** D-018's rule, applied to `scripts/bench_savings.py`. Every ratio
+the payload publishes reports `null` on an empty workload; every sum keeps its
+real `0`.
+
+**What was there.** Five sites, all ratios, all publishing the floor of their
+own range when the denominator was zero: `mean_quality` (four `if n else 0.0`
+call sites plus a hard-coded one in the batch strategy's early return),
+`saved_pct`, and `extra["hit_rate"]` / `["escalation_rate"]` /
+`["compare_savings_pct_with_outputs"]`. A `0.0` hit rate reads "every lookup
+missed", not "nothing was looked up" — the same confusion between the bottom of
+a scale and the absence of a measurement that D-018 ruled on.
+
+**The split is what makes it one rule.** `n_rows`, `total_usd` and `saved_usd`
+over zero rows genuinely *are* zero. That is a fact about the run, not an
+absence of one, and a blanket "null every zero" fix would destroy it. There is
+an arm for that neighbour, and it was built and run.
+
+**An existing test pinned the fabrication as correct — again.**
+`test_run_bench_handles_zero_row_workload_without_crashing` asserted
+`hit_rate == 0.0` and `escalation_rate == 0.0`, under a comment describing the
+`mean_quality` divisions as "already guarded". They were guarded against
+*crashing*, by substituting the floor. This is the second time this shape has
+turned up, after D-018's `test_sweep_at_very_high_threshold_never_escalates`.
+The test was updated, not deleted, and now says what it pins.
+
+**D-018 cited this very file as the precedent for doing it right.** Its comment
+in `tune_threshold.py` reads: "`docs/savings.json` is the in-repo precedent for
+the shape: it publishes `"router_stats": null` for the strategies where no
+router ran." So within one payload `router_stats` abstains while `mean_quality`
+publishes the floor. A fix's own wording pointing at the site it missed.
+
+**The half D-018 did not have to do.** This payload has two human sinks —
+`_format_markdown` and the stdout summary — and both formatted these fields with
+`:.1%` / `:.3f`, which raise `TypeError` on `None`. Fixing the computation alone
+would have converted a fabricated number into a crash. One shared `_fmt_ratio`
+serves both sinks so they cannot drift apart.
+
+**The baseline row's own case.** `_run_baseline` hard-codes `saved_pct=0.0`
+because the baseline is graded against itself — a definitional zero, and a real
+measurement whenever there is a population. On an empty workload there is none,
+and a row reading `0.0%` beside a `null` mean quality would be incoherent about
+whether anything ran at all.
+
+**Reachability, stated plainly.** Not reachable from the CLI: `main` has refused
+`--n < 1` with exit 2 since #156/#157, and `docs/savings.json` and
+`docs/savings.md` both regenerate byte-identically at the default `n=500`. It is
+a library-contract defect, via `run_bench()` — the documented pure-function
+entry point, and how the pre-existing zero-row test calls it. Filed
+`priority:med`, not high.
+
+**Alternatives considered:**
+- Null every zero — rejected; it destroys the real sums.
+- Guard `run_bench`'s `n` the way `main` guards `--n` — rejected; that closes
+  the path instead of fixing the value, and breaks the existing zero-row test's
+  premise. Whether the library should refuse `n=0` outright is a separate call.
+- Fix `mean_quality` only — rejected; the two rates are the same ratio shape on
+  the same range, and that neighbour leaves three arms red.
+
+**Deferred, not decided.** `tune_threshold.sweep([], …)` raises
+`ZeroDivisionError` on the same degenerate input, so the two sibling scripts now
+disagree: one crashes, one abstains. Both are defensible; "fabricate the floor"
+is the one ruled out. Reconciling them touches a second artifact-producing path
+and is filed separately.
+
+**Related issues:** #223, #221, #80, #157

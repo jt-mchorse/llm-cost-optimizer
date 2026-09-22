@@ -270,8 +270,15 @@ class StrategyResult:
     total_usd: float
     baseline_usd: float
     saved_usd: float
-    saved_pct: float
-    mean_quality: float
+    # `None` means "there was no population to measure", not "the measurement
+    # came out at the bottom of its range". Both of these are ratios, and both
+    # published a literal `0.0` on an empty workload -- the floor of the range
+    # in each case. D-018 ruled on exactly this for the sibling script's
+    # per-class quality means; D-019 applies it here. `n_rows`, `total_usd`,
+    # `baseline_usd` and `saved_usd` are sums, not ratios, and keep their real
+    # zero. (#223)
+    saved_pct: float | None
+    mean_quality: float | None
     extra: dict[str, Any] = field(default_factory=dict)
     # Optional canonical RouterStats snapshot (#64). Only populated on
     # the uncertainty-router strategy row; `None` everywhere else so the
@@ -319,6 +326,48 @@ def _dollars_input_only(prompt_tokens: int, *, model: str) -> float:
     return prompt_tokens * pricing.input_per_mtok / 1_000_000
 
 
+def _ratio_or_none(numerator: float, denominator: int, *, places: int = 4) -> float | None:
+    """A ratio over an empty population is `None`, not the floor of its range.
+
+    Every quantity this guards -- `mean_quality`, `hit_rate`, `escalation_rate`,
+    `saved_pct` -- lives on a range whose *bottom* is `0.0`, and each previously
+    published exactly that when the denominator was zero. A judge mean of `0.0`
+    is the worst measurable outcome, not an abstention; a `hit_rate` of `0.0`
+    says every lookup missed, not that nothing was looked up. That is D-018's
+    argument, applied to the second script (D-019, #223).
+
+    The abstention keys off **the denominator being zero**, never off the
+    computed value being zero. A real all-worst-case workload genuinely scoring
+    `0.0` must stay `0.0`: `round(0.0, 4)` is falsy, so a `... or None` at the
+    call site or at egress would launder a real measurement into `null`. That
+    neighbour is exactly the one D-018 rejected.
+
+    Sums over the population are *not* ratios and keep their real zero --
+    `n_rows`, `total_usd` and `saved_usd` over an empty workload really are 0.
+    """
+    if denominator == 0:
+        return None
+    return round(numerator / denominator, places)
+
+
+def _saved_pct_or_none(saved: float, baseline: StrategyResult) -> float | None:
+    """Savings as a fraction of the baseline spend, or `None` when there was none.
+
+    Same rule as `_ratio_or_none` with a different denominator: `saved_pct` was
+    `0.0` whenever `baseline.total_usd` was not positive, and `0.0` there reads
+    as "this strategy saved nothing" -- a real and unflattering result -- rather
+    than "there was no spend to save against". (D-019, #223)
+
+    Reachable only on an empty workload today: every row `_build_workload`
+    produces carries at least 111 prompt tokens, so a baseline over one or more
+    rows always costs something. The guard is kept general because it is the
+    denominator that matters, not how the denominator got to zero.
+    """
+    if baseline.total_usd > 0:
+        return round(saved / baseline.total_usd, 4)
+    return None
+
+
 def _run_baseline(workload: list[WorkloadRow]) -> StrategyResult:
     """No optimization — every request goes to the cheap model, full input price.
 
@@ -338,8 +387,14 @@ def _run_baseline(workload: list[WorkloadRow]) -> StrategyResult:
         total_usd=round(total, 6),
         baseline_usd=round(total, 6),
         saved_usd=0.0,
-        saved_pct=0.0,
-        mean_quality=round(qualities / n, 4) if n else 0.0,
+        # The baseline is graded against itself, so "saved 0.0%" is a real
+        # measurement whenever there is a population to measure -- this is not
+        # a `_saved_pct_or_none` case, it is a definitional zero. On an empty
+        # workload there is no population, and a row reading `0.0%` beside a
+        # `None` mean_quality would be incoherent about whether anything ran
+        # (D-019, #223).
+        saved_pct=None if n == 0 else 0.0,
+        mean_quality=_ratio_or_none(qualities, n),
     )
 
 
@@ -383,15 +438,15 @@ def _run_prompt_cache(workload: list[WorkloadRow], baseline: StrategyResult) -> 
 
     n = len(workload)
     saved = baseline.total_usd - total
-    pct = (saved / baseline.total_usd) if baseline.total_usd > 0 else 0.0
+    pct = _saved_pct_or_none(saved, baseline)
     return StrategyResult(
         strategy="prompt caching (system prefix)",
         n_rows=n,
         total_usd=round(total, 6),
         baseline_usd=baseline.total_usd,
         saved_usd=round(saved, 6),
-        saved_pct=round(pct, 4),
-        mean_quality=round(qualities / n, 4) if n else 0.0,
+        saved_pct=pct,
+        mean_quality=_ratio_or_none(qualities, n),
         extra={"cache_writes": n_writes, "cache_reads": n_reads},
     )
 
@@ -433,19 +488,19 @@ def _run_semantic_cache(workload: list[WorkloadRow], baseline: StrategyResult) -
 
     n = len(workload)
     saved = baseline.total_usd - total
-    pct = (saved / baseline.total_usd) if baseline.total_usd > 0 else 0.0
+    pct = _saved_pct_or_none(saved, baseline)
     return StrategyResult(
         strategy="semantic cache (HashEmbedder, threshold 0.95)",
         n_rows=n,
         total_usd=round(total, 6),
         baseline_usd=baseline.total_usd,
         saved_usd=round(saved, 6),
-        saved_pct=round(pct, 4),
-        mean_quality=round(qualities / n, 4) if n else 0.0,
+        saved_pct=pct,
+        mean_quality=_ratio_or_none(qualities, n),
         extra={
             "hits": n_hits,
             "misses": n_misses,
-            "hit_rate": round(n_hits / n, 4) if n else 0.0,
+            "hit_rate": _ratio_or_none(n_hits, n),
         },
     )
 
@@ -503,18 +558,18 @@ def _run_router(workload: list[WorkloadRow], baseline: StrategyResult) -> Strate
 
     n = len(workload)
     saved = baseline.total_usd - total
-    pct = (saved / baseline.total_usd) if baseline.total_usd > 0 else 0.0
+    pct = _saved_pct_or_none(saved, baseline)
     return StrategyResult(
         strategy="uncertainty router (entropy threshold 1.5)",
         n_rows=n,
         total_usd=round(total, 6),
         baseline_usd=baseline.total_usd,
         saved_usd=round(saved, 6),
-        saved_pct=round(pct, 4),
-        mean_quality=round(qualities / n, 4) if n else 0.0,
+        saved_pct=pct,
+        mean_quality=_ratio_or_none(qualities, n),
         extra={
             "escalated": n_escalated,
-            "escalation_rate": round(n_escalated / n, 4) if n else 0.0,
+            "escalation_rate": _ratio_or_none(n_escalated, n),
         },
         # #64: canonical RouterStats snapshot from the router itself —
         # surfaces per-signal accounting (per_signal_trips,
@@ -544,21 +599,30 @@ def _run_batch(workload: list[WorkloadRow], baseline: StrategyResult) -> Strateg
         for r in workload
     ]
     if not requests:
-        # Empty workload (--n 0): the batch backend rejects an empty submit,
-        # and there's nothing to price. Return a trivial zero result so the
-        # whole bench completes on a degenerate workload, matching the other
-        # strategies' n==0 handling.
+        # Empty workload: the batch backend rejects an empty submit, and there
+        # is nothing to price. Return early so the whole bench still completes
+        # on a degenerate workload, matching the other strategies.
+        #
+        # Reached through `run_bench(n=0)`, not from the CLI: #80 added this
+        # branch when `--n 0` was accepted, and #157 later gave `main` a
+        # `--n < 1` → exit 2 guard. The comment used to name `--n 0` as the
+        # repro, which now exits 2 before the bench runs.
+        #
+        # The sums are real -- nothing was spent, and the whole baseline is
+        # "saved" by not running. The *ratios* are not: they have no population
+        # to be a ratio over, so they abstain rather than reporting the floor of
+        # their range (D-019, #223).
         return StrategyResult(
             strategy=f"batch API (discount {BATCH_DISCOUNT_FACTOR:.2f}×)",
             n_rows=0,
             total_usd=0.0,
             baseline_usd=baseline.total_usd,
             saved_usd=round(baseline.total_usd, 6),
-            saved_pct=0.0,
-            mean_quality=0.0,
+            saved_pct=_saved_pct_or_none(baseline.total_usd, baseline),
+            mean_quality=None,
             extra={
                 "discount_factor": BATCH_DISCOUNT_FACTOR,
-                "compare_savings_pct_with_outputs": 0.0,
+                "compare_savings_pct_with_outputs": None,
             },
         )
     job = backend.submit(requests, idempotency_key="bench-savings-2026-05-17")
@@ -588,16 +652,16 @@ def _run_batch(workload: list[WorkloadRow], baseline: StrategyResult) -> Strateg
     total = sum(r.prompt_tokens * rate * BATCH_DISCOUNT_FACTOR for r in workload)
     n = len(workload)
     saved = baseline.total_usd - total
-    pct = (saved / baseline.total_usd) if baseline.total_usd > 0 else 0.0
-    qualities = sum(r.cheap_quality for r in workload) / n if n else 0.0
+    pct = _saved_pct_or_none(saved, baseline)
+    qualities = sum(r.cheap_quality for r in workload)
     return StrategyResult(
         strategy=f"batch API (discount {BATCH_DISCOUNT_FACTOR:.2f}×)",
         n_rows=n,
         total_usd=round(total, 6),
         baseline_usd=baseline.total_usd,
         saved_usd=round(saved, 6),
-        saved_pct=round(pct, 4),
-        mean_quality=round(qualities, 4),
+        saved_pct=pct,
+        mean_quality=_ratio_or_none(qualities, n),
         extra={
             "discount_factor": BATCH_DISCOUNT_FACTOR,
             # compare_realtime_vs_batch sees both axes at the input rate
@@ -721,6 +785,23 @@ def _cumulative_savings(workload: list[WorkloadRow], strategy: str) -> list[Cumu
 # ----------------------------------------------------------------------
 
 
+def _fmt_ratio(value: float | None, spec: str, *, absent: str) -> str:
+    """Render a possibly-absent ratio for a human sink.
+
+    `saved_pct` and `mean_quality` are `float | None` since D-019 (#223), and
+    both sinks below formatted them with `:.1%` / `:.3f` -- which raise
+    `TypeError: unsupported format string passed to NoneType.__format__`. Making
+    the computation honest without this would have turned a fabricated number
+    into a crash: a guard on the computation says nothing about the presentation.
+
+    One helper for both sinks so the markdown table and the stdout summary
+    cannot disagree about what an absent measurement looks like.
+    """
+    if value is None:
+        return absent
+    return format(value, spec)
+
+
 def _format_markdown(payload: dict[str, Any]) -> str:
     """Render the bench results as a markdown table for the README + docs."""
     lines = [
@@ -741,11 +822,17 @@ def _format_markdown(payload: dict[str, Any]) -> str:
         "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in payload["strategies"]:
-        extra_fmt = ", ".join(f"{k}={v}" for k, v in row["extra"].items()) or "—"
+        # `None` in `extra` is an absent ratio (`hit_rate` on zero lookups,
+        # `escalation_rate` on zero routes), not the string "None" — render it
+        # the same way the two ratio columns render theirs (D-019, #223).
+        extra_fmt = (
+            ", ".join(f"{k}={'—' if v is None else v}" for k, v in row["extra"].items()) or "—"
+        )
         lines.append(
             f"| {row['strategy']} | {row['n_rows']} | "
             f"${row['total_usd']:.4f} | ${row['saved_usd']:.4f} | "
-            f"{row['saved_pct']:.1%} | {row['mean_quality']:.3f} | {extra_fmt} |"
+            f"{_fmt_ratio(row['saved_pct'], '.1%', absent='—')} | "
+            f"{_fmt_ratio(row['mean_quality'], '.3f', absent='—')} | {extra_fmt} |"
         )
     lines.append("")
     lines.append("Cumulative savings per row (per strategy) live in `savings.json`.")
@@ -915,7 +1002,8 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f"  {row['strategy']:50s}  "
             f"${row['total_usd']:.4f}  saved ${row['saved_usd']:.4f}  "
-            f"({row['saved_pct']:.1%})  q={row['mean_quality']:.3f}"
+            f"({_fmt_ratio(row['saved_pct'], '.1%', absent='n/a')})  "
+            f"q={_fmt_ratio(row['mean_quality'], '.3f', absent='n/a')}"
         )
     return 0
 
