@@ -444,3 +444,86 @@ is the one ruled out. Reconciling them touches a second artifact-producing path
 and is filed separately.
 
 **Related issues:** #223, #221, #80, #157
+
+---
+
+## D-020 — An empty input population is refused in `tune_threshold.sweep` and abstained in `bench_savings.run_bench`, on purpose
+
+**Date:** 2026-09-22 · **Reversibility:** cheap · **Issue:** #224 (closes the
+item D-019 deferred)
+
+**Decision.** `scripts/tune_threshold.sweep()` raises `ValueError` on an empty
+`items` list. `scripts/bench_savings.run_bench(n=0)` keeps completing and
+abstaining exactly as D-019 decided. The two sibling scripts answer the same
+degenerate input differently, and that is now a recorded position rather than an
+accident.
+
+**Why.** D-019 left this open honestly: `sweep([], …)` raised a bare
+`ZeroDivisionError` on `n_escalated / n` while `run_bench(n=0)` abstained, and
+both functions advertise themselves in their own docstrings as *the*
+pure-function entry point. A caller reading one module and then the other had no
+way to predict which they would get. #224 asked for a posture, not a patch.
+
+The property that separates them is **what survives in the payload**.
+`run_bench(n=0)` still reports real measurements — `n_rows: 0`,
+`total_usd: 0.0`, `saved_usd: 0.0`, `total_prompt_tokens: 0` — so nulling its
+four ratios leaves a payload that is still *about* a run that happened.
+`ThresholdSweepRow` has seven fields, of which `threshold` echoes the caller's
+input and `n` counts the empty population; the other five —
+`escalation_rate`, `mean_quality_cheap`, `mean_quality_escalated`,
+`mean_quality_overall`, `dollars_per_request` — are all ratios or means over
+that same population. This was built and run rather than argued: the abstaining
+variant returns eight rows, one per default threshold, each carrying a threshold
+echo, `n: 0`, and five `null`s. That is an artifact that looks like an
+eight-threshold sweep and measures nothing, written at exit 0.
+
+**What settles it is the script's own precedent, not taste.** `main()` already
+refuses this script's *other* empty input population: the `--thresholds` guard
+exits 2, and the comment there names exactly this harm — "an empty sweep would
+overwrite the artifact with zero rows at exit 0". Both empty inputs reach the
+same committed `docs/threshold_demo.json`. Only one of the two was guarded.
+
+**Two details that carry the weight.** The guard keys off *the input population
+being empty*, never off the measurements coming out at zero — a one-row sweep
+whose qualities and dollars are a real `0.0` is a measurement and is returned as
+one, the same distinction `_ratio_or_none` draws in `bench_savings`. And it sits
+*ahead* of the threshold loop, so the contract does not depend on the second
+argument: `sweep([], [])` never enters the loop and never divides, so before
+this change it returned `[]` at no error — silently answering "no rows" to a
+question asked about an empty dataset.
+
+**Reachability, stated plainly.** Unreachable from the CLI by construction:
+`main` sweeps `_build_sample_items()`, five hardcoded rows with no flag to
+replace them. This is a library contract only, which is why it was filed
+`priority:low` and why `main` grows no handler for the new `ValueError` —
+dead error-handling is not a fix. The reachability claim is pinned as a test arm
+instead, so that if the dataset ever becomes operator-supplied, the arm is the
+reminder that `main` then needs the exit-2 translation `--thresholds` already
+has.
+
+**Alternatives considered:**
+- Abstain, to match D-019 — rejected; built and run. It emits eight rows of five
+  `null`s each, and it would require making `mean_quality_overall` nullable
+  against its own comment: "Not Optional: computed over the whole population, so
+  it is a real measurement in every row."
+- Return an empty row list — rejected; that is already the pre-fix behaviour of
+  `sweep([], [])`, and it is the exact outcome `main`'s `--thresholds` guard
+  exits 2 to prevent.
+- Put the guard inside the threshold loop — rejected; built and run, one arm
+  red. It leaves `sweep([], [])` returning `[]`, so the contract depends on the
+  other argument.
+- Guard on the outcome ("this row measured nothing") — rejected; built and run,
+  two arms red. It raises on a genuine all-worst-case one-row sweep. Guard on
+  the shape, never on the outcome.
+- Make `bench_savings` refuse too, for symmetry — rejected; built and run, one
+  arm red. It destroys D-019's real sums and breaks the pre-existing zero-row
+  test, whose premise is that `run_bench` completes.
+- Document the divergence and leave the `ZeroDivisionError` — rejected; a bare
+  arithmetic error escaping a loop body names neither the argument at fault nor
+  the rule.
+
+**Not claimed.** matplotlib is absent from this repo by design (in no extra, not
+in `dev` — `pyproject.toml:97`), so what the abstaining variant's all-`null`
+`ys` would do to `_try_save_plot` was not measured and is not asserted anywhere.
+
+**Related issues:** #224, #223, #221
