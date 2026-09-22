@@ -149,13 +149,16 @@ def _resolves_on_disk(token: str) -> bool:
 
 
 # CamelCase symbols the doc legitimately names that are NOT part of the
-# `cost_optimizer` importable surface. `StrategyResult` is a dataclass in
-# `scripts/bench_savings.py` (a benchmark script, not package API); the doc
-# describes its `router_stats` field in the savings-JSON section (#64).
-# Excluded from the symbol-resolution check so a real script-owned symbol isn't
-# a false positive. Hard-pinned by `test_external_symbols_hard_pin_set`, and a
-# shadow test fails if one ever enters the package surface (stale exemption).
-EXTERNAL_SYMBOLS = ("StrategyResult",)
+# `cost_optimizer` importable surface. Both are dataclasses in `scripts/`
+# (benchmark scripts, not package API): `StrategyResult` in
+# `scripts/bench_savings.py`, whose `router_stats` field the savings-JSON
+# section describes (#64), and `ThresholdSweepRow` in
+# `scripts/tune_threshold.py`, whose seven-field shape is the whole argument of
+# D-020 (#224). Excluded from the symbol-resolution check so a real
+# script-owned symbol isn't a false positive. Hard-pinned by
+# `test_external_symbols_hard_pin_set`, and a shadow test fails if one ever
+# enters the package surface (stale exemption).
+EXTERNAL_SYMBOLS = ("StrategyResult", "ThresholdSweepRow")
 
 _PKG = "cost_optimizer"
 _PKG_DIR = REPO_ROOT / _PKG
@@ -169,8 +172,22 @@ def _package_symbol_resolves(name: str) -> bool:
     the doc names `UnknownModelError`, which is a real class in
     `cost_optimizer.pricing` but isn't re-exported at package level. A
     surface-only check would false-positive on it.
+
+    Builtins resolve too. A doc paragraph that says a function raises
+    `ValueError` (D-020) is naming a symbol that unambiguously exists, and the
+    CamelCase pattern this lock keys off matches every builtin exception —
+    `ValueError`, `TypeError`, `ZeroDivisionError`. Without this branch the
+    allowlist would have to grow one hand-maintained entry per exception the
+    docs ever mention, which is the shape of exemption that rots. The cost is
+    that a `cost_optimizer` class renamed to shadow a builtin's name would
+    resolve here; no class in the package is so named, and the name collision
+    would be its own bug.
     """
+    import builtins
     import importlib
+
+    if hasattr(builtins, name):
+        return True
 
     pkg = importlib.import_module(_PKG)
     if hasattr(pkg, name):
@@ -255,7 +272,7 @@ def test_doc_symbol_refs_resolve(doc_text: str) -> None:
 
 
 def test_external_symbols_hard_pin_set() -> None:
-    assert EXTERNAL_SYMBOLS == ("StrategyResult",)
+    assert EXTERNAL_SYMBOLS == ("StrategyResult", "ThresholdSweepRow")
 
 
 def test_external_symbols_absent_from_package_surface() -> None:

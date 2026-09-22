@@ -276,6 +276,33 @@ through their own `PromptCacheWrapper` (or none).
   shipped moves: `main` has refused `--n < 1` since #157, so the branch
   is reachable only through `run_bench()`, and `docs/savings.{json,md}`
   regenerate byte-identically at `n=500`.
+- **D-020 (#224).** The prior question D-018/D-019 never answered: *should the
+  call produce a row at all?* `tune_threshold.sweep()` **refuses** an empty
+  `items` list with a `ValueError`; `bench_savings.run_bench(n=0)` keeps
+  **abstaining**. The divergence is deliberate, and the separating property is
+  what survives in the payload. `run_bench(n=0)` still reports real
+  measurements — `n_rows: 0`, `total_usd: 0.0`, `saved_usd: 0.0`,
+  `total_prompt_tokens: 0` — so nulling its four ratios leaves a payload that
+  is still *about* a run that happened. `ThresholdSweepRow` has seven fields,
+  of which `threshold` echoes the caller's input and `n` counts the empty
+  population; the other five are all ratios or means over that same
+  population, so abstaining there emits one row per threshold whose every
+  measured field is `null` — an eight-row artifact that measures nothing,
+  written at exit 0. The script had already answered this for its *other*
+  empty input population: the `--thresholds` guard in `main` exits 2 rather
+  than let "an empty sweep ... overwrite the artifact with zero rows at exit
+  0", and both empty inputs reach the same committed
+  `docs/threshold_demo.json`. Only one of the two was guarded. Two details
+  carry the weight: the guard keys off the **input population** being empty,
+  never off the measurements coming out at zero (a one-row sweep scoring a
+  real `0.0` throughout is a measurement and is returned as one); and it sits
+  **ahead of the threshold loop**, so the contract does not depend on the
+  second argument — `sweep([], [])` never divides, and previously returned
+  `[]` at no error. Unreachable from the CLI by construction (`main` sweeps
+  five hardcoded rows), so `main` grows no handler and nothing published
+  moves. **If you are adding a third bench script:** a degenerate input is
+  refused when every measured field of its output would be an abstention, and
+  abstained when real measurements survive alongside the abstaining ones.
 - **RouterStats observability (#62).** `RouterStats.to_dict()` and
   `UncertaintyRouter.dump_stats_json(path)` ship the same observability
   shape the two cache layers expose (#50 / #52): a stable JSON dict
