@@ -2536,3 +2536,59 @@ feature arms red, 6 helper/invariant arms green. Six wrong neighbours built and
 run, each caught.
 
 **Suite:** 1140 → 1150 green. ruff, `ruff format --check` and mypy clean.
+
+## 2026-09-22 — Issue #224: an empty input population, refused here and abstained next door
+**Duration:** see the issue's plan/close comment timestamps · **Branch:** `session/2026-09-22-0716-issue-224`
+
+D-019 left this one open honestly: `tune_threshold.sweep([], …)` raised a bare
+`ZeroDivisionError` while the sibling `bench_savings.run_bench(n=0)` completed
+and abstained, and both functions call themselves *the* pure-function entry
+point in their own docstrings. A caller reading one module and then the other
+could not predict which they would get. The issue asked for a posture, not a
+patch, so the work was deciding — and being able to say why.
+
+`sweep()` now refuses an empty `items` list with a `ValueError`, and
+`run_bench(n=0)` is untouched. The divergence is deliberate and recorded as
+D-020. The property that separates them is what survives in the payload:
+`run_bench(n=0)` still reports `n_rows: 0`, `total_usd: 0.0`, `saved_usd: 0.0`
+and `total_prompt_tokens: 0` — real facts about a run that happened — so
+nulling its four ratios leaves something still *about* something.
+`ThresholdSweepRow` has seven fields, of which one echoes the caller's input
+and one counts the empty population; the other five are all ratios or means
+over that population. Rather than argue that, I built the abstaining variant
+and ran it: it returns eight rows, one per default threshold, each carrying a
+threshold echo, `n: 0`, and five `null`s. That printed JSON is the argument.
+
+What actually settled the choice, though, was not my reasoning — it was the
+script's own precedent. `main()` already refuses this script's *other* empty
+input population: the `--thresholds` guard exits 2, and the comment sitting
+beside it names exactly this harm, "an empty sweep would overwrite the artifact
+with zero rows at exit 0". Both empty inputs reach the same committed
+`docs/threshold_demo.json`. Only one of the two had ever been guarded.
+
+Two placement details turned out to be contract, not style. The guard keys off
+the input population being empty, never off the measurements coming out at
+zero — a one-row sweep scoring a real `0.0` throughout is a measurement and is
+returned as one. And it sits *ahead* of the threshold loop: the same check
+inside the loop leaves `sweep([], [])` returning `[]`, because the body never
+runs and so never divides. The pre-fix bug had two faces, and only one of them
+was the crash the issue reported.
+
+Eight new tests. Five of them stay green against the unfixed script, and those
+five are what reject the three wrong neighbours I built and ran: the guard
+inside the loop (1 red), a guard keyed on the row having measured nothing (2
+red — it raises on a genuine all-worst-case sweep), and a "make the two scripts
+consistent" change that moves `bench_savings` to refusing (1 red). Suite 1150 →
+1158; `docs/threshold_demo.json` regenerates byte-identically.
+
+Two notes worth keeping. The architecture doc's symbol lock fired on
+`ValueError`, and since its CamelCase pattern matches every builtin exception,
+an allowlist would have had to grow an entry per exception the docs ever
+mention — so the resolver now accepts builtins, and I probed it to confirm a
+bogus symbol still reddens it. And matplotlib is absent from this repo by
+design, so what the abstaining variant's all-`null` series would do to the plot
+was not measured, and D-020 says so rather than asserting it.
+
+**Open questions:** none. The contract question #224 raised is closed; whether
+a third bench script would follow the refuse or abstain branch is now a
+one-sentence rule in `docs/architecture.md`.

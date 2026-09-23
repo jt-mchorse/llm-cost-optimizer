@@ -185,7 +185,57 @@ def sweep(
     cheap_dollars: float,
     strong_dollars: float,
 ) -> list[ThresholdSweepRow]:
-    """Pure-function sweep usable in `--dry` mode and tests."""
+    """Pure-function sweep usable in `--dry` mode and tests.
+
+    Raises:
+        ValueError: when `items` is empty. An empty population is **refused**
+            here, where the sibling script's `run_bench(n=0)` *abstains*
+            (D-019). That divergence is deliberate; D-020 records it and
+            `docs/architecture.md` states the rule. The short version is the
+            shape of what each one would publish:
+
+            `run_bench(n=0)` still reports real measurements -- `n_rows: 0`,
+            `total_usd: 0.0`, `saved_usd: 0.0`, `total_prompt_tokens: 0` --
+            so nulling its four *ratios* leaves a payload that is still about
+            a run that happened. `ThresholdSweepRow` has seven fields, of
+            which `threshold` echoes the caller's input and `n` counts the
+            empty population; the other **five are all ratios or means over
+            that same population**. Abstaining here would emit one row per
+            threshold whose every measured field is `null` -- an artifact
+            that looks like an eight-threshold sweep and measures nothing.
+            Measured, not assumed: the abstaining variant was built and run,
+            and it produces exactly that.
+
+            `main()` already refuses this script's *other* empty input
+            population, and for this reason: the `--thresholds` guard below
+            exits 2 rather than let "an empty sweep ... overwrite the
+            artifact with zero rows at exit 0". Both empty inputs reach the
+            same committed `docs/threshold_demo.json`; only one of the two
+            was guarded.
+
+    The guard keys off **the input population being empty**, never off the
+    measurements coming out at zero -- a one-row sweep whose qualities and
+    dollars are all a real `0.0` is a measurement and is returned as one, the
+    same distinction `_ratio_or_none` draws in `bench_savings`.
+
+    It is checked ahead of the threshold loop, so it does not depend on
+    `thresholds` being non-empty to fire: `sweep([], [])` never enters the
+    loop, never divides, and previously returned `[]` -- silently answering
+    "no rows" to a question about an empty dataset.
+
+    Unreachable from the CLI by construction: `main` calls this with
+    `_build_sample_items()`, five hardcoded rows. This is a library contract
+    (#224), which is why `main` grows no handler for it.
+    """
+    if not items:
+        raise ValueError(
+            "sweep() requires at least one item; got an empty items list. "
+            "Every measured field of a sweep row is a ratio or a mean over "
+            "this population, so an empty one has no sweep to report "
+            "(D-020; the sibling scripts/bench_savings.py abstains instead "
+            "because its payload keeps real sums -- see docs/architecture.md)."
+        )
+
     judge_scores: dict[str, float] = {}
     for item in items:
         judge_scores[item["cheap_text"]] = item["cheap_quality"]
