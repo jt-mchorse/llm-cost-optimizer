@@ -308,6 +308,71 @@ def sweep(
     return rows
 
 
+#: Decimal places the chart annotations have always used, and still use whenever
+#: two are enough to tell every threshold in the sweep apart. The shipped
+#: default sweep (`0.0,0.5,1.0,1.2,1.4,1.6,1.8,2.0`) is separable at two, so the
+#: ordinary chart is byte-identical.
+_LABEL_PLACES = 2
+
+#: Ceiling on widening. A double round-trips in at most 17 significant digits,
+#: and `--thresholds` is range-checked to finite values `>= 0` — but `set()`
+#: only guarantees the thresholds are distinct *as doubles*, and two distinct
+#: doubles at small magnitude (`1e-300` vs `2e-300`) render identically at any
+#: fixed number of decimal places. That is what `repr` below is for.
+_LABEL_MAX_PLACES = 17
+
+
+def _distinct_labels(values: list[float], *, places: int = _LABEL_PLACES) -> list[str]:
+    """Render every threshold in one sweep so no two annotations collide.
+
+    `main` builds the sweep as ``sorted(set(float(t) for t in ...))``, so the
+    thresholds are **guaranteed distinct**. Rendering them at a fixed two places
+    published a chart that disagreed with that guarantee (#227)::
+
+        thresholds: [0.85, 0.851, 1.25, 1.253]
+        labels:     ['t=0.85', 't=0.85', 't=1.25', 't=1.25']
+
+    Four points, two labels — on a chart whose only purpose is to let an
+    operator pick a threshold off the quality/cost frontier.
+
+    **This is a set-wide rule, not the pairwise one the six sibling fixes use.**
+    `prompt-regression-suite` D-012 and its siblings all render *two numbers in
+    one sentence*, so "widen while the two render identically" is the right
+    shape there. Here there is no pair: a label is wrong when it collides with
+    *any other label in the same chart*. The width is therefore chosen for the
+    whole set at once and shared by every label, which also keeps the
+    annotations readable as a column.
+
+    Stated precisely, because the obvious weaker version is not obviously
+    weaker: on **sorted** input, checking only adjacent pairs is *equivalent* —
+    rendering is monotonic, so if every neighbour differs then every pair does.
+    That neighbour was built and it passed every arm. The two rules diverge only
+    when the input is unsorted (``[0.85, 1.0, 0.8501]`` at two places renders
+    ``t=0.85``, ``t=1.00``, ``t=0.85`` — adjacent pairs all differ, the first
+    and third do not). `main` sorts the sweep, so this is robustness rather than
+    a live defect — but this function takes a list and cannot see an invariant
+    its one caller happens to maintain, and a rule that silently depends on a
+    caller's ordering is one refactor away from being wrong.
+
+    Widening starts at the current two places rather than jumping to a
+    shortest-round-trip rendering, and that is decided by the ordinary case
+    rather than by taste: `repr` would close this class just as well and would
+    republish every default label from ``t=0.00`` to ``t=0.0``, churning the
+    chart everyone actually looks at to fix a chart almost nobody generates.
+    """
+    if not values:
+        return []
+    for width in range(places, max(places, _LABEL_MAX_PLACES) + 1):
+        rendered = [f"t={v:.{width}f}" for v in values]
+        if len(set(rendered)) == len(rendered):
+            return rendered
+    # Distinct as doubles, unseparable by any fixed width in the budget. `repr`
+    # round-trips a float by definition, so these are always distinct — at the
+    # cost of a ragged column, which is the right trade against two points
+    # a reader cannot tell apart.
+    return [f"t={v!r}" for v in values]
+
+
 def _try_save_plot(rows: list[ThresholdSweepRow], out_png: Path) -> bool:
     try:
         import matplotlib
@@ -319,7 +384,9 @@ def _try_save_plot(rows: list[ThresholdSweepRow], out_png: Path) -> bool:
     fig, ax = plt.subplots(figsize=(6, 4))
     xs = [r.dollars_per_request for r in rows]
     ys = [r.mean_quality_overall for r in rows]
-    labels = [f"t={r.threshold:.2f}" for r in rows]
+    # Set-wide, not per-row: the width that separates every threshold in
+    # this sweep from every other one (#227).
+    labels = _distinct_labels([r.threshold for r in rows])
     ax.plot(xs, ys, marker="o")
     for x, y, label in zip(xs, ys, labels, strict=True):
         ax.annotate(label, (x, y), textcoords="offset points", xytext=(5, 4), fontsize=8)
@@ -333,7 +400,16 @@ def _try_save_plot(rows: list[ThresholdSweepRow], out_png: Path) -> bool:
     return True
 
 
-def main(argv: list[str] | None = None) -> int:
+def _build_parser() -> argparse.ArgumentParser:
+    """The CLI parser, extracted from `main` so its defaults are readable.
+
+    `main` built this inline, which left the shipped `--thresholds` default
+    reachable only by running the tool. #227's byte-identity arm asserts
+    against the *shipped* sweep rather than a literal retyped into a test,
+    because a retyped default silently stops testing the default the day
+    someone changes it. Pure extraction: no flag, default or help string is
+    altered.
+    """
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--dry",
@@ -358,6 +434,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument("--cheap-dollars", type=float, default=0.0008, help="$ per cheap request.")
     p.add_argument("--strong-dollars", type=float, default=0.015, help="$ per strong request.")
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = _build_parser()
     args = p.parse_args(argv)
 
     if not args.dry:
