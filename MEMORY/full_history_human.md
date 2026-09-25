@@ -2592,3 +2592,31 @@ was not measured, and D-020 says so rather than asserting it.
 **Open questions:** none. The contract question #224 raised is closed; whether
 a third bench script would follow the refuse or abstain branch is now a
 one-sentence rule in `docs/architecture.md`.
+
+---
+
+### 2026-09-25 — #227: the script guarantees the thresholds are distinct; the chart did not
+
+`tune_threshold.py` builds its sweep as `sorted(set(...))`, so no two
+thresholds are ever equal. It then annotated them on the chart at two decimal
+places. Sweep `0.85,0.851,1.25,1.253` and you get four points carrying two
+labels — on the one figure whose purpose is to let someone pick a threshold off
+the frontier. The JSON artifact was right the whole time.
+
+That suggests a lens worth reusing: find a place where the code *enforces*
+distinctness and then renders at a fixed width.
+
+Two of my three probes were green until I added an arm because of them, and
+that is the part worth keeping. Reverting the call site left every test green,
+because every test called the helper directly rather than looking at what the
+chart was actually handed. And the lazy "just compare neighbours" version of the
+rule passed everything too — because for sorted values it is genuinely
+equivalent, which means the stronger claim I had written in the docstring was
+false. Both got fixed: one by driving the plot function end to end against a
+fake matplotlib, the other by writing the unsorted input that actually separates
+the two rules, and by replacing the overclaim with the reason that survives it.
+
+Testing a chart in a repo where matplotlib is an optional extra turned out to be
+easy in a way worth remembering: inject a fake module into `sys.modules` with a
+recording axes object. Skipping the test when matplotlib is absent would have
+meant skipping it in CI, which is where it matters.
