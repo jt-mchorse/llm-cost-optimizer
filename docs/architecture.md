@@ -303,6 +303,33 @@ through their own `PromptCacheWrapper` (or none).
   moves. **If you are adding a third bench script:** a degenerate input is
   refused when every measured field of its output would be an abstention, and
   abstained when real measurements survive alongside the abstaining ones.
+- **D-021 (#227).** `scripts/tune_threshold.py` annotates its
+  quality-vs-cost chart through `_distinct_labels`, which widens from the
+  current two decimal places until **no two labels in the sweep collide**,
+  sharing one width across every label. `main` builds the sweep as
+  `sorted(set(float(t) for t in ...))`, so the thresholds are *guaranteed
+  distinct* — and the chart annotated them at a fixed two places, publishing
+  a figure that disagreed with that guarantee: `--thresholds
+  0.85,0.851,1.25,1.253` drew four points carrying two labels, on a chart
+  whose only purpose is to let an operator pick a threshold off the
+  frontier. The JSON artifact was never wrong; `payload["rows"]` carries
+  full precision.
+
+  This is a **set-wide** rule, unlike the pairwise one six sibling repos
+  ship for this class — all of those render two numbers in one sentence,
+  while here a label is wrong when it collides with any other label in the
+  chart. The honest qualification: on *sorted* input a pairwise scan is
+  equivalent, because rendering is monotonic. The two diverge only when the
+  input is unsorted, which `main` never produces. Set-wide is still right,
+  because `_distinct_labels` takes a list and cannot see an ordering
+  invariant its one caller happens to maintain.
+
+  Widening starts at two places rather than jumping to a shortest-round-trip
+  rendering, so the shipped default sweep is byte-identical — `repr` closes
+  the class equally well and would republish every default label from
+  `t=0.00` to `t=0.0`. `_build_parser` was lifted out of `main` unchanged so
+  the shipped default is readable by a test rather than retyped into one.
+
 - **RouterStats observability (#62).** `RouterStats.to_dict()` and
   `UncertaintyRouter.dump_stats_json(path)` ship the same observability
   shape the two cache layers expose (#50 / #52): a stable JSON dict

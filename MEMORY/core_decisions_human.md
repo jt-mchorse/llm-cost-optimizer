@@ -527,3 +527,77 @@ in `dev` — `pyproject.toml:97`), so what the abstaining variant's all-`null`
 `ys` would do to `_try_save_plot` was not measured and is not asserted anywhere.
 
 **Related issues:** #224, #223, #221
+
+---
+
+## D-021 — the sweep chart's labels are widened for the whole set, not per pair
+
+**Date.** 2026-09-25 · **Issue.** #227 · **Reversibility.** cheap
+
+**Decision.** `scripts/tune_threshold.py` renders its chart annotations through
+`_distinct_labels`, which widens from the current two decimal places until no
+two labels in the sweep collide, sharing one width across every label, with a
+`repr` fallback.
+
+**Why.** `main` builds the sweep as `sorted(set(float(t) for t in ...))`, so the
+thresholds are *guaranteed distinct* — and the chart then annotated them at a
+fixed two places, publishing a figure that disagreed with the guarantee the
+script itself enforces:
+
+```
+--thresholds 0.85,0.851,1.25,1.253
+labels: ['t=0.85', 't=0.85', 't=1.25', 't=1.25']
+```
+
+Four points, two labels, on a chart whose only purpose is to let an operator
+pick a threshold off the quality/cost frontier. The JSON artifact was never
+wrong — `payload["rows"]` carries full precision — the same split
+`embedding-model-shootout#149` found between a correct aggregate and a collapsed
+table.
+
+**A set-wide rule is a different rule from the pairwise one six repos shipped.**
+All of those render two numbers in one sentence. Here there is no pair: a label
+is wrong when it collides with *any other label in the chart*.
+
+**And I overclaimed that difference at first, and a probe caught it.** My first
+docstring said non-adjacent thresholds could be the colliding ones. That is
+false on sorted input — rendering is monotonic, so if every adjacent pair
+differs then every pair does. I built the adjacent-pairs neighbour and it passed
+every arm I had written: zero red. The two rules diverge only on *unsorted*
+input (`[0.85, 1.0, 0.8501]` renders `t=0.85, t=1.00, t=0.85`). `main` sorts, so
+this is robustness rather than a live defect, and the arm and the docstring now
+say exactly that.
+
+Set-wide is still the right choice, for a reason that survives the correction:
+`_distinct_labels` takes a list and cannot see an ordering invariant its one
+caller happens to maintain. A rule that silently depends on a caller's invariant
+is one refactor away from being wrong — and `len(set(...))` is simpler than a
+pairwise scan anyway.
+
+**Starting at two places rather than `repr` is decided by the ordinary case.**
+Shortest-round-trip closes the class just as well and would republish every
+default label from `t=0.00` to `t=0.0` — churning the chart everyone looks at to
+fix one almost nobody generates. Built it: six arms red.
+
+**My first set of arms was vacuous against a call-site revert, and that is the
+lesson worth keeping.** Every one of them called `_distinct_labels` directly, so
+reverting the *call site* left all of them green — measured, zero red, exactly
+what `vector-search-at-scale#148` recorded. Fixed by driving `_try_save_plot`
+end to end with a **fake matplotlib injected into `sys.modules`**, recording
+every `ax.annotate` call. A fake rather than the real one, because matplotlib is
+an optional extra absent from the `dev` extra and from CI — an arm gated on it
+would skip everywhere that matters, and a permanently skipped arm is not an arm.
+
+A small pure extraction came with it: `_build_parser` lifted out of `main`
+unchanged, so the shipped `--thresholds` default is readable by a test rather
+than retyped into one. A retyped default silently stops testing the default the
+day someone changes it.
+
+**Alternatives considered.** All built and run.
+- *`repr` for every label.* Rejected: 6 red.
+- *An adjacent-pairs scan.* Rejected: 1 red — but only after the unsorted arm
+  existed. Equivalent on sorted input, and silently dependent on a caller.
+- *Widen only the colliding labels.* Rejected: a chart mixing `t=0.850` with
+  `t=1.25` reads as two different quantities.
+- *Round the swept thresholds to match the chart.* Rejected — the standing
+  anti-pattern six repos have now declined.
