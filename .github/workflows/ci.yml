@@ -32,7 +32,21 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 30, not 15, and sized from the measurement rather than from convenience
+    # (#229). `test (3.12)` was cancelled on `main` at 15m05s on 2026-09-22 and
+    # again at 15m10s on 2026-09-28; over the ten newest push runs its duration
+    # was at or above 88% of the old 15-minute cap in eight of them. The worst
+    # observed run is now at 0.51 of its cap, under the 0.80 bar
+    # `portfolio-ops`' `timeout-headroom` fingerprint applies, and still 12x
+    # below GitHub's 360-minute default so a genuinely hung job is caught in
+    # half an hour rather than six.
+    #
+    # This is a cap that was never sized, not a regression being accommodated:
+    # for the cancelled run, checkout + setup-python + `pip install` total 29s
+    # of the 910s job and `pytest --cov` is 877s, and the fifteen slowest tests
+    # locally are a flat tail between 1.34s and 1.45s rather than one
+    # pathological case.
+    timeout-minutes: 30
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
@@ -51,7 +65,11 @@ jobs:
       # directly (#170). Both are pure-Python wheels: no service, no network,
       # no secret, so CI stays hermetic.
       - run: pip install -e '.[dev,dashboard]'
-      - run: pytest --cov=cost_optimizer --cov-report=term-missing
+      # `--durations=10` because local profiling cannot attribute CI time: the
+      # same suite is 39s here and 624-910s on a two-core runner under coverage,
+      # and without durations in the log there is nothing to read the gap off
+      # (#229). Costs nothing and makes the next investigation possible.
+      - run: pytest --cov=cost_optimizer --cov-report=term-missing --durations=10
 
   memory-check:
     runs-on: ubuntu-latest

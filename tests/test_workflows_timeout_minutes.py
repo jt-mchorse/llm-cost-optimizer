@@ -127,3 +127,78 @@ def test_job_timeout_in_policy_band(workflow: str, job_id: str, body: dict[str, 
         f"If this job genuinely needs a wider bound, bump MAX_TIMEOUT_MINUTES "
         f"with a comment naming the workload that forced the change."
     )
+
+
+#: The `test` job's cap, pinned by value rather than only by band (#229).
+#:
+#: `test_job_timeout_in_policy_band` asserts every cap is inside `[1, 30]`, and
+#: `15` satisfies that — which is why nothing in this repo noticed `test (3.12)`
+#: being cancelled on `main` twice for exceeding it. A band lock cannot see a cap
+#: that is legal and too small for the job it governs.
+TEST_JOB_MIN_TIMEOUT_MINUTES = 20
+
+
+def test_the_test_job_keeps_the_headroom_it_was_given() -> None:
+    """The `test` job's cap cannot quietly drift back to 15 (#229).
+
+    Measured on `main` before the cap was raised — `test (3.12)` against the old
+    15-minute cap, newest ten push runs:
+
+        09-28  15m10s  1.01  CANCELLED
+        09-23  10m48s  0.72
+        09-22  15m05s  1.00  CANCELLED
+        09-21  14m05s  0.94
+        09-14  13m12s  0.88
+        09-11  10m48s  0.72
+        09-10  13m17s  0.89
+        09-09  13m10s  0.88
+        09-08  14m32s  0.97
+        09-07  13m22s  0.89
+
+    At or above 0.88 in eight of ten. The floor here is 20 rather than 30 so the
+    cap can be tuned without a test edit, while anything that would put the
+    observed 15m10s maximum back above `portfolio-ops`' 0.80 headroom bar goes
+    red: 910s / (20 * 60) is 0.76, and 910s / (19 * 60) is 0.80.
+
+    Only `test` is pinned. `lint` and `memory-check` measured 18s and 5s against
+    the same cap — ratios of 0.02 and 0.006 — so a floor for them would be a
+    number with no measurement behind it.
+    """
+    ci = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+    jobs = yaml.safe_load(ci.read_text(encoding="utf-8"))["jobs"]
+    timeout = jobs["test"]["timeout-minutes"]
+    assert timeout >= TEST_JOB_MIN_TIMEOUT_MINUTES, (
+        f"ci.yml's `test` job is capped at {timeout} minutes. Its own worst "
+        f"observed run on main is 15m10s, so anything under "
+        f"{TEST_JOB_MIN_TIMEOUT_MINUTES} puts it back over the 0.80 headroom "
+        f"bar `portfolio-ops`' timeout-headroom fingerprint applies (#229)."
+    )
+    assert timeout <= MAX_TIMEOUT_MINUTES, (
+        "raising past the policy band needs a band change and a comment naming "
+        "the workload, per this module's header."
+    )
+
+
+def test_ci_records_test_durations_so_the_next_investigation_has_data() -> None:
+    """Local profiling cannot attribute CI time, so the CI log has to carry it.
+
+    The same suite is ~39s locally and 624-910s on a two-core runner under
+    coverage. Nothing in a local `--durations` run explains that gap, and the
+    honest response to "which tests are slow in CI?" was previously "no data".
+    This arm keeps the instrument from being dropped in a future workflow tweak,
+    the same way `portfolio-ops`' `test_pyyaml_installed` keeps an install step.
+    """
+    ci = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    jobs = yaml.safe_load(ci)["jobs"]
+    runs = [
+        step.get("run", "")
+        for step in jobs["test"]["steps"]
+        if isinstance(step, dict) and "run" in step
+    ]
+    pytest_steps = [r for r in runs if "pytest" in r]
+    assert pytest_steps, "ci.yml's `test` job no longer runs pytest"
+    assert any("--durations" in r for r in pytest_steps), (
+        f"the `test` job's pytest invocation dropped `--durations`: {pytest_steps}. "
+        f"Without it there is no way to attribute the 16-23x gap between the "
+        f"local and CI runtimes (#229)."
+    )
