@@ -2620,3 +2620,30 @@ Testing a chart in a repo where matplotlib is an optional extra turned out to be
 easy in a way worth remembering: inject a fake module into `sys.modules` with a
 recording axes object. Skipping the test when matplotlib is absent would have
 meant skipping it in CI, which is where it matters.
+
+## 2026-09-28 — Issue #229: a cap that was never sized
+**Duration:** ~4 min · **Branch:** `session/2026-09-28-0829-issue-229`
+
+- `test (3.12)` had been cancelled on `main` twice for exceeding its 15-minute
+  cap, and this repo's own timeout lock stayed green throughout: it asserts every
+  cap is inside `[1, 30]`, and 15 satisfies that. A band lock cannot see a value
+  that is legal and too small for the job it governs.
+- Raised the cap to 30 and pinned it by value, with the arithmetic written down:
+  the observed maximum is 910 seconds and truncated, 910/1800 is 0.506, which
+  clears the 0.80 headroom bar `portfolio-ops` now applies. The floor in the new
+  lock is 20 rather than 30, chosen so it sits exactly where that bar does.
+- Decided raise-versus-fix from the per-step breakdown rather than convenience:
+  everything that is not `pytest` totals 29 seconds of a 910-second job, and the
+  fifteen slowest tests locally are a flat 1.34–1.45s tail, so there is no hot
+  spot to fix. Added `--durations=10` to the CI invocation so the next
+  investigation can read CI's own numbers instead of extrapolating from local ones.
+
+**Why this work, this session:** `portfolio-ops#76` surfaced it, and this
+session's own Phase A merge of #228 produced the second cancellation.
+
+**Open questions / blockers:** the 3.11 vs 3.12 gap is recorded as unexplained
+with the measurement attached — real in direction, unsizable from six points.
+
+**Next session:** once this and `portfolio-ops#77` are merged, the new
+`timeout-headroom` fingerprint should report this repo clean; that is one of
+#229's acceptance criteria, so the two changes check each other.
