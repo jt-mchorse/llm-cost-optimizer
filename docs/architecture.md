@@ -650,5 +650,32 @@ llm-eval-harness).
 - **Bench harness** — `scripts/bench_savings.py`; workload at
   `docs/savings_workload.json`.
 - **Dashboard** — `dashboard/app.py`; reads `docs/savings.json`.
+- **D-022 (#229).** `ci.yml`'s `test` job is capped at 30 minutes, sized
+  from the measured distribution rather than from convenience, and pinned
+  by a **value** lock rather than only by the policy band. `test (3.12)`
+  had been cancelled on `main` twice for exceeding a 15-minute cap, and
+  `test_job_timeout_in_policy_band` stayed green throughout because it
+  asserts every cap is inside `[1, 30]` — and `15` satisfies that. A band
+  lock cannot see a value that is legal and too small for the job it
+  governs.
+
+  Over the ten newest push runs on `main`, that job was at or above 88% of
+  its cap in eight of them. The arithmetic behind 30: the observed maximum
+  is 910s and truncated, so `910 / 1800 = 0.506` clears the 0.80 bar
+  `portfolio-ops`' `timeout-headroom` fingerprint applies; 30 is already
+  this repo's `MAX_TIMEOUT_MINUTES`, so no band is widened; and it is
+  twelve times below GitHub's 360-minute default, so a genuinely hung job
+  is still caught in half an hour.
+
+  Raise-or-fix was decided from the per-step breakdown, not from
+  convenience: checkout, `setup-python` and `pip install` total 29 seconds
+  of the 910-second job and `pytest --cov` is 877, and the fifteen slowest
+  tests locally are a flat 1.34–1.45s tail rather than one pathological
+  case. The new lock's floor is 20 rather than 30, so the cap stays
+  tunable while anything putting the observed maximum back over the
+  headroom bar goes red. `--durations=10` was added to the CI invocation
+  because local profiling cannot attribute CI time — the same suite is 39
+  seconds locally and 624–910 on a two-core runner under coverage.
+
 - **Design decisions** — `MEMORY/core_decisions_human.md` for prose,
   `MEMORY/core_decisions_ai.md` for the structured log.
