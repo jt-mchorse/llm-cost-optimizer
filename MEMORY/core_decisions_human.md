@@ -601,3 +601,70 @@ day someone changes it.
   `t=1.25` reads as two different quantities.
 - *Round the swept thresholds to match the chart.* Rejected — the standing
   anti-pattern six repos have now declined.
+
+## D-022 — The `test` job's cap, sized from a measurement (2026-09-28)
+
+**Decision:** `ci.yml`'s `test` job is capped at 30 minutes, pinned by a *value*
+lock rather than only by the policy band, and its `pytest` invocation carries
+`--durations=10`.
+
+**Why:** `test (3.12)` was cancelled on `main` twice for exceeding a 15-minute
+cap — 15m05s on 2026-09-22 and 15m10s on 2026-09-28 — and nothing in this repo
+noticed. `test_job_timeout_in_policy_band` asserts every cap is inside `[1, 30]`,
+and `15` satisfies that. **A band lock cannot see a cap that is legal and too
+small for the job it governs.**
+
+Over the ten newest push runs on `main`, `test (3.12)` was at or above 88% of
+that cap in eight of them. This is not a job that spiked once.
+
+**The arithmetic that picked 30.** The observed maximum is 910s, and it is
+truncated — the true value is at least that. 910 / 1800 is **0.506**, which
+clears the 0.80 bar `portfolio-ops`' new `timeout-headroom` fingerprint applies,
+with room. 30 is already this repo's `MAX_TIMEOUT_MINUTES`, so no policy band is
+widened. And it is twelve times below GitHub's 360-minute default, so a genuinely
+hung job is still caught in half an hour rather than six.
+
+**Raise or fix was decided from the per-step breakdown, not from convenience.**
+For the cancelled run, checkout, `setup-python` and `pip install` total 29
+seconds of a 910-second job; `pytest --cov` is 877. And there is no local hot
+spot to fix — the fifteen slowest tests are a flat tail between 1.34s and 1.45s.
+This is a two-core runner plus coverage instrumentation over 1173 tests, not a
+regression that a cap increase would entrench.
+
+**The value lock's floor is 20, not 30.** That lets the cap be tuned without a
+test edit, while anything that puts the observed 910s maximum back over the
+headroom bar goes red: 910 / (20 × 60) is 0.76, and 910 / (19 × 60) is 0.80.
+Only `test` is pinned — `lint` and `memory-check` measured 18s and 5s against the
+same cap, so a floor for them would be a number with no measurement behind it.
+
+**`--durations=10` is the instrument, not the fix.** Local profiling cannot
+attribute CI time: the same suite is 39 seconds here and 624–910 on a two-core
+runner under coverage, and nothing in a local durations run explains that gap. An
+arm keeps it from being dropped in a future workflow tweak.
+
+**Alternatives considered:**
+- *Leave the cap and make the suite faster* — rejected. There is no hot spot, and
+  everything that is not `pytest` is 29 of 910 seconds.
+- *Raise to 19 or 20* — rejected, built and run, 1 red. At 19 the observed
+  maximum is back at the headroom bar.
+- *Raise past the policy band* — rejected, built and run, 2 red.
+- *Pin `lint` and `memory-check` too* — rejected; no measurement behind it.
+- *Rely on the existing band lock* — rejected. `15` is inside `[1, 30]`, which is
+  exactly why two cancellations went unnoticed.
+
+**On 3.11 vs 3.12: unexplained, with the measurement attached.** 3.12 is slower
+in 6 of 6 paired runs — a sign test gives p ≈ 0.031, so the direction is real —
+but the magnitude ranges from 5 seconds on 09-23 (612s vs 624s in the same run)
+to 8m45s on 09-21 (320s vs 845s). Runner variance dominates and a systematic
+component cannot be sized from six points. Do not re-derive this; do not invent a
+cause.
+
+**Deliberately not filed:** the 25 tests at ≥1.0s locally are ~33s of a 37s run,
+which suggests a shared-fixture opportunity. Local timings do not attribute CI
+time, and acting on that suspicion without the durations data this change adds is
+exactly the guessing the issue warns against. The next session can read it off a
+real CI log.
+
+**Reversibility:** Cheap.
+
+**Related issues:** #229, #58, portfolio-ops#76

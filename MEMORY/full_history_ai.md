@@ -2591,3 +2591,26 @@ context_for_next_session:
 decisions_made: [D-021]
 followups: []
 ---
+
+---
+session: 2026-09-28T08:34:40Z
+duration_min: 4
+issue: 229
+focus: a_BAND_lock_cannot_see_a_cap_that_is_LEGAL_AND_TOO_SMALL_for_the_job_it_governs
+delta:
+  files_changed: 4
+  tests_added: 2
+  suite: "1173 -> 1175 green"
+context_for_next_session:
+  - THE_LENS_IS_A_LOCK_THAT_PINS_A_RANGE_CANNOT_SEE_A_VALUE_THAT_IS_LEGAL_AND_WRONG_test_job_timeout_in_policy_band_asserts_every_cap_is_inside_1_to_30_AND_15_SATISFIES_IT_so_test_3_12_was_CANCELLED_ON_main_TWICE_with_the_repos_own_timeout_lock_GREEN_ASK_OF_EVERY_BAND_OR_RANGE_LOCK_WHICH_WRONG_VALUE_IT_ADMITS
+  - RAISE_VS_FIX_WAS_DECIDED_FROM_THE_PER_STEP_BREAKDOWN_checkout_plus_setup_python_plus_pip_install_are_29s_OF_A_910s_JOB_and_pytest_cov_is_877s_AND_THERE_IS_NO_LOCAL_HOT_SPOT_the_fifteen_slowest_tests_are_a_FLAT_TAIL_1_34s_to_1_45s_so_it_is_a_two_core_runner_plus_coverage_NOT_A_REGRESSION_A_CAP_INCREASE_WOULD_ENTRENCH_GET_THE_STEP_TIMINGS_BEFORE_ARGUING_ABOUT_A_TIMEOUT
+  - "THE_ARITHMETIC_THAT_PICKED_30: observed max 910s and TRUNCATED so the true value is at least that; 910/1800 = 0.506 clears portfolio-ops' new 0.80 timeout-headroom bar; 30 is ALREADY this repo's MAX_TIMEOUT_MINUTES so no band widens; and it is 12x below GitHub's 360 default so a real hang is still caught in half an hour. WRITE THE DIVISION DOWN - a cap with no arithmetic behind it is how this one got to 15."
+  - THE_VALUE_LOCKS_FLOOR_IS_20_NOT_30_ON_PURPOSE_it_lets_the_cap_be_TUNED_without_a_test_edit_while_910_over_20_times_60_is_0_76_and_910_over_19_times_60_is_0_80_SO_THE_FLOOR_IS_EXACTLY_WHERE_THE_HEADROOM_BAR_IS_measured_the_19_neighbour_at_1_RED_A_FLOOR_PICKED_FROM_THE_BAR_IT_DEFENDS_BEATS_A_FLOOR_EQUAL_TO_THE_SHIPPED_VALUE
+  - ONLY_test_IS_PINNED_lint_measured_18s_and_memory_check_5s_AGAINST_THE_SAME_CAP_ratios_0_02_and_0_006_A_FLOOR_FOR_THEM_WOULD_BE_A_NUMBER_WITH_NO_MEASUREMENT_BEHIND_IT_and_integration_yml_is_workflow_dispatch_ONLY_so_it_has_no_push_history_to_size_against
+  - durations_10_IS_THE_INSTRUMENT_NOT_THE_FIX_AND_IT_IS_LOCKED_local_profiling_CANNOT_attribute_CI_time_39s_here_vs_624_to_910s_there_SHIP_THE_INSTRUMENT_RATHER_THAN_GUESS
+  - "3_11_VS_3_12 IS RECORDED AS UNEXPLAINED WITH THE DATA - DO NOT RE-DERIVE: 3.12 slower in 6 of 6 paired runs (sign test p ~ 0.031, direction real) but by 5 SECONDS on 09-23 (612s vs 624s in the SAME run) to 8m45s on 09-21 (320s vs 845s). Runner variance dominates; six points cannot size a systematic component."
+  - DELIBERATELY_NOT_FILED_the_25_tests_at_over_1s_locally_are_33s_of_a_37s_run_which_SUGGESTS_a_shared_fixture_opportunity_BUT_LOCAL_TIMINGS_DO_NOT_ATTRIBUTE_CI_TIME_read_it_off_a_REAL_CI_LOG_once_this_merges_and_durations_lands
+  - portfolio_ops_77_ADDS_THE_timeout_headroom_FINGERPRINT_THAT_WOULD_HAVE_CAUGHT_THIS_and_ITS_acceptance_criterion_is_that_this_repo_reports_clean_afterwards_SO_THE_TWO_CHANGES_CHECK_EACH_OTHER
+decisions_made: [D-022]
+followups: []
+---
