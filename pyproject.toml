@@ -113,6 +113,19 @@ ignore_missing_imports = true
 module = "matplotlib.*"
 ignore_missing_imports = true
 
+# `tests/integration` imports `pytest`, and `_pytest` imports numpy under
+# TYPE_CHECKING, so adding it to the gate (#235) pulled numpy's own stubs in.
+# numpy 2.5 dropped Python 3.11 and its `__init__.pyi` uses the 3.12 `type`
+# statement, which mypy refuses under `python_version = "3.11"`, so the 3.12 CI
+# job (numpy 2.5.3) failed while 3.11 (numpy 2.4.6) passed. Nothing here
+# type-checks against numpy. Same fix as chunking-strategies-lab#209.
+[[tool.mypy.overrides]]
+module = "numpy.*"
+follow_imports = "skip"
+# `follow_imports` does not apply to `.pyi` stubs unless this is set; without
+# it the skip is a no-op (measured in chunking-strategies-lab#209).
+follow_imports_for_stubs = true
+
 [tool.ruff]
 # ruff 0.16.1 extended `ruff format` to Python code blocks inside Markdown.
 # CI installs ruff unpinned (`pip install -e '.[dev]'`), so the tool's scope
