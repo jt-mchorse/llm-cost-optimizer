@@ -2656,3 +2656,23 @@ context_for_next_session:
   - A_PROBE_WHOSE_MUTATION_ASSERT_FAILED_STILL_RAN_THE_SUITE_and_printed_an_unmutated_green_CHAIN_THE_MUTATION_AND_THE_RUN_WITH_AND_AND
 followups: []
 ---
+
+---
+session: 2026-09-30T08:59Z
+issue: 235
+focus: THE_DOCUMENTED_LIVE_PATH_FAILED_ON_A_FRESH_CLONE_AT_IMPORT_AND_THEN_AGAIN_ON_A_FIELD_THAT_NEVER_EXISTED
+phase: shipped
+duration_min: 5   # computed from the plan comment timestamp and date -u
+delta:
+  files_changed: 8
+  tests_added: 10
+  suite: "1175 -> 1185 green"
+decisions_made: []
+measured: "fresh clone py3.12: .[dev] + documented integration command = collection error (no anthropic); with .[dev,anthropic] the suite ran into AttributeError input_per_million_usd; after the fix only the live call fails, with the expected 401 from a fake key. Probes: old README 5 red, old workflow 1 red, old attribute 1 red (mypy gate)."
+context_for_next_session:
+  - RUN_THE_README_QUICKSTART_IN_A_FRESH_CLONE_AND_FRESH_VENV_my_dev_venv_had_anthropic_installed_so_it_could_not_see_the_missing_extra
+  - A_SUITE_EXCLUDED_FROM_DEFAULT_PYTEST_WITH_A_MANUAL_ONLY_WORKFLOW_THAT_HAS_NEVER_RUN_IS_READ_BY_NOTHING_put_it_under_a_static_gate_mypy_found_the_field_in_one_run
+  - A_CROSS_REPO_SNIPPET_MUST_MATCH_THE_OTHER_REPOS_API_SEMANTICS_leh_rubric_is_the_TEXT_not_a_name_lco_tests_used_a_stub_judge_so_nothing_could_notice
+  - BRANCH_NOTE_THIS_IS_THE_THIRD_OPEN_lco_PR_232_234_235_MEMORY_conflicts_only_merge_serially
+followups: []
+---
