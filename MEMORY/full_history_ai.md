@@ -2635,3 +2635,24 @@ context_for_next_session:
   - GOTCHA_lco_architecture_doc_backtick_path_lock_REFUSES_a_backticked_stem_that_is_not_a_file_docs_savings
 followups: []
 ---
+
+---
+session: 2026-09-30T08:53Z
+issue: 233
+focus: D_022S_DURATIONS_INSTRUMENT_PAID_OFF_THE_FLAT_SLOW_TAIL_WAS_ONE_BENCH_RECOMPUTED_27_TIMES
+phase: shipped
+duration_min: 8   # computed: plan comment -> date -u, including ~10 min waiting on CI
+delta:
+  files_changed: 7
+  tests_added: 4
+  suite: "1175 -> 1179 green; local 37.8s -> 11.3s"
+  benchmarks: { ci_test_3_12: "15m17s -> 2m54s", ci_test_3_11: "7m48s -> 2m13s", local_suite: "37.8s -> 11.3s" }
+decisions_made: []
+measured: "probes: cache serves a different workload 8 red, import hook removed 1 red, deepcopy removed 4 red. One probe first did NOT APPLY (the target line occurred twice) and its 1179-passed was an unmutated run - rerun on the unique line, 4 red"
+context_for_next_session:
+  - D_022_REJECTED_MAKE_THE_SUITE_FASTER_BECAUSE_THE_TAIL_WAS_FLAT_AND_IT_WAS_FLAT_BECAUSE_IT_WAS_ONE_COMPUTATION_A_FLAT_TAIL_OF_EQUAL_DURATIONS_IS_A_SIGNATURE_OF_REPETITION_NOT_OF_NO_HOT_SPOT
+  - 3_12_VS_3_11_PER_TEST_RATIO_IS_A_STEADY_2_0X_35_1_TO_35_7s_VS_17_3_TO_17_8s_ACROSS_ALL_TEN_so_D_011_D_022s_UNEXPLAINED_DIVERGENCE_IS_SYSTEMATIC_NOT_RUNNER_NOISE_consistent_with_3_12_slowing_settrace_based_coverage_HYPOTHESIS_NOT_TESTED_COVERAGE_CORE_sysmon_would_be_the_experiment
+  - capture_demo_RE_IMPORTS_bench_savings_FRESH_so_a_module_attribute_patch_misses_it_the_fixture_also_wraps_importlib_import_module
+  - A_PROBE_WHOSE_MUTATION_ASSERT_FAILED_STILL_RAN_THE_SUITE_and_printed_an_unmutated_green_CHAIN_THE_MUTATION_AND_THE_RUN_WITH_AND_AND
+followups: []
+---

@@ -2659,3 +2659,15 @@ with the measurement attached — real in direction, unsizable from six points.
 **Open questions / blockers:** none.
 
 **Next session:** lco's remaining open issues are decision-revisits plus #18 (demo capture).
+
+## 2026-09-30 — Issue #233: one canonical bench per test session
+**Duration:** ~8 min (including ~10 min waiting on CI) · **Branch:** session/2026-09-30-0844-issue-233
+
+- D-022 added `--durations` to CI and deferred acting until it had data. The data showed every slow test was the same 500-row bench, recomputed 27 times. A session-scoped cache, with deep copies and an uncached equivalence arm, took CI `test (3.12)` from **15m17s to 2m54s** and `test (3.11)` from **7m48s to 2m13s**; the local suite went from 37.8 s to 11.3 s. Test-only change.
+- The per-test 3.12/3.11 ratio is a steady ~2.0×, which suggests the "unexplained" divergence D-011/D-022 recorded is systematic (plausibly coverage tracing on 3.12). Not tested.
+
+**Why this work, this session:** D-022 explicitly deferred it until its instrument produced data, and the data was in.
+
+**Open questions / blockers:** #232 is also open in this repo (MEMORY conflict only).
+
+**Next session:** optionally try `COVERAGE_CORE=sysmon` on 3.12 as a measured experiment.
