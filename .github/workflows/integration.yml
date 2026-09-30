@@ -50,6 +50,6 @@ jobs:
             exit 1
           fi
           echo "secret length: ${#ANTHROPIC_API_KEY}"
-      - run: pip install -e '.[dev]' anthropic
+      - run: pip install -e '.[dev,anthropic]'
       - name: Run integration suite
         run: pytest tests/integration -v --no-header

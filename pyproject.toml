@@ -86,12 +86,22 @@ python_version = "3.11"
 # `tests/` by normalizing to a single spelling.
 mypy_path = "."
 explicit_package_bases = true
-files = ["cost_optimizer", "scripts"]
+# `tests/integration` is in the gate too (#235). It is excluded from the default
+# pytest run and its workflow is manual-only, so the gate is the only thing that
+# ever reads it: it had called `ModelPricing.input_per_million_usd` -- a field
+# that never existed (the field is `input_per_mtok`) -- since it was written.
+files = ["cost_optimizer", "scripts", "tests/integration"]
 warn_unused_ignores = true
 warn_redundant_casts = true
 
 [[tool.mypy.overrides]]
 module = "redis.*"
+ignore_missing_imports = true
+
+# Same reason as `redis` above: the `anthropic` extra is optional, and the
+# integration suite in the gate imports it (#235).
+[[tool.mypy.overrides]]
+module = "anthropic.*"
 ignore_missing_imports = true
 
 # matplotlib is genuinely absent: it is in no extra, not in `dev`, and not in

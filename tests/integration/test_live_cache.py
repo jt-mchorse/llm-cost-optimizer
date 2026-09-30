@@ -69,7 +69,7 @@ def _estimate_max_cost_usd(model: str) -> float:
     pricing = get_pricing(model)
     worst_case_input_tokens = 2 * 3600
     # Per-million-token price; convert to per-token then × tokens.
-    return worst_case_input_tokens * (pricing.input_per_million_usd / 1_000_000)
+    return worst_case_input_tokens * (pricing.input_per_mtok / 1_000_000)
 
 
 def test_live_cache_cold_then_warm_round_trip():
