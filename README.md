@@ -46,6 +46,8 @@ pip install -e '.[dev,anthropic]'   # the integration suite imports the SDK (#23
 ANTHROPIC_API_KEY=sk-... pytest tests/integration -v
 ```
 
+Or copy [`.env.example`](.env.example) to `.env` (gitignored), fill in the key, and `set -a; . ./.env; set +a` before running. It also lists `LIVE_CACHE_MODEL` (the model for the cold/warm calls, default `claude-haiku-4-5`).
+
 Use the wrapper against a real Anthropic client (`pip install -e '.[anthropic]'`
 adds the SDK; the package itself imports without it):
 
