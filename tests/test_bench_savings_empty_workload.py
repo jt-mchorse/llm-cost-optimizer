@@ -225,7 +225,7 @@ def test_extra_renders_an_absent_rate_as_a_dash_not_the_string_none() -> None:
 # ----------------------------------------------------------------------
 
 
-def test_the_shipped_artifacts_do_not_move(tmp_path: Path) -> None:
+def test_the_shipped_artifacts_do_not_move(tmp_path: Path, memoized_bench: object) -> None:
     """The whole change must be invisible at the committed `n=500`.
 
     `--n < 1` exits 2 (#157), so no published artifact can contain an absent

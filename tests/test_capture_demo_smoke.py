@@ -16,6 +16,12 @@ import sys
 from contextlib import redirect_stdout
 from pathlib import Path
 
+import pytest
+
+# Every test here runs the full capture pipeline, bench included; serve the
+# canonical bench payload from the session cache (#233).
+pytestmark = pytest.mark.usefixtures("memoized_bench")
+
 
 def _load_capture_module():
     """Load ``scripts/capture_demo.py`` as a fresh module.

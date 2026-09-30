@@ -26,7 +26,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.bench_savings import _format_markdown, run_bench  # noqa: E402
+from scripts.bench_savings import _format_markdown  # noqa: E402
 
 REGEN_HINT = (
     "Regenerate the committed artifacts:\n"
@@ -52,9 +52,9 @@ README_STRATEGY_KEYWORDS = (
 )
 
 
-def test_run_bench_payload_matches_committed_savings_json() -> None:
+def test_run_bench_payload_matches_committed_savings_json(canonical_bench_payload: dict) -> None:
     """`run_bench(n=500, seed=0xC057)` must equal the committed `docs/savings.json`."""
-    payload = run_bench(n=500, seed=0xC057)
+    payload = canonical_bench_payload
     committed = json.loads(SAVINGS_JSON.read_text(encoding="utf-8"))
     # JSON round-trip with sort_keys + indent gives a stable string for both
     # sides, so the assertion message is human-readable on diff.
@@ -65,9 +65,9 @@ def test_run_bench_payload_matches_committed_savings_json() -> None:
     )
 
 
-def test_format_markdown_output_matches_committed_savings_md() -> None:
+def test_format_markdown_output_matches_committed_savings_md(canonical_bench_payload: dict) -> None:
     """`_format_markdown(run_bench(...))` must equal `docs/savings.md` byte-for-byte."""
-    payload = run_bench(n=500, seed=0xC057)
+    payload = canonical_bench_payload
     rendered = _format_markdown(payload)
     committed = SAVINGS_MD.read_text(encoding="utf-8")
     assert rendered == committed, (
