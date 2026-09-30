@@ -2614,3 +2614,24 @@ context_for_next_session:
 decisions_made: [D-022]
 followups: []
 ---
+
+---
+session: 2026-09-30T08:09Z
+issue: 231
+focus: A_DOTTED_out_STEM_OVERWROTE_THE_CANONICAL_RUN_BECAUSE_with_suffix_EATS_THE_DOT_THE_176_SIDECAR_KEEPS
+phase: shipped
+duration_min: 9   # 08:00 hunt start -> 08:09 close, from date -u and the issue timestamps
+delta:
+  files_changed: 7
+  tests_added: 17
+  suite: "1175 -> 1192 green"
+decisions_made: ["D-023"]
+measured: "probes: main's derivation behind the new signature 9 red, stem-for-workload 6, strip-any-suffix 7, tune reverted 24; documented --out docs/savings byte-identical against the three committed files"
+context_for_next_session:
+  - RUN_THE_DOCUMENTED_COMMAND_WITH_A_DIFFERENT_ARGUMENT_the_canonical_invocation_is_the_ONE_input_where_with_suffix_and_name_append_AGREE_so_every_committed_artifact_was_consistent_and_the_defect_was_invisible
+  - 176_FIXED_ONE_OF_THREE_DERIVATIONS_AND_ITS_COMMENT_SAID_LIKE_ITS_TWO_SIBLINGS_ABOVE_they_were_not_alike_on_a_dotted_stem_A_FIX_THAT_CLAIMS_PARITY_WITH_A_SIBLING_run_both_on_the_input_that_separates_them
+  - AN_importorskip_ARM_FOR_A_LIBRARY_IN_NO_EXTRA_IS_PERMANENTLY_SKIPPED_IN_CI_spy_on_the_seam_instead_the_path_handed_to_it_IS_the_derivation
+  - A_LITERAL_GIT_SHOW_MAIN_REVERT_WAS_A_COLLECTION_ERROR_new_test_module_imports_names_main_lacks_empty_probe_output_means_DID_NOT_RUN_rerun_the_revert_BEHIND_THE_NEW_SIGNATURE_9_red
+  - GOTCHA_lco_architecture_doc_backtick_path_lock_REFUSES_a_backticked_stem_that_is_not_a_file_docs_savings
+followups: []
+---

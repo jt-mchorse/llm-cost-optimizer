@@ -668,3 +668,22 @@ real CI log.
 **Reversibility:** Cheap.
 
 **Related issues:** #229, #58, portfolio-ops#76
+
+## D-023 — Every artifact name appends to one resolved `--out` stem (2026-09-30)
+**Decision:** `scripts/_io.py` gains `artifact_path(stem, suffix)`, which appends, and `resolve_out_stem` takes a required `artifact_suffixes` and strips a suffix only when it is one the calling script writes. `bench_savings`, `tune_threshold` and `capture_demo` derive every name through it.
+
+**Why:** `Path.with_suffix` replaces whatever follows the last dot, while #176's workload sidecar was built from `.name`, which keeps it. So on any dotted stem the three names disagreed, and `--out docs/savings.small` overwrote the canonical `docs/savings.json`/`.md` while writing `savings.small_workload.json`. Run twice into one directory, that left a 500-row workload beside a 25-row table — #176's harm verbatim, coming back through the two names #176 didn't touch. It was found by running the documented command with `--out …/savings.json`, which produced `savings.json_workload.json` against a help text promising `<stem>_workload.json`.
+
+#174's intent is kept: `--out docs/savings.json` still means the stem `docs/savings`, because `.json` is one of this script's own suffixes. The documented `--out docs/savings` is byte-identical against all three committed files.
+
+The existing arm for a suffixed stem asserted two of the three names, and #176's own arm used a stem with no dot, so neither could see this. The plot arm spies on the `_try_save_plot` seam instead of importing matplotlib, which is in no extra; an `importorskip` arm would be permanently skipped in CI.
+
+**Alternatives considered:**
+- Use `.stem` for the workload name — rejected, built and run, 6 red: the names become consistent and still clobber the canonical run.
+- Strip any suffix — rejected, built and run, 7 red: `savings.small` becomes `savings`.
+- Always append, never strip — rejected: `--out docs/savings.json` would write `savings.json.json`.
+- A default for `artifact_suffixes` — rejected: a new script would silently inherit "strip nothing".
+
+**Reversibility:** Cheap.
+
+**Related issues:** #231, #176, #174

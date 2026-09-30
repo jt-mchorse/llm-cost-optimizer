@@ -246,3 +246,19 @@
   reversibility: cheap
   related_issues: ["#229", "#58", "portfolio-ops#76", "portfolio-ops#77"]
   superseded_by: null
+
+- id: D-023
+  date: 2026-09-30
+  decision: every_artifact_name_a_script_writes_is_APPENDED_to_ONE_resolved_stem_through_scripts_io_artifact_path_AND_resolve_out_stem_strips_a_suffix_ONLY_when_it_is_one_the_CALLING_SCRIPT_WRITES_via_a_REQUIRED_keyword_artifact_suffixes
+  amends: "#174's resolve_out_stem docstring (a suffixed stem returned untouched so with_suffix could replace it) - no prior D-NNN"
+  rationale: with_suffix_REPLACES_WHATEVER_FOLLOWS_THE_LAST_DOT_while_176s_workload_sidecar_was_built_from_name_WHICH_KEEPS_IT_so_the_three_names_DISAGREED_ON_ANY_DOTTED_STEM_and_out_docs_savings_small_OVERWROTE_the_canonical_docs_savings_json_and_md_leaving_the_500_row_workload_BESIDE_A_25_ROW_TABLE_WHICH_IS_176s_HARM_VERBATIM_THROUGH_THE_SIBLINGS
+  FOUND_BY_RUNNING_THE_DOCUMENTED_COMMAND_WITH_A_DIFFERENT_out: out_tmp_savings_json_wrote_savings_json_workload_json_AND_THE_HELP_TEXT_PROMISES_stem_workload_json
+  KEEPS_174s_INTENT: out_docs_savings_json_STILL_MEANS_the_stem_docs_savings_because_json_is_an_artifact_suffix_of_this_script_and_the_documented_out_docs_savings_is_BYTE_IDENTICAL_against_the_committed_three_files
+  THE_KEYWORD_IS_REQUIRED_ON_PURPOSE: a_default_of_strip_nothing_would_let_a_new_script_inherit_the_two_derivation_split_silently_tune_threshold_passes_json_and_png_bench_savings_passes_json_and_md
+  THE_EXISTING_ARM_COVERED_THE_DIVERGENT_CASE_AND_ASSERTED_TWO_OF_THREE_NAMES: test_main_ordinary_stems_are_unaffected_savings_json_checked_json_and_md_exist_and_never_looked_at_the_workload_AND_176s_OWN_ARM_used_run_a_WHICH_HAS_NO_DOT
+  THE_PLOT_ARM_SPIES_ON_THE_SEAM_BECAUSE_MATPLOTLIB_IS_IN_NO_EXTRA: an_importorskip_arm_would_be_PERMANENTLY_SKIPPED_IN_CI_the_path_handed_to_try_save_plot_IS_the_derivation_and_does_not_need_a_plotting_library
+  alternatives_rejected: ["USE_stem_FOR_THE_WORKLOAD_NAME_REJECTED_BUILT_AND_RUN_6_RED_it_makes_the_trio_CONSISTENT_AND_STILL_CLOBBERS_the_canonical_run", "STRIP_ANY_SUFFIX_REJECTED_BUILT_AND_RUN_7_RED_savings_small_becomes_savings", "APPEND_ALWAYS_WITHOUT_STRIPPING_REJECTED_out_docs_savings_json_would_write_savings_json_json_breaking_174s_intent_and_an_existing_arm", "A_DEFAULT_artifact_suffixes_REJECTED_a_new_script_would_inherit_strip_nothing"]
+  measured: "suite 1175 -> 1192 green (17 new arms, none skipped); ruff clean. Probes (tests dir, totals 1192): main's derivation behind the new signature 9 red on the two bench modules, stem-for-workload neighbour 6 red, strip-any-suffix 7 red, tune_threshold reverted 24 red. A literal git-show-main revert is a COLLECTION ERROR because the new module imports ARTIFACT_SUFFIXES - CI-red but not a behavioural result, recorded as such."
+  reversibility: cheap
+  related_issues: ["#231", "#176", "#174"]
+  superseded_by: null
