@@ -49,7 +49,7 @@ from cost_optimizer.router import (  # noqa: E402
     EscalationSignal,
     UncertaintyRouter,
 )
-from scripts._io import atomic_write_text, resolve_out_stem  # noqa: E402
+from scripts._io import artifact_path, atomic_write_text, resolve_out_stem  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -540,7 +540,7 @@ def main(argv: list[str] | None = None) -> int:
     # 1 (#174), and only after the whole sweep had already completed. Same
     # operator-misconfig contract as the `--thresholds` guard directly above.
     try:
-        out_stem = resolve_out_stem(args.out)
+        out_stem = resolve_out_stem(args.out, artifact_suffixes=(".json", ".png"))
     except ValueError as e:
         print(f"::error::{e}", file=sys.stderr)
         return 2
@@ -552,8 +552,10 @@ def main(argv: list[str] | None = None) -> int:
         strong_dollars=args.strong_dollars,
     )
 
-    out_json = out_stem.with_suffix(".json")
-    out_png = out_stem.with_suffix(".png")
+    # Appended, not substituted (#231, D-023): `with_suffix` would turn
+    # `--out docs/threshold_demo.v2` into `docs/threshold_demo.json`.
+    out_json = artifact_path(out_stem, ".json")
+    out_png = artifact_path(out_stem, ".png")
     payload = {
         "mode": "dry",
         "cheap_dollars_per_request": args.cheap_dollars,

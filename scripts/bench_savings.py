@@ -73,7 +73,7 @@ from cost_optimizer.semantic_cache import (  # noqa: E402
     InMemoryStorage,
     SemanticCache,
 )
-from scripts._io import atomic_write_text, resolve_out_stem  # noqa: E402
+from scripts._io import artifact_path, atomic_write_text, resolve_out_stem  # noqa: E402
 
 # ----------------------------------------------------------------------
 # Workload generation (deterministic)
@@ -907,6 +907,13 @@ def _write_workload(workload: list[WorkloadRow], out: Path) -> None:
     atomic_write_text(out, json.dumps(payload, indent=2, sort_keys=True))
 
 
+#: The suffixes this script writes, so `--out docs/savings.json` still means the
+#: stem `docs/savings` (#174) while `--out docs/savings.small` keeps its dot (#231).
+ARTIFACT_SUFFIXES = (".json", ".md")
+#: #176's provenance sidecar, appended to the same stem as the two artifacts.
+WORKLOAD_SUFFIX = "_workload.json"
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
@@ -922,7 +929,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--out",
         default="docs/savings",
-        help="Output stem; `.json` and `.md` are written next to it.",
+        help=(
+            "Output stem; `<stem>.json`, `<stem>.md` and `<stem>_workload.json` "
+            "are written next to it. A trailing `.json`/`.md` is stripped; any "
+            "other dot is part of the stem."
+        ),
     )
     p.add_argument("--n", type=int, default=500, help="Workload row count.")
     p.add_argument("--seed", type=int, default=0xC057, help="Deterministic order seed.")
@@ -957,14 +968,18 @@ def main(argv: list[str] | None = None) -> int:
     # Checking here also means the operator isn't made to wait for a full bench
     # before being told the flag is wrong.
     try:
-        out_stem = resolve_out_stem(args.out)
+        out_stem = resolve_out_stem(args.out, artifact_suffixes=ARTIFACT_SUFFIXES)
     except ValueError as e:
         print(f"::error::{e}", file=sys.stderr)
         return 2
 
     payload = run_bench(n=args.n, seed=args.seed)
-    out_json = out_stem.with_suffix(".json")
-    out_md = out_stem.with_suffix(".md")
+    # All three names from one stem through one helper (#231, D-023): the
+    # two siblings used `with_suffix`, which eats a dot that belongs to the
+    # stem, and so overwrote the canonical `docs/savings.{json,md}` for
+    # `--out docs/savings.small` while the sidecar below kept the dot.
+    out_json = artifact_path(out_stem, ".json")
+    out_md = artifact_path(out_stem, ".md")
     # Derived from the stem, like its two siblings above — not a constant
     # basename in the same directory. With the canonical `--out docs/savings`
     # the stem *is* `savings`, so all three names coincided and the divergence
@@ -979,7 +994,7 @@ def main(argv: list[str] | None = None) -> int:
     # reproducible"); losing it silently is the failure D-012 exists to
     # prevent. This yields `docs/savings_workload.json` byte-identically for
     # the documented invocation, so the committed artifact is untouched.
-    out_workload = out_stem.with_name(out_stem.name + "_workload.json")
+    out_workload = artifact_path(out_stem, WORKLOAD_SUFFIX)
     # The output stem is operator input too: an unwritable `--out` (a read-only
     # dir, a permission-denied path, or a path component that is a file) makes
     # `atomic_write_text` raise OSError, which without this guard escaped `main`

@@ -288,8 +288,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return bench_rc
 
-    bench_md = tmp_out_stem.with_suffix(".md")
-    bench_json = tmp_out_stem.with_suffix(".json")
+    # The same derivation the bench used to write them (#231, D-023), so the
+    # two cannot disagree about where the artifacts are.
+    from scripts._io import artifact_path
+
+    bench_md = artifact_path(tmp_out_stem, ".md")
+    bench_json = artifact_path(tmp_out_stem, ".json")
     if not bench_md.exists() or not bench_json.exists():
         print(
             f"[capture] bench did not produce expected artifacts at "
