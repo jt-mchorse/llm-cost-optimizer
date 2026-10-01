@@ -2695,3 +2695,21 @@ context_for_next_session:
   - THE_LOCK_IS_TWO_DIRECTIONAL_read_subset_listed_AND_listed_subset_read_so_a_stale_entry_fails_too_and_SDK_IMPLICIT_holds_ANTHROPIC_API_KEY_because_Anthropic_reads_it_with_no_line_of_ours
   - SCOPE_EXCLUDES_ONLY_tests_test_star_py_AT_DEPTH_2_the_hermetic_unit_tests_tests_integration_IS_IN_SCOPE_because_it_is_what_an_operator_runs_with_a_key
 followups: []
+
+---
+session: 2026-10-01T09:02Z
+issue: 247
+focus: A_TELEMETRY_NEUTRAL_RESTORE_ROLLED_BACK_A_COUNTER_FOR_SOMETHING_THAT_CANNOT_BE_UNDONE
+phase: shipped
+duration_min: 4   # issue filed ~4 min before this block, from date -u
+delta:
+  files_changed: 2
+  tests_added: 4
+  suite: "1211 -> 1215 green"
+decisions_made: []
+measured: "1dcb7ae: TTL cache, 5 records, clock past expiry, helper run -> storage 0, expired_purged 0. Revert probe (old semantic_cache.py): 1 failed of 1215."
+context_for_next_session:
+  - A_RESTORE_JUSTIFIED_BY_ONE_COUNTER_CLASS_RESTORED_ALL_OF_THEM_the_reason_named_hits_and_misses_and_the_code_restored_the_storage_counters_too_A_TRUE_REASON_FOR_AN_OVER_BROAD_SCOPE
+  - THE_ZERO_HITS_RETURNS_0_0_HALF_IS_D_019S_EMPTY_POPULATION_RULE_NOT_REACHING_THE_RUNTIME_FILED_AS_A_DECISION_REVISIT
+followups: []
+---
