@@ -102,7 +102,13 @@ def test_readme_pip_extras_all_exist_in_pyproject() -> None:
     """Every `pip install -e '.[<extra>]'` quoted in the README must be a
     declared optional-dependencies key."""
     body = _readme()
-    quoted = set(re.findall(r"pip install -e '\.\[([^\]]+)\]'", body))
+    # `.[dev,anthropic]` names two extras; split on the comma so a multi-extra
+    # install is checked extra by extra rather than as one unknown key (#235).
+    quoted = {
+        extra.strip()
+        for group in re.findall(r"pip install -e '\.\[([^\]]+)\]'", body)
+        for extra in group.split(",")
+    }
     assert quoted, (
         "README must quote at least one `pip install -e '.[<extra>]'` "
         "command for this test to lock anything."

@@ -61,7 +61,11 @@ def test_the_gate_covers_both_the_package_and_the_scripts() -> None:
     with (_REPO_ROOT / "pyproject.toml").open("rb") as fh:
         config = tomllib.load(fh)
     mypy_config = config["tool"]["mypy"]
-    assert set(mypy_config["files"]) == {"cost_optimizer", "scripts"}, mypy_config["files"]
+    assert set(mypy_config["files"]) == {
+        "cost_optimizer",
+        "scripts",
+        "tests/integration",
+    }  # #235 added the live suite, mypy_config["files"]
     # Both halves of the mapping fix; either alone leaves mypy unable to give
     # `scripts/_io.py` one unambiguous module name.
     assert mypy_config["mypy_path"] == "."

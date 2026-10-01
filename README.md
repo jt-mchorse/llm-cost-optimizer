@@ -42,10 +42,12 @@ pytest
 The default `pytest` invocation runs the full hermetic unit suite (a few seconds to a few tens of seconds, no API key) and intentionally excludes the **live-API integration** suite under `tests/integration/`. That suite exercises `PromptCacheWrapper` against real Anthropic prompt caching — cold call writes tokens, warm call reads them — and is gated on `ANTHROPIC_API_KEY` plus a `LIVE_CACHE_BUDGET_USD` guardrail (default `$0.10`). It runs in CI only on a manual `workflow_dispatch` against the `integration` workflow, never on push or PR. To run locally:
 
 ```bash
+pip install -e '.[dev,anthropic]'   # the integration suite imports the SDK (#235)
 ANTHROPIC_API_KEY=sk-... pytest tests/integration -v
 ```
 
-Use the wrapper against a real Anthropic client:
+Use the wrapper against a real Anthropic client (`pip install -e '.[anthropic]'`
+adds the SDK; the package itself imports without it):
 
 ```python
 from anthropic import Anthropic
@@ -160,7 +162,8 @@ quality signal.
 
 ```python
 from cost_optimizer import EntropySignal, JudgeConfidenceSignal, UncertaintyRouter
-from eval_harness import Judge, AnthropicBackend  # cross-repo import
+# Cross-repo: pip install git+https://github.com/jt-mchorse/llm-eval-harness
+from eval_harness import FAITHFULNESS_RUBRIC, AnthropicBackend, Judge
 
 router = UncertaintyRouter(
     cheap_model="claude-haiku-4-5-20251001",
@@ -170,7 +173,9 @@ router = UncertaintyRouter(
         EntropySignal(threshold=1.5),
         JudgeConfidenceSignal(
             judge=Judge(backend=AnthropicBackend()),
-            rubric="faithfulness",
+            # The rubric TEXT, passed verbatim to `judge.score` -- not a name.
+            # `rubric="faithfulness"` would grade against that one word (#235).
+            rubric=FAITHFULNESS_RUBRIC,
             threshold=0.7,
         ),
     ],

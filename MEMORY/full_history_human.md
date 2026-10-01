@@ -2671,3 +2671,15 @@ with the measurement attached — real in direction, unsizable from six points.
 **Open questions / blockers:** #232 is also open in this repo (MEMORY conflict only).
 
 **Next session:** optionally try `COVERAGE_CORE=sysmon` on 3.12 as a measured experiment.
+
+## 2026-09-30 — Issue #235: the documented live path works on a fresh clone
+**Duration:** ~5 min · **Branch:** session/2026-09-30-0854-issue-235
+
+- On a fresh clone, the README's install line followed by its integration command failed at import (the `[anthropic]` extra was never named), and with the SDK installed the suite then failed on `ModelPricing.input_per_million_usd`, a field that never existed. The README names the extra, CI installs through it, and `tests/integration` joins the mypy gate, which is what catches the field.
+- The README router snippet passed `rubric="faithfulness"` to llm-eval-harness's `Judge`, whose rubric is the text itself; it now passes `FAITHFULNESS_RUBRIC`.
+
+**Why this work, this session:** found by running the README Quickstart in a fresh clone.
+
+**Open questions / blockers:** #232 and #234 are also open here (MEMORY conflicts only).
+
+**Next session:** run the other repos' Quickstarts in fresh clones the same way.

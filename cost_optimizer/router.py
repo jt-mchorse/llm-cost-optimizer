@@ -398,6 +398,10 @@ class JudgeConfidenceSignal:
     """
 
     judge: Any
+    #: The rubric **text**, passed verbatim as `judge.score(..., rubric=...)`.
+    #: `llm-eval-harness` formats it into the prompt as `RUBRIC: {rubric}`, so a
+    #: bare name like `"faithfulness"` grades against that one word; pass
+    #: `eval_harness.FAITHFULNESS_RUBRIC` for the calibrated rubric (#235).
     rubric: str
     threshold: float = 0.7
     name: str = "judge"
