@@ -2695,3 +2695,23 @@ context_for_next_session:
   - THE_LOCK_IS_TWO_DIRECTIONAL_read_subset_listed_AND_listed_subset_read_so_a_stale_entry_fails_too_and_SDK_IMPLICIT_holds_ANTHROPIC_API_KEY_because_Anthropic_reads_it_with_no_line_of_ours
   - SCOPE_EXCLUDES_ONLY_tests_test_star_py_AT_DEPTH_2_the_hermetic_unit_tests_tests_integration_IS_IN_SCOPE_because_it_is_what_an_operator_runs_with_a_key
 followups: []
+
+---
+session: 2026-10-01T08:49Z
+issue: 243
+focus: ATOMIC_WRITE_TEXT_CREATED_0600_REGARDLESS_OF_UMASK_AND_AN_OVERWRITE_DEMOTED_0644_TO_0600
+phase: shipped
+duration_min: 2   # computed from the plan comment timestamp (08:47:29Z) and date -u
+delta:
+  files_changed: 2
+  tests_added: 10
+  suite: "1211 -> 1221 green; ruff check, ruff format --check and mypy clean"
+decisions_made: []
+measured: "main, umask 022: new file 0o600, overwrite of 0o644 -> 0o600. Fixed: 0o644 and 0o644. Revert probe (main's io_utils.py): 8 failed of 1221. Neighbour arms: hard-coded 0o644 = 2 red (umask 077, write_text parity); no mode copy = 4 red."
+context_for_next_session:
+  - NAMEDTEMPORARYFILE_AND_MKSTEMP_ALWAYS_CREATE_0600_and_os_replace_carries_the_temp_inode_mode_onto_the_target
+  - TEMP_NOW_os_open_O_EXCL_0o666_with_secrets_token_hex_4_so_the_random_part_stays_8_chars_and_the_NAME_MAX_budget_is_unchanged
+  - THE_UMASK_077_TEST_IS_THE_ONE_THAT_SEPARATES_HONOURING_THE_UMASK_FROM_A_HARD_CODED_0644
+  - THE_HELPER_MUST_NOT_CALL_os_umask_a_test_monkeypatches_it_to_raise
+followups: ["portfolio-ops#81"]
+---
