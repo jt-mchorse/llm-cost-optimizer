@@ -2683,3 +2683,13 @@ with the measurement attached — real in direction, unsizable from six points.
 **Open questions / blockers:** #232 and #234 are also open here (MEMORY conflicts only).
 
 **Next session:** run the other repos' Quickstarts in fresh clones the same way.
+
+## 2026-09-30T09:44:43Z — #237: added .env.example
+
+The portfolio handoff asks every repo for a `.env.example`; this one had none. The
+only variables read are in the live-API integration suite: the Anthropic key, the
+spend guardrail, and `LIVE_CACHE_MODEL`, which the README never mentioned. The
+new file lists all three with placeholders and defaults, and the README's
+integration section points at it. A test derives the variable names from the
+source and requires the file to list exactly those, so a new variable or a stale
+entry fails CI. Part of portfolio-ops#80.

@@ -2677,3 +2677,21 @@ context_for_next_session:
   - CI_3_12_WENT_RED_AFTER_PUSH_adding_tests_integration_to_mypy_pulled_numpy_stubs_in_via_pytest_TYPE_CHECKING_import_numpy_2_5_uses_the_3_12_type_statement_and_mypy_python_version_is_3_11_3_11_CI_got_numpy_2_4_6_and_passed_FIXED_WITH_THE_csl_209_OVERRIDE_follow_imports_skip_plus_follow_imports_for_stubs
 followups: []
 ---
+
+---
+session: 2026-09-30T09:44:43Z
+issue: 237
+focus: env_example_derived_from_source_both_directions
+phase: shipped
+duration_min: 1
+delta:
+  files_changed: 3
+  tests_added: 5
+  suite: "1180 passed; ruff check, ruff format --check and mypy on the new file clean"
+decisions_made: []
+measured: "reads found: ANTHROPIC_API_KEY (gate plus Anthropic() implicit), LIVE_CACHE_MODEL, LIVE_CACHE_BUDGET_USD, all in tests/integration/test_live_cache.py; none in cost_optimizer/ or scripts/. Probes: file absent 3 red of 5; LIVE_CACHE_MODEL dropped 1 red."
+context_for_next_session:
+  - PART_OF_portfolio_ops_80_remaining_after_this_leh_ems_vsas_and_mcp_github_gists
+  - THE_LOCK_IS_TWO_DIRECTIONAL_read_subset_listed_AND_listed_subset_read_so_a_stale_entry_fails_too_and_SDK_IMPLICIT_holds_ANTHROPIC_API_KEY_because_Anthropic_reads_it_with_no_line_of_ours
+  - SCOPE_EXCLUDES_ONLY_tests_test_star_py_AT_DEPTH_2_the_hermetic_unit_tests_tests_integration_IS_IN_SCOPE_because_it_is_what_an_operator_runs_with_a_key
+followups: []
