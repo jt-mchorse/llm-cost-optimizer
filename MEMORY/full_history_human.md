@@ -2693,3 +2693,14 @@ new file lists all three with placeholders and defaults, and the README's
 integration section points at it. A test derives the variable names from the
 source and requires the file to list exactly those, so a new variable or a stale
 entry fails CI. Part of portfolio-ops#80.
+
+## 2026-10-01 — Issue #245: SemanticCache.put refuses a bare-string tags
+**Duration:** ~4 min · **Branch:** session/2026-10-01-0855-issue-tags
+
+- `put(tags="tenant-42")` stored the tag as its seven characters, so invalidating "tenant-42" dropped nothing (the stale answer kept being served) and invalidating "t" evicted it. Non-string tags were stored in memory but crashed Redis. `put` now refuses both before storing anything, and the error names the tuple spelling that works. 23 tests across both backends; all three revert probes are red.
+
+**Why this work, this session:** found by this run's second hunt wave in a priority-tier repo.
+
+**Open questions / blockers:** none.
+
+**Next session:** decide whether D-019's "an empty population abstains" rule extends to the runtime ratios (hit_rate, escalation_rate, fp_rate, savings_pct).

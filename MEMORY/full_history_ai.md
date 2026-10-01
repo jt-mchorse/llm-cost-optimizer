@@ -2695,3 +2695,21 @@ context_for_next_session:
   - THE_LOCK_IS_TWO_DIRECTIONAL_read_subset_listed_AND_listed_subset_read_so_a_stale_entry_fails_too_and_SDK_IMPLICIT_holds_ANTHROPIC_API_KEY_because_Anthropic_reads_it_with_no_line_of_ours
   - SCOPE_EXCLUDES_ONLY_tests_test_star_py_AT_DEPTH_2_the_hermetic_unit_tests_tests_integration_IS_IN_SCOPE_because_it_is_what_an_operator_runs_with_a_key
 followups: []
+
+---
+session: 2026-10-01T08:54Z
+issue: 245
+focus: A_BARE_STRING_TAG_WAS_SPLATTED_INTO_CHARACTERS_AND_TAG_INVALIDATION_BECAME_A_NO_OP
+phase: shipped
+duration_min: 4   # 08:50 issue -> 08:54 close, from date -u
+delta:
+  files_changed: 2
+  tests_added: 23
+  suite: "1211 -> 1234 green"
+decisions_made: []
+measured: "1dcb7ae: put(tags='tenant-42') -> tags ['-','2','4','a','e','n','t']; invalidate(tag='tenant-42') -> 0; invalidate(tag='t') -> 1; tags=[1,'x'] stored in memory. Revert probes, control 1234: old frozenset(tags) 2 red, no str check 6, no element check 8."
+context_for_next_session:
+  - A_STR_IS_AN_ITERABLE_OF_STR_THE_ANNOTATION_THAT_LOOKS_LIKE_IT_EXCLUDES_THE_INPUT_ADMITS_IT_same_shape_as_ems_153_notes_and_csl_D_018_grep_the_portfolio_for_frozenset_of_a_param_typed_Iterable_str
+  - lco_SECOND_HUNT_ALSO_FOUND_D_019_NOT_APPLIED_TO_FOUR_RUNTIME_RATIOS_decision_sized_and_measure_false_positive_rate_erasing_expired_purged_NOT_FILED_YET
+followups: []
+---
