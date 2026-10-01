@@ -1215,9 +1215,16 @@ def measure_false_positive_rate(
     it against a *populated* cache — the only useful way to measure a real FP
     rate — would otherwise inflate the very `hit_rate` the savings dashboard
     reports (and in the optimistic direction: offline lookups that hit make
-    the reported hit_rate read higher than reality). Snapshot the stats
-    counters up front and restore them in a `finally`, so the diagnostic
-    reports the FP rate without touching the cache's reported telemetry.
+    the reported hit_rate read higher than reality). Snapshot `hits` and
+    `misses` up front and restore them in a `finally`, so the diagnostic
+    reports the FP rate without inflating the lookup counters.
+
+    Only those two (#247). `expired_purged` and `invalidations` count changes
+    to *storage*, and a lookup that purges expired records has really removed
+    them: restoring the whole snapshot erased those evictions from the
+    telemetry for good -- five records gone from storage, `expired_purged`
+    still 0. The measurement is neutral about what it observed, not about
+    what it did.
     """
     stats_snapshot = replace(cache.stats)
     samples: list[FalsePositiveSample] = []
@@ -1246,6 +1253,6 @@ def measure_false_positive_rate(
         # side-effect-free on `cache.stats` (D-007). `finally` so an exception
         # from a caller-supplied `call_model`/`equality` can't leak partial
         # measurement counts into production either.
-        cache.stats = stats_snapshot
+        cache.stats = replace(cache.stats, hits=stats_snapshot.hits, misses=stats_snapshot.misses)
     rate = (fp_count / hit_count) if hit_count > 0 else 0.0
     return rate, samples
