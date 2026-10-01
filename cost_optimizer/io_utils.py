@@ -98,12 +98,9 @@ def atomic_write_text(path: str | Path, text: str) -> None:
     tmp_path: Path | None = None
     try:
         fd, tmp_path = _open_temp(target)
-        try:
-            tmp = os.fdopen(fd, "w", encoding="utf-8")
-        except BaseException:
-            os.close(fd)
-            raise
-        with tmp:
+        # `os.fdopen` closes `fd` itself if building the text wrapper fails
+        # (e.g. an unknown encoding), so no separate close is needed here.
+        with os.fdopen(fd, "w", encoding="utf-8") as tmp:
             tmp.write(text)
             tmp.flush()
             os.fsync(tmp.fileno())
