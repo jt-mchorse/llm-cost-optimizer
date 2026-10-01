@@ -679,3 +679,13 @@ llm-eval-harness).
 
 - **Design decisions** — `MEMORY/core_decisions_human.md` for prose,
   `MEMORY/core_decisions_ai.md` for the structured log.
+- **D-023 (#231).** Every artifact name a script writes is *appended* to one
+  resolved `--out` stem through `scripts/_io.py`'s `artifact_path`, and
+  `resolve_out_stem` strips a suffix only when it is one the calling script
+  writes. `Path.with_suffix` replaces whatever follows the last dot, so
+  `--out docs/savings.small` wrote `docs/savings.json`/`.md` — overwriting
+  the canonical run — while #176's workload sidecar, built from `.name`,
+  kept the dot. That left a 500-row workload beside a 25-row table, which is
+  #176's harm through the other two names. `--out docs/savings.json` still
+  means the same stem as the documented run (#174's intent), and the documented
+  `--out docs/savings` is byte-identical.

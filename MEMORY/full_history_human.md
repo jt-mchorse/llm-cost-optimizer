@@ -2647,3 +2647,15 @@ with the measurement attached — real in direction, unsizable from six points.
 **Next session:** once this and `portfolio-ops#77` are merged, the new
 `timeout-headroom` fingerprint should report this repo clean; that is one of
 #229's acceptance criteria, so the two changes check each other.
+
+## 2026-09-30 — Issue #231: a dotted --out stem overwrote the canonical run (D-023)
+**Duration:** ~9 min · **Branch:** session/2026-09-30-0801-issue-231
+
+- `bench_savings --out docs/savings.small` wrote `docs/savings.json`/`.md` (overwriting the canonical run) and `savings.small_workload.json`, because `with_suffix` eats a dot that #176's sidecar keeps. Every artifact name now appends to one resolved stem through a shared helper, and only a suffix the script itself writes is stripped. `tune_threshold` and `capture_demo` go through the same helper.
+- 17 new arms (none skipped: the plot arm spies on the seam, since matplotlib is in no extra). The documented invocation is byte-identical to the committed artifacts.
+
+**Why this work, this session:** found by running the documented command with a different `--out`.
+
+**Open questions / blockers:** none.
+
+**Next session:** lco's remaining open issues are decision-revisits plus #18 (demo capture).
