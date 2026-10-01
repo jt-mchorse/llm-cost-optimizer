@@ -49,8 +49,8 @@ def test_bench_is_deterministic_across_two_calls() -> None:
     assert json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
 
 
-def test_workload_mix_matches_documented_60_30_10_split() -> None:
-    payload = run_bench(n=500)
+def test_workload_mix_matches_documented_60_30_10_split(canonical_bench_payload: dict) -> None:
+    payload = canonical_bench_payload
     mix = payload["workload_mix"]
     assert mix["redundant"] == 300
     assert mix["easy"] == 150
@@ -58,8 +58,8 @@ def test_workload_mix_matches_documented_60_30_10_split() -> None:
     assert mix["redundant"] + mix["easy"] + mix["hard"] == payload["n_rows"]
 
 
-def test_each_strategy_math_is_internally_consistent() -> None:
-    payload = run_bench(n=500)
+def test_each_strategy_math_is_internally_consistent(canonical_bench_payload: dict) -> None:
+    payload = canonical_bench_payload
     baseline_total = payload["strategies"][0]["total_usd"]
     for s in payload["strategies"]:
         # saved == baseline_usd - total_usd (within float-rounding tolerance)
@@ -73,13 +73,15 @@ def test_each_strategy_math_is_internally_consistent() -> None:
         assert s["baseline_usd"] == baseline_total
 
 
-def test_prompt_cache_strategy_saves_money_on_redundant_workload() -> None:
+def test_prompt_cache_strategy_saves_money_on_redundant_workload(
+    canonical_bench_payload: dict,
+) -> None:
     """Regression guard: prompt caching should produce positive savings.
 
     If a future refactor breaks the cache_write/cache_read pricing math,
     this number flips sign and the test catches it.
     """
-    payload = run_bench(n=500)
+    payload = canonical_bench_payload
     prompt_cache = next(s for s in payload["strategies"] if "prompt caching" in s["strategy"])
     assert prompt_cache["saved_usd"] > 0
     # With one stable system prefix across 500 rows, savings should be
@@ -89,8 +91,10 @@ def test_prompt_cache_strategy_saves_money_on_redundant_workload() -> None:
     assert prompt_cache["extra"]["cache_reads"] == 499
 
 
-def test_semantic_cache_strategy_saves_money_and_reports_hits() -> None:
-    payload = run_bench(n=500)
+def test_semantic_cache_strategy_saves_money_and_reports_hits(
+    canonical_bench_payload: dict,
+) -> None:
+    payload = canonical_bench_payload
     semantic = next(s for s in payload["strategies"] if "semantic cache" in s["strategy"])
     assert semantic["saved_usd"] > 0
     # Redundant rows are 60% of the workload. After the first occurrence
@@ -100,12 +104,14 @@ def test_semantic_cache_strategy_saves_money_and_reports_hits() -> None:
     assert semantic["extra"]["hit_rate"] >= 0.2
 
 
-def test_router_increases_cost_but_improves_quality_on_hard_rows() -> None:
+def test_router_increases_cost_but_improves_quality_on_hard_rows(
+    canonical_bench_payload: dict,
+) -> None:
     """The router *should not* save money on this workload; it should
     improve quality by spending more on hard rows. This is the documented
     honest behavior, not a bug.
     """
-    payload = run_bench(n=500)
+    payload = canonical_bench_payload
     baseline = payload["strategies"][0]
     router = next(s for s in payload["strategies"] if "router" in s["strategy"])
     # The router pays cheap on every row + strong on hard rows.
@@ -118,8 +124,8 @@ def test_router_increases_cost_but_improves_quality_on_hard_rows() -> None:
     assert router["extra"]["escalation_rate"] == 0.1
 
 
-def test_batch_strategy_saves_exactly_one_minus_discount() -> None:
-    payload = run_bench(n=500)
+def test_batch_strategy_saves_exactly_one_minus_discount(canonical_bench_payload: dict) -> None:
+    payload = canonical_bench_payload
     baseline = payload["strategies"][0]
     batch = next(s for s in payload["strategies"] if "batch API" in s["strategy"])
     expected_total = round(baseline["total_usd"] * BATCH_DISCOUNT_FACTOR, 6)
@@ -131,12 +137,14 @@ def test_batch_strategy_saves_exactly_one_minus_discount() -> None:
     "strategy_key",
     ["prompt_cache", "semantic_cache", "router", "batch"],
 )
-def test_cumulative_series_ends_at_strategy_total(strategy_key: str) -> None:
+def test_cumulative_series_ends_at_strategy_total(
+    strategy_key: str, canonical_bench_payload: dict
+) -> None:
     """The last row of each cumulative series must reconcile against the
     strategy summary's total — they're independent derivations of the
     same number, so the cross-check guards against drift.
     """
-    payload = run_bench(n=500)
+    payload = canonical_bench_payload
     series = payload["cumulative_savings_by_strategy"][strategy_key]
     assert series, "cumulative series must be non-empty"
     final = series[-1]
@@ -407,12 +415,12 @@ def test_run_bench_payload_strategies_use_to_dict_shape() -> None:
         ]
 
 
-def test_run_bench_payload_router_row_carries_router_stats() -> None:
+def test_run_bench_payload_router_row_carries_router_stats(canonical_bench_payload: dict) -> None:
     # #64: the router strategy's row must carry a `router_stats` dict
     # snapshotted from `UncertaintyRouter.stats.to_dict()` (PR #63 / issue #62).
     # The four non-router rows must have `router_stats=None` so the
     # field is unambiguously a router-only annotation.
-    payload = run_bench(n=500, seed=0xC057)
+    payload = canonical_bench_payload
     router_rows = [s for s in payload["strategies"] if "router" in s["strategy"]]
     assert len(router_rows) == 1, "expected exactly one router strategy row"
     rs = router_rows[0]["router_stats"]

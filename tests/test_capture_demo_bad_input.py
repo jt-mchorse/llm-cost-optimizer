@@ -30,6 +30,10 @@ import pytest
 
 from tests.test_capture_demo_smoke import _load_capture_module
 
+# Every test here runs the full capture pipeline, bench included; serve the
+# canonical bench payload from the session cache (#233).
+pytestmark = pytest.mark.usefixtures("memoized_bench")
+
 
 def _drive(argv: list[str]) -> tuple[int, str]:
     """Run ``capture_demo.main(argv)``, returning ``(rc, stdout)``."""

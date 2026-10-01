@@ -77,3 +77,96 @@ def bounded_work() -> Callable[..., Any]:
             threading.settrace(previous)  # type: ignore[arg-type]
 
     return _guard
+
+
+# ---------------------------------------------------------------------------
+# One canonical bench payload per session (#233)
+# ---------------------------------------------------------------------------
+#
+# D-022 added `--durations 10` to CI and deferred acting on the slow tail until
+# it produced data. It did: on main run 36535471170 the ten slowest tests were
+# 17.3-17.8 s each on 3.11 and 35.1-35.7 s each on 3.12, and every one of them is
+# the same computation -- a full 500-row `run_bench`. Locally, 27 tests over
+# 0.5 s were 35.7 s of a ~38 s suite at ~1.4 s per bench: one deterministic
+# payload recomputed 27 times. The tail looked flat because it was one thing.
+#
+# `run_bench` is pure in `(n, seed)` -- the two-call determinism arm in
+# `test_bench_savings.py` stays uncached to keep that premise honest, and
+# `test_the_cached_payload_is_a_fresh_run` compares the cache with a real call.
+
+_CANONICAL_BENCH_KEY = (500, 0xC057)
+
+
+@pytest.fixture(scope="session")
+def canonical_bench_session() -> dict[str, Any]:
+    from scripts.bench_savings import run_bench
+
+    n, seed = _CANONICAL_BENCH_KEY
+    return run_bench(n=n, seed=seed)
+
+
+@pytest.fixture
+def canonical_bench_payload(canonical_bench_session: dict[str, Any]) -> dict[str, Any]:
+    """The `run_bench(n=500)` payload, deep-copied so a test may mutate it."""
+    import copy
+
+    return copy.deepcopy(canonical_bench_session)
+
+
+class _BenchCalls:
+    """What `memoized_bench` served: `cached` from the session payload, `real`
+    from a genuine `run_bench` call."""
+
+    def __init__(self) -> None:
+        self.cached = 0
+        self.real = 0
+
+
+@pytest.fixture
+def memoized_bench(
+    monkeypatch: pytest.MonkeyPatch, canonical_bench_session: dict[str, Any]
+) -> _BenchCalls:
+    """Route `scripts.bench_savings.run_bench` through the session payload.
+
+    For tests that reach the bench through `main`, directly or via
+    `capture_demo`. Only the canonical `(n, seed)` is served from the cache;
+    anything else runs for real, so a test that varies the workload still
+    measures it.
+
+    Two hooks, because `capture_demo._import_bench_main` deletes
+    `scripts.bench_savings` from `sys.modules` and re-imports it on every call:
+    a patch on the already-imported module object never reaches that fresh
+    copy. So `importlib.import_module` is wrapped too, and patches the fresh
+    module as it is created. `capture_demo` calls `importlib.import_module`
+    through the shared `importlib` module object, which is why this reaches it.
+    """
+    import copy
+    import importlib
+
+    import scripts.bench_savings as bench
+
+    calls = _BenchCalls()
+
+    def _memoize(module: Any) -> None:
+        real = module.run_bench
+
+        def run_bench(*, n: int = 500, seed: int = 0xC057) -> dict[str, Any]:
+            if (n, seed) == _CANONICAL_BENCH_KEY:
+                calls.cached += 1
+                return copy.deepcopy(canonical_bench_session)
+            calls.real += 1
+            return real(n=n, seed=seed)
+
+        monkeypatch.setattr(module, "run_bench", run_bench)
+
+    _memoize(bench)
+    real_import = importlib.import_module
+
+    def import_module(name: str, package: str | None = None) -> Any:
+        module = real_import(name, package)
+        if name == "scripts.bench_savings":
+            _memoize(module)
+        return module
+
+    monkeypatch.setattr(importlib, "import_module", import_module)
+    return calls
