@@ -2752,3 +2752,13 @@ entry fails CI. Part of portfolio-ops#80.
 **Open questions / blockers:** the helper's `0.0` on zero hits is filed as a decision-revisit (D-019's rule never reached the runtime ratios).
 
 **Next session:** none queued.
+
+## 2026-10-02 — invalidate refuses a tag that is not a string (#251)
+
+#246 made `put` accept only string tags but left `invalidate` unchecked. Since
+a stored tag is now always a string, anything else passed to `invalidate` could
+never match. A tuple (the very shape `put`'s error message suggests), bytes, a
+number or `None` dropped nothing on either backend, and the stale answer kept
+being served. A list raised on one backend and returned 0 on the other.
+`invalidate` now refuses a non-string tag before touching storage. 16 new
+tests; reverting the check turns all 10 refusal tests red.
