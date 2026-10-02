@@ -2694,6 +2694,18 @@ integration section points at it. A test derives the variable names from the
 source and requires the file to list exactly those, so a new variable or a stale
 entry fails CI. Part of portfolio-ops#80.
 
+## 2026-10-01 — Issue #239: `--out` refuses a stem another stem's files can reach, and a directory
+**Duration:** ~5 min · **Branch:** session/2026-10-01-0745-issue-239
+
+- `bench_savings --out savings_workload.json` overwrote an earlier run's workload record with a results file, because `S` + `_workload.json` is `S_workload` + `.json`. `resolve_out_stem` now gets every tail a script writes and refuses a stem ending in the overlap of two tails. The rule is derived, not hard-coded to `_workload`.
+- `--out run1/` used to write `run1.*` beside the directory (pathlib drops the trailing separator). Both scripts now refuse it with exit 2 before doing any work. 28 new arms; seven revert probes are all red.
+
+**Why this work, this session:** priority-tier repo with no open actionable issue; a hunt found both and I reproduced them before filing.
+
+**Open questions / blockers:** none.
+
+**Next session:** the `capture_demo` cheat-sheet issue filed alongside this one.
+
 ## 2026-10-01 — Issue #241: the dashboard cheat-sheet describes the dashboard it launches
 **Duration:** ~3 min · **Branch:** session/2026-10-01-0750-issue-241
 
