@@ -2741,3 +2741,14 @@ entry fails CI. Part of portfolio-ops#80.
 **Open questions / blockers:** none.
 
 **Next session:** decide whether D-019's "an empty population abstains" rule extends to the runtime ratios (hit_rate, escalation_rate, fp_rate, savings_pct).
+
+## 2026-10-01 — Issue #247: the FP helper stops erasing the evictions its lookups made
+**Duration:** ~4 min · **Branch:** session/2026-10-01-0915-issue-fpstats
+
+- `measure_false_positive_rate` restored the cache's entire stats snapshot afterwards. On a TTL cache, its lookups purge expired records from storage for good, and the restore then reset `expired_purged` to 0, so those evictions were never counted. It now restores only `hits` and `misses`, the two counters D-007's reasoning is about. 4 tests; the revert probe is red.
+
+**Why this work, this session:** found by this run's second hunt wave in a priority-tier repo.
+
+**Open questions / blockers:** the helper's `0.0` on zero hits is filed as a decision-revisit (D-019's rule never reached the runtime ratios).
+
+**Next session:** none queued.

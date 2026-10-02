@@ -2772,3 +2772,21 @@ context_for_next_session:
   - lco_SECOND_HUNT_ALSO_FOUND_D_019_NOT_APPLIED_TO_FOUR_RUNTIME_RATIOS_decision_sized_and_measure_false_positive_rate_erasing_expired_purged_NOT_FILED_YET
 followups: []
 ---
+
+---
+session: 2026-10-01T09:02Z
+issue: 247
+focus: A_TELEMETRY_NEUTRAL_RESTORE_ROLLED_BACK_A_COUNTER_FOR_SOMETHING_THAT_CANNOT_BE_UNDONE
+phase: shipped
+duration_min: 4   # issue filed ~4 min before this block, from date -u
+delta:
+  files_changed: 2
+  tests_added: 4
+  suite: "1211 -> 1215 green"
+decisions_made: []
+measured: "1dcb7ae: TTL cache, 5 records, clock past expiry, helper run -> storage 0, expired_purged 0. Revert probe (old semantic_cache.py): 1 failed of 1215."
+context_for_next_session:
+  - A_RESTORE_JUSTIFIED_BY_ONE_COUNTER_CLASS_RESTORED_ALL_OF_THEM_the_reason_named_hits_and_misses_and_the_code_restored_the_storage_counters_too_A_TRUE_REASON_FOR_AN_OVER_BROAD_SCOPE
+  - THE_ZERO_HITS_RETURNS_0_0_HALF_IS_D_019S_EMPTY_POPULATION_RULE_NOT_REACHING_THE_RUNTIME_FILED_AS_A_DECISION_REVISIT
+followups: []
+---
