@@ -11,6 +11,7 @@ every artifact script uses to turn its ``--out`` flag into filenames.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Collection
 from pathlib import Path
 
@@ -51,8 +52,31 @@ def resolve_out_stem(raw: str, *, artifact_suffixes: Collection[str]) -> Path:
     Keyword-only and required: a default would let a new script inherit
     "strip nothing" and quietly bring back the two-derivation split.
 
+    **A directory is not a stem (#239).** #174 scoped its guard to "exactly
+    the set ``with_suffix`` rejects" -- the inputs that *crash*. ``run1/``
+    and ``run1/.`` do not crash: pathlib drops the trailing separator and
+    the ``.``, so ``Path("run1/").name`` is ``"run1"`` and the artifacts
+    landed *beside* the directory the operator named, at exit 0, on top of
+    any other script's ``run1.json``. The final component of the string as
+    typed is checked, before pathlib normalises it away. ``..`` keeps #174's
+    reading: ``...json`` is an odd but coherent filename.
+
+    **Two stems must not share a name (#239).** D-023 made one stem's names
+    agree with each other; it never asked whether two *different* stems can
+    produce the same name. They can whenever one tail ends with another:
+    ``bench_savings`` writes ``.json`` and ``_workload.json``, so stem ``S``
+    + ``_workload.json`` *is* stem ``S_workload`` + ``.json``, and the second
+    run overwrote the first run's workload record with a results file of
+    another schema. So ``artifact_suffixes`` is every tail the script
+    appends -- only those that are a ``Path.suffix`` can be stripped, which
+    ``_workload.json`` never is -- and a stem ending in the difference of
+    two nested tails is refused. Derived from the tails, so a script that
+    adds a fourth inherits the rule.
+
     Raises:
-        ValueError: when ``raw`` has no filename component to suffix.
+        ValueError: when ``raw`` has no filename component to suffix, names
+        a directory, or ends in a part of one tail that another tail
+        completes.
     """
     stem = Path(raw)
     if stem.name == "":
@@ -61,9 +85,39 @@ def resolve_out_stem(raw: str, *, artifact_suffixes: Collection[str]) -> Path:
             "The script appends the artifact suffixes itself, e.g. "
             "`--out docs/savings` writes docs/savings.json and docs/savings.md."
         )
+    if os.path.basename(raw) in ("", "."):
+        raise ValueError(
+            f"--out must end in a filename stem, not a directory; got {raw!r}, which "
+            f"would write {stem.name}.* beside that directory rather than into it. "
+            f"Name the stem inside it, e.g. `--out {os.path.normpath(os.path.join(raw, 'NAME'))}`."
+        )
     if stem.suffix in artifact_suffixes:
         stem = stem.with_suffix("")
+    for prefix in _colliding_stem_endings(artifact_suffixes):
+        if stem.name.endswith(prefix):
+            raise ValueError(
+                f"--out stem {stem.name!r} ends in {prefix!r}, so its files would "
+                f"collide with those of stem {stem.name[: -len(prefix)]!r} -- one "
+                f"stem's '{prefix}' + tail is the other's whole name. Choose a stem "
+                f"that does not end in {prefix!r}."
+            )
     return stem
+
+
+def _colliding_stem_endings(tails: Collection[str]) -> list[str]:
+    """Every ``x`` with ``x + short == long`` for two tails the script writes.
+
+    A stem ending in ``x`` produces, through ``short``, the same name another
+    stem produces through ``long`` (#239). Sorted so the message is stable.
+    """
+    return sorted(
+        {
+            long[: -len(short)]
+            for long in tails
+            for short in tails
+            if long != short and long.endswith(short)
+        }
+    )
 
 
 def artifact_path(stem: Path, suffix: str) -> Path:

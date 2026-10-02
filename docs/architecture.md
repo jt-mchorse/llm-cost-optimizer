@@ -689,3 +689,12 @@ llm-eval-harness).
   #176's harm through the other two names. `--out docs/savings.json` still
   means the same stem as the documented run (#174's intent), and the documented
   `--out docs/savings` is byte-identical.
+- **#239.** D-023 made one stem's names agree; two *different* stems could
+  still share a name. `bench_savings` writes `.json` and `_workload.json`, so
+  stem `S` + `_workload.json` is stem `S_workload` + `.json`, and
+  `--out savings_workload.json` overwrote another run's workload record with a
+  results file. `resolve_out_stem` now takes every tail a script writes and
+  refuses a stem ending in the difference of two nested tails — derived from
+  the tails, not written for `_workload`. It also refuses an `--out` whose final
+  component is empty or `.` (`run1/`, `run1/.`), which pathlib used to drop so
+  the files landed beside the directory. Both exit 2 before the work.

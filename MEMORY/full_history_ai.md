@@ -2695,3 +2695,23 @@ context_for_next_session:
   - THE_LOCK_IS_TWO_DIRECTIONAL_read_subset_listed_AND_listed_subset_read_so_a_stale_entry_fails_too_and_SDK_IMPLICIT_holds_ANTHROPIC_API_KEY_because_Anthropic_reads_it_with_no_line_of_ours
   - SCOPE_EXCLUDES_ONLY_tests_test_star_py_AT_DEPTH_2_the_hermetic_unit_tests_tests_integration_IS_IN_SCOPE_because_it_is_what_an_operator_runs_with_a_key
 followups: []
+
+---
+session: 2026-10-01T07:44Z
+issue: 239
+focus: TWO_STEMS_COULD_SHARE_A_NAME_AND_A_DIRECTORY_WAS_A_STEM
+phase: shipped
+duration_min: 4   # 07:40 plan -> 07:44 close, from date -u
+delta:
+  files_changed: 4
+  tests_added: 28
+  suite: "1211 -> 1239 green"
+decisions_made: []
+measured: "repro at 1dcb7ae: --out savings then --out savings_workload.json replaced a 50-row workload record with a 5-row results file at rc=0; --out run1/ wrote run1.{json,md} and run1_workload.json beside the directory. Revert probes, one full-suite subprocess each, control 1239: no directory check 9 red, trailing-slash-only 2, no collision loop 7, bench passes only strippable tails 4, collision before strip 3, hard-coded _workload 1, substring-not-endswith 2."
+context_for_next_session:
+  - D_023_SCOPED_ITSELF_TO_ONE_STEMS_NAMES_AGREEING_AND_174_TO_EXACTLY_THE_SET_with_suffix_REJECTS_BOTH_TRUE_BOTH_LEFT_A_NEIGHBOUR_two_stems_sharing_a_name_and_an_input_that_does_not_crash_but_writes_elsewhere
+  - THE_RULE_IS_DERIVED_FROM_THE_TAILS_a_script_adding_a_fourth_nested_tail_inherits_it_and_an_arm_proves_that_on_a_synthetic_trace_tail
+  - FOUND_BY_A_PHASE_A_HUNT_AGENT_AND_REPRODUCED_FIRSTHAND_BEFORE_FILING
+  - lco_capture_demo_cheat_sheet_claims_about_docs_savings_json_and_a_source_url_param_FILED_SEPARATELY
+followups: []
+---

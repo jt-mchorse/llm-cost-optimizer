@@ -968,7 +968,12 @@ def main(argv: list[str] | None = None) -> int:
     # Checking here also means the operator isn't made to wait for a full bench
     # before being told the flag is wrong.
     try:
-        out_stem = resolve_out_stem(args.out, artifact_suffixes=ARTIFACT_SUFFIXES)
+        # Every tail this script writes, the sidecar included (#239): with
+        # only the two it can strip, `resolve_out_stem` could not see that a
+        # stem ending in `_workload` names another stem's workload record.
+        out_stem = resolve_out_stem(
+            args.out, artifact_suffixes=(*ARTIFACT_SUFFIXES, WORKLOAD_SUFFIX)
+        )
     except ValueError as e:
         print(f"::error::{e}", file=sys.stderr)
         return 2
