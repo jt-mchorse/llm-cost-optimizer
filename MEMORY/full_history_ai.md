@@ -2790,3 +2790,20 @@ context_for_next_session:
   - THE_ZERO_HITS_RETURNS_0_0_HALF_IS_D_019S_EMPTY_POPULATION_RULE_NOT_REACHING_THE_RUNTIME_FILED_AS_A_DECISION_REVISIT
 followups: []
 ---
+
+---
+session: 2026-10-02T09:20Z
+issue: 251
+focus: SemanticCache_invalidate_HAD_NO_TAG_CHECK_A_RULE_ON_ONE_OF_TWO_POPULATIONS_put_GOT_IT_IN_246
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 16
+  suite: "1286 -> 1302 green; ruff clean"
+decisions_made: []
+measured: "main, both backends after put(tags=('tenant-42',)): invalidate(tag=('tenant-42',)/b'tenant-42'/42/None) -> 0 and still served; list -> TypeError in memory, 0 on redis. Revert: 10 of 16 red (every refusal arm), controls green."
+context_for_next_session:
+  - FOUND_BY_A_HUNT_AGENT_READING_246S_SCOPE_its_guard_was_titled_puts
+  - THE_STORAGES_invalidate_by_tag_STAYS_UNCHECKED_ON_PURPOSE_puts_check_also_lives_on_SemanticCache_not_the_backend_seam
+followups: []
+---

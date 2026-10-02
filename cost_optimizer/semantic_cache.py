@@ -1167,7 +1167,19 @@ class SemanticCache:
         return key
 
     def invalidate(self, *, tag: str) -> int:
-        """Drop every record carrying `tag`. Returns count dropped."""
+        """Drop every record carrying `tag`. Returns count dropped.
+
+        `tag` must be a `str` (#251). `put` stores only `str` tags since #246, so
+        any other value can never match: `invalidate(tag=("tenant-42",))` -- the
+        shape `put`'s own error message spells -- returned 0 and the stale
+        answer kept being served, and a list made the two backends disagree
+        (in-memory raised `TypeError`, Redis returned 0).
+        """
+        if not isinstance(tag, str):
+            raise ValueError(
+                f"invalidate takes one tag as a str; got {tag!r} ({type(tag).__name__}). "
+                f"To drop several tags, call invalidate once per tag."
+            )
         n = self.storage.invalidate_by_tag(tag)
         self.stats.invalidations += n
         return n
