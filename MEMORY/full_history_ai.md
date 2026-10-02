@@ -2790,3 +2790,21 @@ context_for_next_session:
   - THE_ZERO_HITS_RETURNS_0_0_HALF_IS_D_019S_EMPTY_POPULATION_RULE_NOT_REACHING_THE_RUNTIME_FILED_AS_A_DECISION_REVISIT
 followups: []
 ---
+
+---
+session: 2026-10-02T11:25Z
+issue: 253
+focus: RedisStorage_KEY_PREFIX_DID_NOT_ISOLATE_A_SHARED_TAG_INDEX_AND_A_NESTED_PREFIX_SCAN_D_024
+phase: shipped
+delta:
+  files_changed: 5
+  tests_added: 9
+  suite: "1286 -> 1295 green; ruff clean"
+decisions_made: [D-024]
+measured: "before: B.invalidate after A.invalidate -> 0, stale served; cache vs cache:eu -> len 1, hit on the other's record. After: 1/evicted and 0/miss. Revert probes: scan filter 6/9 red, tag namespace 3/9 red. Default layout pinned byte-identical."
+context_for_next_session:
+  - FOUND_BY_A_HUNT_ON_THE_LENS_TWO_BACKENDS_OF_ONE_PROTOCOL_AND_WRITER_READER_PARITY
+  - DOC_LOCKS_FIRED_AFTER_D_024_WAS_IN_MEMORY_AS_DESIGNED
+  - lco_NOW_HAS_THREE_OPEN_PRS_FROM_TODAY_250_252_254ish_MERGE_SERIALLY_ALL_APPEND_MEMORY
+followups: []
+---
