@@ -2717,3 +2717,16 @@ entry fails CI. Part of portfolio-ops#80.
 **Open questions / blockers:** none.
 
 **Next session:** the GIF itself (#18) is still an operator task.
+
+## 2026-10-01 — Issue #243: atomic writes honour the umask and keep an existing file's mode
+**Duration:** ~2 min · **Branch:** session/2026-10-01-0847-issue-243
+
+- `atomic_write_text` built its temp file with `NamedTemporaryFile`, which always creates 0600, and `os.replace` carried that mode onto the target. With umask 022 a new artifact came out 0600, and overwriting a 0644 file demoted it to 0600. The `Path.write_text` it replaced did neither.
+- The temp file is now opened with `os.open(..., O_EXCL, 0o666)`, so the kernel applies the umask. If the target already exists, its mode is copied onto the temp before the rename. The temp-name cap, surrogate handling, fsync and cleanup are unchanged.
+- 10 new tests cover umask 022 and 077, parity with `write_text`, overwrites of 0644/0600/0640, the capped-name path, `SemanticCache.dump_stats_json` and `tune_threshold --out`. Reverting to main's helper turns 8 of them red.
+
+**Why this work, this session:** portfolio-ops#81 measured the same defect in every repo's helper.
+
+**Open questions / blockers:** none.
+
+**Next session:** none for this issue.
