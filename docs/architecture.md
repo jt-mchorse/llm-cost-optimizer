@@ -698,3 +698,12 @@ llm-eval-harness).
   the tails, not written for `_workload`. It also refuses an `--out` whose final
   component is empty or `.` (`run1/`, `run1/.`), which pathlib used to drop so
   the files landed beside the directory. Both exit 2 before the work.
+- **D-024 (#253).** A `RedisStorage` key prefix is a namespace for records
+  *and* tags. Every cache used to share the `tag:<name>` index, whose members
+  are bare record keys, so one cache's `invalidate` removed another cache's
+  members as stale and deleted the set, and that cache kept serving the stale
+  answer. `SCAN cache:*` also matched a cache at `cache:eu`, whose records were
+  served as hits. A custom `key_prefix` now keeps its tag sets under itself
+  unless `tag_prefix` is given. A scanned key belongs to the cache only if
+  nothing after the prefix contains a `:`, because record keys are hex digests.
+  The default `RedisStorage()` layout is byte-identical.
