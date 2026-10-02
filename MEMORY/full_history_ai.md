@@ -2715,3 +2715,22 @@ context_for_next_session:
   - lco_capture_demo_cheat_sheet_claims_about_docs_savings_json_and_a_source_url_param_FILED_SEPARATELY
 followups: []
 ---
+
+---
+session: 2026-10-01T07:48Z
+issue: 241
+focus: THE_RECORDING_CHEAT_SHEET_DESCRIBED_A_DASHBOARD_THAT_DOES_NOT_EXIST_AND_A_FILE_THE_RUN_NEVER_WROTE
+phase: shipped
+duration_min: 3   # 07:45 plan -> 07:48 close, from date -u
+delta:
+  files_changed: 4
+  tests_added: 10
+  suite: "1211 -> 1221 green"
+decisions_made: []
+measured: "revert probes, one full-suite subprocess each, control 1221: argv without --json 4 red, launch with the old argv 1, cheat-sheet quoting a fake section 2, caption without source 1, main passing docs/savings.json 1"
+context_for_next_session:
+  - PROSE_AN_OPERATOR_FOLLOWS_IS_A_TEST_CASE_the_cheat_sheet_named_a_url_param_a_footer_and_a_panel_and_NONE_EXISTED_now_the_quoted_section_names_are_checked_against_the_st_subheader_titles_by_AST
+  - THE_SECTION_WALK_HAS_A_NON_ZERO_CONTROL_so_a_walk_that_finds_nothing_cannot_make_the_subset_arm_vacuous
+  - dashboard_app_import_in_tests_needs_the_find_spec_skip_pattern_because_the_lint_job_installs_dev_only
+followups: []
+---

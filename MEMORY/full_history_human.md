@@ -2705,3 +2705,15 @@ entry fails CI. Part of portfolio-ops#80.
 **Open questions / blockers:** none.
 
 **Next session:** the `capture_demo` cheat-sheet issue filed alongside this one.
+
+## 2026-10-01 — Issue #241: the dashboard cheat-sheet describes the dashboard it launches
+**Duration:** ~3 min · **Branch:** session/2026-10-01-0750-issue-241
+
+- `capture_demo`'s STAGE 2 cheat-sheet claimed the dashboard read the JSON STAGE 1 had just written. It actually read the committed `docs/savings.json`, because neither the printed command nor `--launch-streamlit` passed `--json`. It also pointed at a `?source=` parameter, a footer and a comparison panel, none of which exist. Both paths now pass the run's `savings_demo.json`, the dashboard caption shows its source file, and the checklist quotes real section titles. Those titles are checked by AST against `dashboard/app.py`.
+- 10 new arms; five revert probes are all red.
+
+**Why this work, this session:** found by this run's hunt in a priority-tier repo and checked against the code before filing.
+
+**Open questions / blockers:** none.
+
+**Next session:** the GIF itself (#18) is still an operator task.
