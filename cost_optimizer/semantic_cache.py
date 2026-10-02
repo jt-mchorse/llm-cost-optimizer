@@ -917,6 +917,31 @@ class CacheLookupResult:
     matched_record_key: str | None
 
 
+def _checked_tags(tags: Iterable[str]) -> frozenset[str]:
+    """`put`'s fourth input, held to the standard of the other three (#245).
+
+    `tags` is typed `Iterable[str]`, and a `str` *is* one, so
+    `put(..., tags="tenant-42")` stored seven one-character tags:
+    `invalidate(tag="tenant-42")` then dropped nothing -- the stale answer
+    tag invalidation exists to evict kept being served -- while
+    `invalidate(tag="t")` evicted a record nobody tagged `"t"`. A non-`str`
+    element was stored as well, and the backends disagreed about it:
+    `InMemoryStorage` kept it, `RedisStorage` raised `TypeError` sorting the
+    mixed set for serialisation (#194's "backends must not disagree").
+    """
+    if isinstance(tags, (str, bytes)):
+        raise ValueError(
+            f"tags must be an iterable of tag strings, not a single {type(tags).__name__}; "
+            f"got {tags!r}, which would be stored as its characters -- "
+            f"pass a tuple, e.g. tags=({tags!r},)"
+        )
+    materialised = list(tags)
+    for tag in materialised:
+        if not isinstance(tag, str):
+            raise ValueError(f"every tag must be a str; got {tag!r} ({type(tag).__name__})")
+    return frozenset(materialised)
+
+
 class SemanticCache:
     """Embedding-keyed response cache.
 
@@ -1119,6 +1144,7 @@ class SemanticCache:
             or ttl_s <= 0
         ):
             raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s!r}")
+        tag_set = _checked_tags(tags)
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s
         expires_at = (self.now_fn() + ttl) if ttl is not None else None
         # Third input to this function, same seam, same standard as the two
@@ -1133,7 +1159,7 @@ class SemanticCache:
             key=key,
             vector=vector,
             payload=payload,
-            tags=frozenset(tags),
+            tags=tag_set,
             expires_at=expires_at,
             model=model,
         )

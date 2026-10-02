@@ -149,7 +149,10 @@ def main() -> None:
     st.title("LLM cost optimizer — savings dashboard")
     st.caption(
         f"Mode: **{payload['mode']}** · rows: {payload['n_rows']:,} · "
-        f"cheap: `{payload['cheap_model']}` · strong: `{payload['strong_model']}`"
+        f"cheap: `{payload['cheap_model']}` · strong: `{payload['strong_model']}` · "
+        # The file this page renders (#241): `--json` makes it any run's JSON,
+        # and nothing on the page used to say which.
+        f"source: `{args.json}`"
     )
 
     # ----- top row: workload mix + total spend -----

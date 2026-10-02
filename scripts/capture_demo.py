@@ -44,6 +44,7 @@ import argparse
 import importlib
 import io
 import math
+import shlex
 import shutil
 import subprocess
 import sys
@@ -162,37 +163,61 @@ def _run_bench_into(tmp_out_stem: Path) -> tuple[int, str]:
     return rc, buf.getvalue()
 
 
-def _dashboard_cheatsheet() -> str:
+def _streamlit_argv(json_path: Path, *streamlit_options: str) -> list[str]:
+    """The dashboard command, pointed at *this run's* JSON (#241).
+
+    `dashboard/app.py` defaults to the committed `docs/savings.json`, which
+    STAGE 1 does not write -- so without `--json` the recording showed the
+    committed file under a cheat-sheet saying it was the run just made.
+    Everything after `--` is forwarded to the script by streamlit, so
+    streamlit's own options go before it.
+    """
+    return [
+        "streamlit",
+        "run",
+        "dashboard/app.py",
+        *streamlit_options,
+        "--",
+        "--json",
+        str(json_path),
+    ]
+
+
+def _dashboard_cheatsheet(json_path: Path) -> str:
+    # Section names are the dashboard's own `st.subheader` titles, quoted
+    # exactly; `tests/test_capture_demo_cheatsheet.py` derives those titles
+    # from `dashboard/app.py` and fails on a quoted name that is not one (#241).
+    # The previous checklist named a "comparison panel" and a `?source=` URL
+    # parameter, neither of which the dashboard has.
     return (
         "# Streamlit dashboard tour (STAGE 2) — operator steps.\n"
-        "# The dashboard reads the committed docs/savings.json that\n"
-        "# STAGE 1 just regenerated. Not launched by default because\n"
-        "# streamlit spawns a long-running server that can't run\n"
-        "# hermetically in CI; pass --launch-streamlit to spawn it from\n"
-        "# this script.\n"
+        "# Point the dashboard at the JSON STAGE 1 just wrote, not at the\n"
+        "# committed docs/savings.json it reads by default. Not launched by\n"
+        "# default because streamlit spawns a long-running server that\n"
+        "# can't run hermetically in CI; pass --launch-streamlit to spawn\n"
+        "# it from this script with the same argument.\n"
         "#\n"
         "# 1. Start the dashboard in a separate terminal:\n"
-        "#      streamlit run dashboard/app.py\n"
+        f"#      {shlex.join(_streamlit_argv(json_path))}\n"
         "#\n"
         f"# 2. Open the URL the recording captures:\n"
         f"#      {DASHBOARD_URL}\n"
         "#\n"
         "# 3. Recording checklist (in order, so the GIF is reproducible):\n"
-        "#      a. Strategy summary table — top of page; show the five\n"
-        "#         rows with per-strategy dollars-saved and percent-saved\n"
-        "#         that match the terminal output from STAGE 1.\n"
-        "#      b. Cumulative-savings chart — scroll to confirm the chart\n"
-        "#         is sourced from docs/savings.json (the page footer or\n"
-        "#         a `?source=...` URL parameter shows this).\n"
-        "#      c. Strategy comparison view — open the comparison panel\n"
-        "#         to show two strategies side-by-side with their\n"
-        "#         saved_pct trajectories.\n"
+        "#      a. The caption under the title — it names the source file;\n"
+        f"#         confirm it reads {json_path}.\n"
+        '#      b. "Dollars saved vs. baseline" — the per-strategy dollars\n'
+        "#         and percent saved, matching STAGE 1's terminal output.\n"
+        '#      c. "Cumulative $ saved per row" — the per-strategy\n'
+        "#         cumulative series across the workload.\n"
+        '#      d. "Per-strategy details" — the full table, including the\n'
+        "#         extra.* columns.\n"
         "#\n"
         "# 4. Stop the dashboard with Ctrl-C when the recording is done."
     )
 
 
-def _maybe_launch_streamlit() -> subprocess.Popen[bytes] | None:
+def _maybe_launch_streamlit(json_path: Path) -> subprocess.Popen[bytes] | None:
     """Spawn `streamlit run dashboard/app.py` as a child if streamlit is
     installed and on PATH. Returns the child for the operator to terminate
     when the recording is finished. Returns ``None`` if streamlit isn't
@@ -201,7 +226,7 @@ def _maybe_launch_streamlit() -> subprocess.Popen[bytes] | None:
     if shutil.which("streamlit") is None:
         return None
     return subprocess.Popen(  # noqa: S603 — invoked with absolute resolution of `streamlit`
-        ["streamlit", "run", "dashboard/app.py", "--server.headless", "true"],
+        _streamlit_argv(json_path, "--server.headless", "true"),
         cwd=REPO_ROOT,
     )
 
@@ -324,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
 
     streamlit_child = None
     if args.launch_streamlit:
-        streamlit_child = _maybe_launch_streamlit()
+        streamlit_child = _maybe_launch_streamlit(stable_json)
         if streamlit_child is None:
             print(
                 "[capture] --launch-streamlit was passed but `streamlit` is "
@@ -348,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
         webbrowser.open(DASHBOARD_URL)
 
     if not args.skip_dashboard_cheatsheet:
-        print(_dashboard_cheatsheet())
+        print(_dashboard_cheatsheet(stable_json))
 
     return 0
 

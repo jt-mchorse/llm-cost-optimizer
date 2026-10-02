@@ -106,11 +106,13 @@ def test_capture_demo_prints_dashboard_cheatsheet_by_default(tmp_path: Path) -> 
     # The cheat-sheet must reference the exact streamlit command + URL +
     # the three checklist anchors so the operator's recording path is
     # frame-for-frame reproducible.
-    assert "streamlit run dashboard/app.py" in out
+    assert "streamlit run dashboard/app.py -- --json" in out
     assert "http://localhost:8501" in out
-    assert "Strategy summary table" in out
-    assert "Cumulative-savings chart" in out
-    assert "Strategy comparison view" in out
+    # The checklist anchors are the dashboard's own section titles since #241;
+    # `test_capture_demo_cheatsheet.py` derives them from dashboard/app.py.
+    assert '"Dollars saved vs. baseline"' in out
+    assert '"Cumulative $ saved per row"' in out
+    assert '"Per-strategy details"' in out
 
 
 def test_capture_demo_skip_dashboard_suppresses_cheatsheet(tmp_path: Path) -> None:
