@@ -2697,6 +2697,45 @@ context_for_next_session:
 followups: []
 
 ---
+session: 2026-10-01T07:44Z
+issue: 239
+focus: TWO_STEMS_COULD_SHARE_A_NAME_AND_A_DIRECTORY_WAS_A_STEM
+phase: shipped
+duration_min: 4   # 07:40 plan -> 07:44 close, from date -u
+delta:
+  files_changed: 4
+  tests_added: 28
+  suite: "1211 -> 1239 green"
+decisions_made: []
+measured: "repro at 1dcb7ae: --out savings then --out savings_workload.json replaced a 50-row workload record with a 5-row results file at rc=0; --out run1/ wrote run1.{json,md} and run1_workload.json beside the directory. Revert probes, one full-suite subprocess each, control 1239: no directory check 9 red, trailing-slash-only 2, no collision loop 7, bench passes only strippable tails 4, collision before strip 3, hard-coded _workload 1, substring-not-endswith 2."
+context_for_next_session:
+  - D_023_SCOPED_ITSELF_TO_ONE_STEMS_NAMES_AGREEING_AND_174_TO_EXACTLY_THE_SET_with_suffix_REJECTS_BOTH_TRUE_BOTH_LEFT_A_NEIGHBOUR_two_stems_sharing_a_name_and_an_input_that_does_not_crash_but_writes_elsewhere
+  - THE_RULE_IS_DERIVED_FROM_THE_TAILS_a_script_adding_a_fourth_nested_tail_inherits_it_and_an_arm_proves_that_on_a_synthetic_trace_tail
+  - FOUND_BY_A_PHASE_A_HUNT_AGENT_AND_REPRODUCED_FIRSTHAND_BEFORE_FILING
+  - lco_capture_demo_cheat_sheet_claims_about_docs_savings_json_and_a_source_url_param_FILED_SEPARATELY
+followups: []
+---
+
+---
+session: 2026-10-01T07:48Z
+issue: 241
+focus: THE_RECORDING_CHEAT_SHEET_DESCRIBED_A_DASHBOARD_THAT_DOES_NOT_EXIST_AND_A_FILE_THE_RUN_NEVER_WROTE
+phase: shipped
+duration_min: 3   # 07:45 plan -> 07:48 close, from date -u
+delta:
+  files_changed: 4
+  tests_added: 10
+  suite: "1211 -> 1221 green"
+decisions_made: []
+measured: "revert probes, one full-suite subprocess each, control 1221: argv without --json 4 red, launch with the old argv 1, cheat-sheet quoting a fake section 2, caption without source 1, main passing docs/savings.json 1"
+context_for_next_session:
+  - PROSE_AN_OPERATOR_FOLLOWS_IS_A_TEST_CASE_the_cheat_sheet_named_a_url_param_a_footer_and_a_panel_and_NONE_EXISTED_now_the_quoted_section_names_are_checked_against_the_st_subheader_titles_by_AST
+  - THE_SECTION_WALK_HAS_A_NON_ZERO_CONTROL_so_a_walk_that_finds_nothing_cannot_make_the_subset_arm_vacuous
+  - dashboard_app_import_in_tests_needs_the_find_spec_skip_pattern_because_the_lint_job_installs_dev_only
+followups: []
+---
+
+---
 session: 2026-10-01T08:49Z
 issue: 243
 focus: ATOMIC_WRITE_TEXT_CREATED_0600_REGARDLESS_OF_UMASK_AND_AN_OVERWRITE_DEMOTED_0644_TO_0600
