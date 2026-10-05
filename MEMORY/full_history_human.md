@@ -2766,3 +2766,13 @@ using the same guard file. A test that writes a tracked file fails that
 session, a test that deletes one fails it, and a test that writes only under
 `tmp_path` passes. Checked here by running a throwaway test that appended to
 `README.md`: the session failed and named the file.
+
+## 2026-10-02 — invalidate refuses a tag that is not a string (#251)
+
+#246 made `put` accept only string tags but left `invalidate` unchecked. Since
+a stored tag is now always a string, anything else passed to `invalidate` could
+never match. A tuple (the very shape `put`'s error message suggests), bytes, a
+number or `None` dropped nothing on either backend, and the stale answer kept
+being served. A list raised on one backend and returned 0 on the other.
+`invalidate` now refuses a non-string tag before touching storage. 16 new
+tests; reverting the check turns all 10 refusal tests red.
