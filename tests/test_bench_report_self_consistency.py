@@ -16,6 +16,7 @@ Two ways it didn't, both invisible on the canonical `--n 500 --out docs/savings`
 
 from __future__ import annotations
 
+import io
 import math
 import re
 import sys
@@ -56,6 +57,36 @@ def test_report_prose_names_this_runs_rows_and_json(
     # The file the report points at is one this run actually wrote.
     assert named == "run_small.json"
     assert (tmp_path / named).is_file()
+
+
+def test_a_non_utf8_out_stem_is_shown_escaped_in_the_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The footer names the JSON file, so the name is in the report's TEXT.
+
+    A filesystem byte that is not UTF-8 is a lone surrogate in the name, and
+    writing it into the .md raised UnicodeEncodeError on ext4 (CI) while APFS
+    refused the name earlier and hid it. Capture what `main` writes, so this
+    runs the real call site on every filesystem.
+    """
+    import scripts.bench_savings as bench
+
+    written: dict[str, str] = {}
+
+    def capture(path: Path, text: str) -> None:
+        text.encode("utf-8")  # what atomic_write_text does; must not raise
+        written[Path(path).suffix] = text
+
+    monkeypatch.setattr(bench, "atomic_write_text", capture)
+    # A real process's stdout uses `surrogateescape`; pytest's capture is
+    # strict, and the script's own `print` of the path would raise under it.
+    monkeypatch.setattr(
+        sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="utf-8", errors="surrogateescape")
+    )
+    monkeypatch.setattr(bench, "_write_workload", lambda *a, **k: None)
+    stem = tmp_path / "savings\udcff"
+    assert bench_main(["--dry", "--n", "5", "--out", str(stem)]) == 0
+    assert "live in `savings\\xff.json`." in written[".md"]
 
 
 def test_every_published_saving_is_baseline_minus_spent(payloads: dict[int, dict]) -> None:

@@ -1042,7 +1042,16 @@ def main(argv: list[str] | None = None) -> int:
     # (llm-eval-harness#158/#159, python-async-llm-pipelines#84).
     try:
         atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
-        atomic_write_text(out_md, _format_markdown(payload, json_name=out_json.name))
+        # The name goes INTO the report's text, so it must be encodable. A
+        # filesystem byte that is not UTF-8 arrives as a lone surrogate
+        # (`surrogateescape`) and made writing the .md raise
+        # UnicodeEncodeError -- a traceback -- on any filesystem that accepted
+        # the name (ext4: CI), while APFS refused the name first and hid it.
+        # Show such a byte as `\xff` instead.
+        json_name = out_json.name.encode("utf-8", "surrogateescape").decode(
+            "utf-8", "backslashreplace"
+        )
+        atomic_write_text(out_md, _format_markdown(payload, json_name=json_name))
         _write_workload(_build_workload(n=args.n, seed=args.seed), out_workload)
     except OSError as e:
         print(f"::error::could not write bench artifacts: {e}", file=sys.stderr)
