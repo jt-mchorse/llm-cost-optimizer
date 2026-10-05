@@ -2827,8 +2827,8 @@ followups: []
 ---
 
 ---
-session: 2026-10-05T07:45Z
-duration_min: 30
+session: 2026-10-05T07:26Z
+duration_min: 6   # first repro -> close comment, from the command log and the comment timestamps
 issue: 255
 focus: bench_savings_REPORT_DISAGREED_WITH_ITSELF_UNDER_ANY_NON_CANONICAL_RUN_hard_coded_prose_AND_saved_FROM_TWO_DIFFERENT_ROUNDINGS
 phase: shipped
