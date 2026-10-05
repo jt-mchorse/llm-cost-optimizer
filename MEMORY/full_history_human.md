@@ -2753,6 +2753,20 @@ entry fails CI. Part of portfolio-ops#80.
 
 **Next session:** none queued.
 
+## 2026-10-02 — the test session fails if any test rewrites a committed file (portfolio-ops#79)
+
+Ported from python-async-llm-pipelines#115, where a test overwrote a committed
+artifact on every CI run. The overwrite only happened on Linux, so nobody
+noticed. `tests/_committed_files_guard.py` records a hash of every git-tracked
+file when the session starts and fails the session if any changed or
+disappeared. It covers every tracked file, not only `docs/`, because committed
+outputs live in different places in each repo and no current test writes any of
+them. A self-test runs a real inner pytest session in a throwaway git repo
+using the same guard file. A test that writes a tracked file fails that
+session, a test that deletes one fails it, and a test that writes only under
+`tmp_path` passes. Checked here by running a throwaway test that appended to
+`README.md`: the session failed and named the file.
+
 ## 2026-10-02 — invalidate refuses a tag that is not a string (#251)
 
 #246 made `put` accept only string tags but left `invalidate` unchecked. Since
