@@ -350,6 +350,23 @@ def _ratio_or_none(numerator: float, denominator: int, *, places: int = 4) -> fl
     return round(numerator / denominator, places)
 
 
+def _published_saved_usd(baseline: StrategyResult, total_usd: float) -> float:
+    """Dollars saved, computed from the two numbers published beside it.
+
+    Every row publishes `baseline_usd`, `total_usd` and `saved_usd`, and a
+    reader checks the table by subtracting. The saving used to be the *rounded*
+    baseline minus the *unrounded* total, so the three came from two different
+    roundings and did not add up: n=5 batch published spent 0.000289 + saved
+    0.000289 against a baseline of 0.000579. At equal spend the residue was a
+    tiny negative that rounded to `-0.0` -- a zero-hit semantic cache read as
+    `$-0.0000 | -0.0%`, a loss for a strategy that neither saved nor lost
+    (#255). Subtracting the published values makes equal spend an exact `+0.0`
+    (`x - x` is positive zero) and leaves a real loss negative, so no sign
+    needs laundering afterwards.
+    """
+    return round(baseline.total_usd - total_usd, 6)
+
+
 def _saved_pct_or_none(saved: float, baseline: StrategyResult) -> float | None:
     """Savings as a fraction of the baseline spend, or `None` when there was none.
 
@@ -437,14 +454,15 @@ def _run_prompt_cache(workload: list[WorkloadRow], baseline: StrategyResult) -> 
         qualities += r.cheap_quality
 
     n = len(workload)
-    saved = baseline.total_usd - total
+    total_usd = round(total, 6)
+    saved = _published_saved_usd(baseline, total_usd)
     pct = _saved_pct_or_none(saved, baseline)
     return StrategyResult(
         strategy="prompt caching (system prefix)",
         n_rows=n,
-        total_usd=round(total, 6),
+        total_usd=total_usd,
         baseline_usd=baseline.total_usd,
-        saved_usd=round(saved, 6),
+        saved_usd=saved,
         saved_pct=pct,
         mean_quality=_ratio_or_none(qualities, n),
         extra={"cache_writes": n_writes, "cache_reads": n_reads},
@@ -487,14 +505,15 @@ def _run_semantic_cache(workload: list[WorkloadRow], baseline: StrategyResult) -
         qualities += r.cheap_quality
 
     n = len(workload)
-    saved = baseline.total_usd - total
+    total_usd = round(total, 6)
+    saved = _published_saved_usd(baseline, total_usd)
     pct = _saved_pct_or_none(saved, baseline)
     return StrategyResult(
         strategy="semantic cache (HashEmbedder, threshold 0.95)",
         n_rows=n,
-        total_usd=round(total, 6),
+        total_usd=total_usd,
         baseline_usd=baseline.total_usd,
-        saved_usd=round(saved, 6),
+        saved_usd=saved,
         saved_pct=pct,
         mean_quality=_ratio_or_none(qualities, n),
         extra={
@@ -557,14 +576,15 @@ def _run_router(workload: list[WorkloadRow], baseline: StrategyResult) -> Strate
             qualities += r.cheap_quality
 
     n = len(workload)
-    saved = baseline.total_usd - total
+    total_usd = round(total, 6)
+    saved = _published_saved_usd(baseline, total_usd)
     pct = _saved_pct_or_none(saved, baseline)
     return StrategyResult(
         strategy="uncertainty router (entropy threshold 1.5)",
         n_rows=n,
-        total_usd=round(total, 6),
+        total_usd=total_usd,
         baseline_usd=baseline.total_usd,
-        saved_usd=round(saved, 6),
+        saved_usd=saved,
         saved_pct=pct,
         mean_quality=_ratio_or_none(qualities, n),
         extra={
@@ -651,15 +671,16 @@ def _run_batch(workload: list[WorkloadRow], baseline: StrategyResult) -> Strateg
     rate = pricing.input_per_mtok / 1_000_000
     total = sum(r.prompt_tokens * rate * BATCH_DISCOUNT_FACTOR for r in workload)
     n = len(workload)
-    saved = baseline.total_usd - total
+    total_usd = round(total, 6)
+    saved = _published_saved_usd(baseline, total_usd)
     pct = _saved_pct_or_none(saved, baseline)
     qualities = sum(r.cheap_quality for r in workload)
     return StrategyResult(
         strategy=f"batch API (discount {BATCH_DISCOUNT_FACTOR:.2f}×)",
         n_rows=n,
-        total_usd=round(total, 6),
+        total_usd=total_usd,
         baseline_usd=baseline.total_usd,
-        saved_usd=round(saved, 6),
+        saved_usd=saved,
         saved_pct=pct,
         mean_quality=_ratio_or_none(qualities, n),
         extra={
@@ -767,14 +788,19 @@ def _cumulative_savings(workload: list[WorkloadRow], strategy: str) -> list[Cumu
             raise ValueError(f"unknown strategy: {strategy}")
 
         running_strategy += cost
+        baseline_total_usd = round(running_baseline, 6)
+        strategy_total_usd = round(running_strategy, 6)
         cumulative.append(
             {
                 "row_index": i,
                 "row_id": r.row_id,
                 "class": r.class_,
-                "baseline_total_usd": round(running_baseline, 6),
-                "strategy_total_usd": round(running_strategy, 6),
-                "cumulative_saved_usd": round(running_baseline - running_strategy, 6),
+                "baseline_total_usd": baseline_total_usd,
+                "strategy_total_usd": strategy_total_usd,
+                # From the two published totals, as `_published_saved_usd`
+                # does per strategy: 302 of 2720 rows (n in 10/50/120/500)
+                # used to disagree with their own neighbours by $0.000001.
+                "cumulative_saved_usd": round(baseline_total_usd - strategy_total_usd, 6),
             }
         )
     return cumulative
@@ -802,12 +828,19 @@ def _fmt_ratio(value: float | None, spec: str, *, absent: str) -> str:
     return format(value, spec)
 
 
-def _format_markdown(payload: dict[str, Any]) -> str:
-    """Render the bench results as a markdown table for the README + docs."""
+def _format_markdown(payload: dict[str, Any], *, json_name: str = "savings.json") -> str:
+    """Render the bench results as a markdown table for the README + docs.
+
+    `json_name` is the JSON artifact this run wrote beside the table. The
+    prose used to say "500-row" and "`savings.json`" whatever `--n` and
+    `--out` were -- the canonical invocation is the one input where both are
+    true, so the committed artifact could not show it (#255). The default
+    keeps direct callers on the canonical name.
+    """
     lines = [
         "# Savings benchmark",
         "",
-        "Synthetic 500-row workload, deterministic, hermetic. Numbers are "
+        f"Synthetic {payload['n_rows']}-row workload, deterministic, hermetic. Numbers are "
         "what `scripts/bench_savings.py` produced on the host that wrote "
         "this file — re-run the script to refresh.",
         "",
@@ -835,7 +868,7 @@ def _format_markdown(payload: dict[str, Any]) -> str:
             f"{_fmt_ratio(row['mean_quality'], '.3f', absent='—')} | {extra_fmt} |"
         )
     lines.append("")
-    lines.append("Cumulative savings per row (per strategy) live in `savings.json`.")
+    lines.append(f"Cumulative savings per row (per strategy) live in `{json_name}`.")
     lines.append("The Streamlit dashboard renders those series; see the repo README.")
     return "\n".join(lines) + "\n"
 
@@ -1009,7 +1042,7 @@ def main(argv: list[str] | None = None) -> int:
     # (llm-eval-harness#158/#159, python-async-llm-pipelines#84).
     try:
         atomic_write_text(out_json, json.dumps(payload, indent=2, sort_keys=True))
-        atomic_write_text(out_md, _format_markdown(payload))
+        atomic_write_text(out_md, _format_markdown(payload, json_name=out_json.name))
         _write_workload(_build_workload(n=args.n, seed=args.seed), out_workload)
     except OSError as e:
         print(f"::error::could not write bench artifacts: {e}", file=sys.stderr)
