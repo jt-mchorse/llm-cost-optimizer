@@ -2792,6 +2792,41 @@ followups: []
 ---
 
 ---
+session: 2026-10-02T07:55Z
+issue: "portfolio-ops#79"
+focus: PORT_THE_TESTS_MAY_NOT_REWRITE_A_COMMITTED_FILE_SESSION_GUARD_WIDENED_FROM_docs_TO_EVERY_GIT_TRACKED_FILE
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 6
+  suite: "1292 green under the guard; ruff check and format clean"
+decisions_made: []
+measured: "full suite under the guard = 0 tracked files changed; a throwaway test appending to README.md fails the session with 'rewrote committed files: [README.md]' (README restored from a cp copy, tree clean after); unwiring the conftest import turns the wiring arm red."
+context_for_next_session:
+  - tests_committed_files_guard_py_IS_SELF_CONTAINED_AND_IDENTICAL_ACROSS_7_REPOS_its_self_test_COPIES_IT_VERBATIM_AS_AN_INNER_SESSIONS_CONFTEST_in_a_throwaway_git_repo_writer_FAILS_deleter_FAILS_tmp_path_writer_PASSES
+  - EVERY_TRACKED_FILE_NOT_A_DIRECTORY_LIST_the_2026_10_01_probe_found_ZERO_tracked_files_modified_by_any_suite_so_the_wider_rule_costs_nothing_A_NEW_TEST_THAT_REGENERATES_A_COMMITTED_ARTIFACT_MUST_WRITE_TO_tmp_path_AND_COMPARE
+  - THE_CORPUS_ARM_test_this_checkout_is_what_the_guard_snapshots_FAILS_UNTIL_THE_FILE_IS_COMMITTED_that_is_by_design
+followups: []
+---
+
+---
+session: 2026-10-02T09:20Z
+issue: 251
+focus: SemanticCache_invalidate_HAD_NO_TAG_CHECK_A_RULE_ON_ONE_OF_TWO_POPULATIONS_put_GOT_IT_IN_246
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 16
+  suite: "1286 -> 1302 green; ruff clean"
+decisions_made: []
+measured: "main, both backends after put(tags=('tenant-42',)): invalidate(tag=('tenant-42',)/b'tenant-42'/42/None) -> 0 and still served; list -> TypeError in memory, 0 on redis. Revert: 10 of 16 red (every refusal arm), controls green."
+context_for_next_session:
+  - FOUND_BY_A_HUNT_AGENT_READING_246S_SCOPE_its_guard_was_titled_puts
+  - THE_STORAGES_invalidate_by_tag_STAYS_UNCHECKED_ON_PURPOSE_puts_check_also_lives_on_SemanticCache_not_the_backend_seam
+followups: []
+---
+
+---
 session: 2026-10-02T11:25Z
 issue: 253
 focus: RedisStorage_KEY_PREFIX_DID_NOT_ISOLATE_A_SHARED_TAG_INDEX_AND_A_NESTED_PREFIX_SCAN_D_024
