@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -132,6 +133,55 @@ def _router_panel_rows(router_stats: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+#: The quality drop the "Quality maintained?" table tolerates, as an exact decimal.
+QUALITY_TOLERANCE = Fraction(1, 100)
+
+
+def _render_delta(delta: Fraction) -> str:
+    """The delta, widened until it reads back on its verdict's side of -0.01."""
+    tolerated = delta >= -QUALITY_TOLERANCE
+    for places in range(4, 18):
+        text = f"{float(delta):+.{places}f}"
+        if (Fraction(text) >= -QUALITY_TOLERANCE) is tolerated:
+            return text
+    return f"{float(delta):+}"
+
+
+def _quality_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """The "Quality maintained?" rows: each strategy's quality vs the baseline's.
+
+    Decided on the decimal values (#257). The float subtraction did not compute
+    the drop: 0.876 - 0.886 is -0.010000000000000009, so the committed
+    artifact's own baseline flagged a drop of exactly the tolerated 0.01 as a
+    regression, and 47 of 51 two-decimal drops of exactly 0.01 did the same
+    while 4 passed -- every one displayed as -0.01. The difference of
+    `Fraction(repr(.))` is the drop the numbers say, the same treatment
+    llm-eval-harness D-034 gave its gate. The delta is published as text,
+    widened until it reads back on its verdict's side, so the dataframe cannot
+    round two verdicts to one number. A quality of `None` -- an empty
+    population, D-019 -- is `—` / `n/a`, where the subtraction raised.
+    """
+    baseline = payload["strategies"][0]["mean_quality"]
+    rows: list[dict[str, Any]] = []
+    for s in payload["strategies"]:
+        quality = s["mean_quality"]
+        if quality is None or baseline is None:
+            delta_text, verdict = "—", "n/a"
+        else:
+            delta = Fraction(repr(quality)) - Fraction(repr(baseline))
+            delta_text = _render_delta(delta)
+            verdict = "yes" if delta >= -QUALITY_TOLERANCE else "regression"
+        rows.append(
+            {
+                "strategy": s["strategy"],
+                "mean_quality": quality,
+                "delta_vs_baseline": delta_text,
+                "verdict": verdict,
+            }
+        )
+    return rows
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     # Streamlit forwards everything after `--` to the script; pull our
     # own flag out without consuming Streamlit's own args.
@@ -167,7 +217,6 @@ def main() -> None:
         st.caption(f"Total prompt tokens: {payload['total_prompt_tokens']:,}")
 
     baseline_total = payload["strategies"][0]["total_usd"]
-    baseline_quality = payload["strategies"][0]["mean_quality"]
 
     with col_spend:
         st.subheader("Dollars saved vs. baseline")
@@ -214,19 +263,7 @@ def main() -> None:
 
     # ----- quality maintained -----
     st.subheader("Quality maintained?")
-    quality_rows: list[dict[str, Any]] = []
-    for s in payload["strategies"]:
-        delta = s["mean_quality"] - baseline_quality
-        verdict = "yes" if delta >= -0.01 else "regression"
-        quality_rows.append(
-            {
-                "strategy": s["strategy"],
-                "mean_quality": s["mean_quality"],
-                "delta_vs_baseline": round(delta, 4),
-                "verdict": verdict,
-            }
-        )
-    st.dataframe(pd.DataFrame(quality_rows).set_index("strategy"), width="stretch")
+    st.dataframe(pd.DataFrame(_quality_rows(payload)).set_index("strategy"), width="stretch")
     st.caption(
         "`delta_vs_baseline` tolerates a 0.01 drift (rounding + tied "
         "sampling); a larger drop is flagged so the operator inspects "
