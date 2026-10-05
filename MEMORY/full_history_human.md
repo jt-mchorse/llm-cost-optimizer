@@ -2776,3 +2776,17 @@ number or `None` dropped nothing on either backend, and the stale answer kept
 being served. A list raised on one backend and returned 0 on the other.
 `invalidate` now refuses a non-string tag before touching storage. 16 new
 tests; reverting the check turns all 10 refusal tests red.
+
+## 2026-10-05 — the savings report agrees with itself under any run (#255)
+
+Running `bench_savings.py` with `--n 10 --out d/run_small` gave a report that
+said "500-row workload" over a table of 10-row results. Its footer pointed at
+`savings.json`, a file that run never wrote. Both strings were hard-coded, and
+the canonical run is the one case where they happen to be true. They now come
+from the run itself. Separately, every "saved" figure subtracted the unrounded
+spend from the rounded baseline, so in 40 of the small runs I tried, spent plus
+saved didn't equal the baseline. In 24 of them a cache with zero hits showed
+`-0.0%`, which reads as a loss. Savings are now computed from the published
+numbers, so the table adds up. Regenerating the committed artifact left the
+strategy table identical and corrected 210 cumulative rows by a millionth of a
+dollar.
