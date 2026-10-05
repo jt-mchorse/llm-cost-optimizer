@@ -687,3 +687,25 @@ The existing arm for a suffixed stem asserted two of the three names, and #176's
 **Reversibility:** Cheap.
 
 **Related issues:** #231, #176, #174
+
+## D-024 — a Redis key prefix is a namespace for both records and tags (2026-10-02)
+
+**Context.** `RedisStorage(key_prefix=...)` looked like a namespace but wasn't. Every
+cache shared the `tag:<name>` index, and that index stores bare record keys, so
+it couldn't tell which cache a member belonged to. One cache's `invalidate`
+removed another cache's entries from it and then deleted it, so the other cache
+went on serving a stale answer. Separately, scanning `cache:*` also matched a
+cache at `cache:eu`, whose records were then served as hits.
+
+**Decision.** The default `RedisStorage()` layout (`cache:` / `tag:`) stays
+exactly as it was. A custom `key_prefix` with no `tag_prefix` keeps its tag sets
+under `<key_prefix>:tag`. An explicit `tag_prefix` is used as given. A scanned
+key belongs to the cache only if nothing after its prefix contains a `:`. Record
+keys are hex digests, so they never do.
+
+**Alternatives rejected.** Raising for a custom prefix without a tag prefix,
+which would break every custom-prefix user. Changing the member format, which
+would alter the default layout as well. A hex-only scan pattern, which would tie
+the storage to the key length.
+
+**Reversibility.** Cheap.
