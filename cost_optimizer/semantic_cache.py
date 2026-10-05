@@ -26,8 +26,9 @@ import copy
 import hashlib
 import json
 import math
+import re
 import time
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Protocol, cast
@@ -346,7 +347,7 @@ class RedisStorage:
         url: str | None = None,
         client: Any | None = None,
         key_prefix: str = DEFAULT_KEY_PREFIX,
-        tag_prefix: str = DEFAULT_TAG_PREFIX,
+        tag_prefix: str | None = None,
         now_fn: Any = time.time,
     ) -> None:
         if client is None:
@@ -360,6 +361,20 @@ class RedisStorage:
             client = redis.Redis.from_url(url or "redis://localhost:6379/0")
         self.client = client
         self.key_prefix = key_prefix
+        # A namespace for the tag index too (#253, D-024). Every cache used to
+        # share `tag:<name>` whatever its `key_prefix`, and the SETs hold BARE
+        # record keys, so cache A's `invalidate_by_tag` could not load cache B's
+        # members under A's prefix, `srem`-ed them as stale and deleted the SET:
+        # B's own invalidate then found nothing and B kept serving the stale
+        # answer. The default layout (`cache:` / `tag:`) is unchanged byte for
+        # byte; a custom `key_prefix` keeps its tags under itself unless an
+        # explicit `tag_prefix` says otherwise.
+        if tag_prefix is None:
+            tag_prefix = (
+                self.DEFAULT_TAG_PREFIX
+                if key_prefix == self.DEFAULT_KEY_PREFIX
+                else f"{key_prefix}:{self.DEFAULT_TAG_PREFIX}"
+            )
         self.tag_prefix = tag_prefix
         # Must be the SAME clock `SemanticCache` computes `expires_at` from —
         # `put` below turns that absolute timestamp back into a relative TTL,
@@ -373,6 +388,30 @@ class RedisStorage:
 
     def _tag_key(self, tag: str) -> str:
         return f"{self.tag_prefix}:{tag}"
+
+    def _own_record_keys(self) -> Iterator[str]:
+        """Every record key in THIS cache's namespace, over SCAN (#253, D-024).
+
+        `f"{key_prefix}:*"` alone also matched a nested prefix: a cache at
+        `"cache"` counted -- and served as hits -- the records of a cache at
+        `"cache:eu"`. A record key is always `SemanticCache._make_key`'s hex
+        digest, which contains no `:`, so a match whose remainder does is another
+        namespace's record (or a tag SET stored under this prefix) and is
+        skipped. The prefix is glob-escaped so a `*`, `?` or `[` in it is literal.
+        """
+        head = f"{self.key_prefix}:"
+        match = re.sub(r"([*?\[\]\\])", r"\\\1", head) + "*"
+        cursor = 0
+        while True:
+            cursor, keys = cast(
+                "tuple[int, list[bytes]]", self.client.scan(cursor=cursor, match=match)
+            )
+            for k in keys:
+                key = k.decode("utf-8") if isinstance(k, bytes) else k
+                if key.startswith(head) and ":" not in key[len(head) :]:
+                    yield key
+            if cursor == 0:
+                break
 
     def put(self, record: CacheRecord) -> None:
         import json
@@ -453,36 +492,28 @@ class RedisStorage:
         self, vector: list[float], *, model: str | None = None
     ) -> tuple[CacheRecord, float] | None:
         best: tuple[CacheRecord, float] | None = None
-        cursor = 0
-        match = f"{self.key_prefix}:*"
-        while True:
-            cursor, keys = cast(
-                "tuple[int, list[bytes]]", self.client.scan(cursor=cursor, match=match)
-            )
-            for k in keys:
-                record = self._load(k.decode("utf-8") if isinstance(k, bytes) else k)
-                if record is None:
-                    continue
-                # Selection-time model filter (D-005/#133), mirroring
-                # InMemoryStorage: skip cross-model records so they can't mask
-                # a valid same-model candidate. Client-side over SCAN — a
-                # server-side pre-filter would need a RediSearch index (out of
-                # scope, per the class docstring).
-                if model is not None and record.model != model:
-                    continue
-                sim = cosine(vector, list(record.vector))
-                # Same content tiebreak as InMemoryStorage (#188) — see the long
-                # note there. This half is why the fix is not cosmetic: `SCAN`
-                # returns keys in an order Redis does not define, so the two
-                # backends resolved a tie to *different records* on the same
-                # populated cache with the same insertion order (measured:
-                # in-memory 250a127aab1750fb, Redis 1a5ec8281b4bf5ff). This
-                # module already asserts cross-backend parity in its test
-                # suite; the tiebreak is what makes that hold on ties too.
-                if best is None or (sim, record.key) > (best[1], best[0].key):
-                    best = (record, sim)
-            if cursor == 0:
-                break
+        for key in self._own_record_keys():
+            record = self._load(key)
+            if record is None:
+                continue
+            # Selection-time model filter (D-005/#133), mirroring
+            # InMemoryStorage: skip cross-model records so they can't mask
+            # a valid same-model candidate. Client-side over SCAN — a
+            # server-side pre-filter would need a RediSearch index (out of
+            # scope, per the class docstring).
+            if model is not None and record.model != model:
+                continue
+            sim = cosine(vector, list(record.vector))
+            # Same content tiebreak as InMemoryStorage (#188) — see the long
+            # note there. This half is why the fix is not cosmetic: `SCAN`
+            # returns keys in an order Redis does not define, so the two
+            # backends resolved a tie to *different records* on the same
+            # populated cache with the same insertion order (measured:
+            # in-memory 250a127aab1750fb, Redis 1a5ec8281b4bf5ff). This
+            # module already asserts cross-backend parity in its test
+            # suite; the tiebreak is what makes that hold on ties too.
+            if best is None or (sim, record.key) > (best[1], best[0].key):
+                best = (record, sim)
         return best
 
     def invalidate_by_tag(self, tag: str) -> int:
@@ -547,17 +578,7 @@ class RedisStorage:
         return 0
 
     def __len__(self) -> int:
-        cursor = 0
-        match = f"{self.key_prefix}:*"
-        count = 0
-        while True:
-            cursor, keys = cast(
-                "tuple[int, list[bytes]]", self.client.scan(cursor=cursor, match=match)
-            )
-            count += len(keys)
-            if cursor == 0:
-                break
-        return count
+        return sum(1 for _ in self._own_record_keys())
 
 
 # ----------------------------------------------------------------------

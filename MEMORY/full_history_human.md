@@ -2776,3 +2776,12 @@ number or `None` dropped nothing on either backend, and the stale answer kept
 being served. A list raised on one backend and returned 0 on the other.
 `invalidate` now refuses a non-string tag before touching storage. 16 new
 tests; reverting the check turns all 10 refusal tests red.
+
+## 2026-10-02 — a Redis key prefix isolates both records and tags (#253, D-024)
+
+Two caches on one Redis with different key prefixes leaked into each other.
+They shared one tag index, so one cache's invalidation wiped the other's index
+and the other kept serving a stale answer. And a cache at `cache` also picked up
+the records of a cache at `cache:eu` and served them as hits. A custom prefix
+now keeps its tag sets under itself, scans skip any key belonging to a nested
+prefix, and the default layout is unchanged. Recorded as D-024. 9 new tests.
