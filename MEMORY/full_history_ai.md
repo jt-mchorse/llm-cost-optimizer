@@ -2884,3 +2884,22 @@ context_for_next_session:
   - GOTCHA_I_WROTE_RENDERED_VALUES_INTO_THE_PR_BODY_UNCHECKED_AND_SWAPPED_THEM_corrected_after_printing_them
 followups: []
 ---
+
+---
+session: 2026-10-06T09:38Z
+duration_min: 1   # computed: plan comment 09:37:12Z -> 09:38Z (date -u)
+issue: 262
+branch: session/2026-10-06-0937-issue-262
+focus: bench_savings_60_30_10_MIX_GAVE_EVERY_ROUNDING_REMAINDER_TO_HARD_n3_was_67pct_hard_now_largest_remainder
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 14
+  suite: "1332 -> 1346 passed; ruff, format clean; docs/savings.* unchanged at the default --n 500"
+decisions_made: []
+measured: "mix 1->1/0/0, 3->2/1/0, 19->11/6/2, 500->300/150/50 (was 0/0/1, 1/0/2, 11/5/3). Neighbour probe (old rule behind the new name): 7 of 14 red."
+context_for_next_session:
+  - ALSO_FILED_261_decision_revisit_batch_savings_pct_from_6dp_rounded_totals_33_to_52pct_on_micro_totals_JT_call
+  - MERGE_ORDER_lco_260_263_independent
+followups: ["#261"]
+---
