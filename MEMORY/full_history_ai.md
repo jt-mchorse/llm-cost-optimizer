@@ -2864,3 +2864,23 @@ context_for_next_session:
   - CI_CAUGHT_A_REGRESSION_I_SHIPPED_naming_out_json_in_the_md_TEXT_put_a_surrogateescape_byte_into_content_UnicodeEncodeError_on_ext4_APFS_hid_it_FIX_backslashreplace_AND_AN_ARM_THAT_CAPTURES_WHAT_main_WRITES_so_no_filesystem_can_hide_it_A_FILE_NAME_THAT_MOVES_INTO_CONTENT_IS_NEW_INPUT_TO_THE_ENCODER
 followups: []
 ---
+
+---
+session: 2026-10-05T08:37Z
+duration_min: 3   # computed: started 08:34Z -> 08:37Z
+issue: 257
+branch: session/2026-10-05-0835-issue-257
+focus: DASHBOARD_QUALITY_VERDICT_FLAGGED_47_OF_51_EXACT_0_01_DROPS_ON_A_FLOAT_SUBTRACTION_SHOWED_BOTH_VERDICTS_AS_MINUS_0_01_AND_CRASHED_ON_NONE
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 9
+  suite: "1317 -> 1326 green; ruff clean; configured mypy clean"
+decisions_made: []
+measured: "51 two-decimal drops of exactly 0.01: float 4 yes / 47 regression (committed 0.886 -> 0.876 among them), now all yes; None quality TypeError -> n/a. Probes: float 3 red, binary Fraction 3 red, round(delta,9) 1 red. AppTest arm drives the real page on an edited --json and asserts the caption names that file."
+context_for_next_session:
+  - SAME_CLASS_AS_leh_D_034_FOUND_BY_A_SWEEP_FOR_VERDICTS_AT_EXACT_BOUNDARIES_lco_has_no_decision_recorded_it_applies_D_034s_reasoning
+  - AN_AppTest_ARM_MUST_PROVE_IT_READ_THE_EDITED_ARTIFACT_the_committed_default_could_satisfy_a_yes_by_itself
+  - GOTCHA_I_WROTE_RENDERED_VALUES_INTO_THE_PR_BODY_UNCHECKED_AND_SWAPPED_THEM_corrected_after_printing_them
+followups: []
+---

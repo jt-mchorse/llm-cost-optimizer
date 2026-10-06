@@ -2799,3 +2799,14 @@ saved didn't equal the baseline. In 24 of them a cache with zero hits showed
 numbers, so the table adds up. Regenerating the committed artifact left the
 strategy table identical and corrected 210 cumulative rows by a millionth of a
 dollar.
+
+## 2026-10-05 — the dashboard's quality check treats a 0.01 drop as tolerated (#257)
+
+The dashboard flags a strategy whose quality drops more than 0.01 below the
+baseline. It subtracted the scores as floats, so a drop of exactly 0.01 was
+flagged for 47 of 51 baselines and let through for 4, including a flag on the
+committed results' own baseline. Every one of them displayed as `-0.01`. It
+also crashed when a quality was missing. The check now compares the decimal
+values, prints enough digits that a flagged and an unflagged delta never look
+the same, and shows a missing quality as "n/a". A test drives the real
+dashboard page on an edited results file.
