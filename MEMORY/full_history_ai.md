@@ -2843,3 +2843,24 @@ context_for_next_session:
   - lco_NOW_HAS_THREE_OPEN_PRS_FROM_TODAY_250_252_254ish_MERGE_SERIALLY_ALL_APPEND_MEMORY
 followups: []
 ---
+
+---
+session: 2026-10-05T07:26Z
+duration_min: 6   # first repro -> close comment, from the command log and the comment timestamps
+issue: 255
+focus: bench_savings_REPORT_DISAGREED_WITH_ITSELF_UNDER_ANY_NON_CANONICAL_RUN_hard_coded_prose_AND_saved_FROM_TWO_DIFFERENT_ROUNDINGS
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 5
+  suite: "1308 -> 1313 green; ruff and mypy clean"
+decisions_made: []
+measured: "before, n=0..120: 40 strategy rows saved != baseline - spent, 24 saved_usd/saved_pct == -0.0, cumulative 302/2720 rows (n 10/50/120/500) disagree; after: 0/0/0. Regenerated docs/savings.*: strategy table and .md byte-identical, 210 cumulative rows move by 1e-6. Revert probes: prose 1 red, footer-only 1 red, strategy 2 red, cumulative 1 red; neighbours launder-sign-only 1 red, clamp-at-zero 2 red."
+context_for_next_session:
+  - FOUND_BY_A_HUNT_AGENT_RUNNING_THE_DOCUMENTED_COMMAND_WITH_A_DIFFERENT_ARGUMENT_the_canonical_invocation_is_the_ONE_input_where_hard_coded_prose_is_true
+  - A_PUBLISHED_DIFFERENCE_MUST_BE_COMPUTED_FROM_THE_PUBLISHED_OPERANDS_rounded_minus_unrounded_is_a_table_that_does_not_add_up_and_its_zero_is_minus_zero
+  - DO_NOT_FIX_MINUS_ZERO_BY_ADDING_0_0_that_launders_the_sign_and_leaves_the_40_off_by_a_micro_dollar_rows
+  - _coerce_token_count_READS_True_AS_ONE_TOKEN_NOT_FILED_its_docstring_promises_nothing_else
+  - CI_CAUGHT_A_REGRESSION_I_SHIPPED_naming_out_json_in_the_md_TEXT_put_a_surrogateescape_byte_into_content_UnicodeEncodeError_on_ext4_APFS_hid_it_FIX_backslashreplace_AND_AN_ARM_THAT_CAPTURES_WHAT_main_WRITES_so_no_filesystem_can_hide_it_A_FILE_NAME_THAT_MOVES_INTO_CONTENT_IS_NEW_INPUT_TO_THE_ENCODER
+followups: []
+---
