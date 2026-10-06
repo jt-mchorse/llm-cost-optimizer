@@ -44,6 +44,7 @@ import argparse
 import importlib
 import io
 import math
+import re
 import shlex
 import shutil
 import subprocess
@@ -62,6 +63,8 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "demo-artifacts"
 # must stay constant across re-captures.
 STABLE_SAVINGS_MD = "savings_demo.md"
 STABLE_SAVINGS_JSON = "savings_demo.json"
+# Where a --launch-streamlit child writes its output (#259).
+STREAMLIT_LOG = "streamlit.log"
 
 DASHBOARD_URL = "http://localhost:8501"
 
@@ -217,18 +220,49 @@ def _dashboard_cheatsheet(json_path: Path) -> str:
     )
 
 
-def _maybe_launch_streamlit(json_path: Path) -> subprocess.Popen[bytes] | None:
+def _maybe_launch_streamlit(json_path: Path, log_path: Path) -> subprocess.Popen[bytes] | None:
     """Spawn `streamlit run dashboard/app.py` as a child if streamlit is
-    installed and on PATH. Returns the child for the operator to terminate
-    when the recording is finished. Returns ``None`` if streamlit isn't
-    available — the caller falls back to the cheat-sheet.
+    installed and on PATH, its output going to `log_path`. Returns the child,
+    which outlives this script for the dashboard tour; returns ``None`` if
+    streamlit isn't available -- the caller falls back to the cheat-sheet.
+
+    The output goes to a file, not the terminal (#259): Streamlit's banner
+    prints a Network and an External URL, and the External one is the
+    operator's public IP, in a terminal that is being recorded. A file rather
+    than a pipe because nothing would drain a pipe once this script exits.
     """
     if shutil.which("streamlit") is None:
         return None
-    return subprocess.Popen(  # noqa: S603 — invoked with absolute resolution of `streamlit`
-        _streamlit_argv(json_path, "--server.headless", "true"),
-        cwd=REPO_ROOT,
-    )
+    with log_path.open("wb") as log:
+        return subprocess.Popen(  # noqa: S603 — invoked with absolute resolution of `streamlit`
+            _streamlit_argv(json_path, "--server.headless", "true"),
+            cwd=REPO_ROOT,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+        )
+
+
+_LOCAL_URL = re.compile(r"^\s*Local URL: (http://localhost:\d+)\s*$", re.MULTILINE)
+
+
+def _wait_for_local_url(
+    child: subprocess.Popen[bytes], log_path: Path, timeout: float
+) -> str | None:
+    """The URL the child reports binding, or ``None`` if it exits or times out first.
+
+    Streamlit moves to the next free port when 8501 is taken and the port was
+    not set explicitly -- and on a second take it is taken, by the first take's
+    dashboard, which outlives the script by design. Opening the hard-coded
+    8501 then recorded the previous take's dashboard and JSON (#259).
+    """
+    deadline = time.monotonic() + timeout
+    while True:
+        text = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""
+        if (m := _LOCAL_URL.search(text)) is not None:
+            return m.group(1)
+        if child.poll() is not None or time.monotonic() >= deadline:
+            return None
+        time.sleep(0.1)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -347,30 +381,40 @@ def main(argv: list[str] | None = None) -> int:
     # STAGE 2 — dashboard tour (operator-action, optional auto-launch).
     print(_banner(2, "Streamlit dashboard tour (operator-action)"))
 
-    streamlit_child = None
+    dashboard_url = DASHBOARD_URL
     if args.launch_streamlit:
-        streamlit_child = _maybe_launch_streamlit(stable_json)
+        log_path = output_dir / STREAMLIT_LOG
+        streamlit_child = _maybe_launch_streamlit(stable_json, log_path)
         if streamlit_child is None:
             print(
                 "[capture] --launch-streamlit was passed but `streamlit` is "
                 "not on PATH; falling back to the cheat-sheet."
             )
         else:
+            local_url = _wait_for_local_url(streamlit_child, log_path, timeout=30.0)
+            if local_url is None:
+                tail = log_path.read_text(encoding="utf-8", errors="replace")[-1500:]
+                if streamlit_child.poll() is None:
+                    streamlit_child.terminate()
+                return _fail(
+                    f"streamlit (pid {streamlit_child.pid}) exited or never reported its "
+                    f"Local URL; its output ({log_path}):\n{tail}"
+                )
+            dashboard_url = local_url
             print(
-                f"[capture] spawned streamlit (pid {streamlit_child.pid}); "
-                f"Ctrl-C / terminate when the recording is done."
+                f"[capture] spawned streamlit (pid {streamlit_child.pid}) on {local_url}; "
+                f"output in {log_path}. Terminate it when the recording is done."
             )
-            # Small grace period so the server is up before the browser opens.
-            time.sleep(2.0)
 
     # Open the dashboard URL by default so the recording captures the rendered
     # page (suppress with --no-open). The demo flow assumes the dashboard is
     # running — whether auto-launched above or started by the operator per the
     # cheat-sheet. This open used to be nested inside the --launch-streamlit
     # success branch, so on the default path --no-open controlled nothing and
-    # the URL was never opened despite the documented default (#100).
+    # the URL was never opened despite the documented default (#100). When this
+    # script launched it, the URL is the one the child reported (#259).
     if not args.no_open:
-        webbrowser.open(DASHBOARD_URL)
+        webbrowser.open(dashboard_url)
 
     if not args.skip_dashboard_cheatsheet:
         print(_dashboard_cheatsheet(stable_json))
