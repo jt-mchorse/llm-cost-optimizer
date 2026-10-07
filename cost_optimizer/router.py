@@ -235,7 +235,7 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
 
     Accepts the shape `response.first_token_logprobs` directly (set by
     test fakes and by adapters that pre-extract), and also the nested
-    shape `response.content[0].logprobs` used by some SDKs. Returns
+    shape `response.content[i].logprobs` (the first `type: "text"` block) used by some SDKs. Returns
     None for anything else so signals can stay defensive.
     """
     direct = _read_field(response, "first_token_logprobs")
@@ -282,7 +282,21 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
     # nest: a tuple at ANY of them abstained the signal. Widening only the
     # outermost would leave the other two, which is the shape #215 was.
     if is_item_sequence(content) and content:
-        first = content[0]
+        # The first TEXT block, as `measure`'s comment and `_extract_text` both
+        # say (#273). This read `content[0]` whatever it was, so a response that
+        # leads with a `thinking` (or `tool_use`, `redacted_thinking`, ...) block
+        # abstained to value=None/trip=False on every call -- extended thinking
+        # silently disabled escalation, and the reading looks like a confident
+        # cheap response. A list whose blocks carry no `type` at all (an older
+        # fake or adapter) keeps the old first-block behaviour.
+        typed = [b for b in content if _read_field(b, "type") is not None]
+        if typed:
+            text_blocks = [b for b in typed if _read_field(b, "type") == "text"]
+            if not text_blocks:
+                return None
+            first = text_blocks[0]
+        else:
+            first = content[0]
         logprobs = _read_field(first, "logprobs")
         if is_item_sequence(logprobs) and logprobs:
             top = logprobs[0]
