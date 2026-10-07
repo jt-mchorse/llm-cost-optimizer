@@ -2974,5 +2974,19 @@ decisions_made: []
 measured: "main: {succeeded 2, expired 3} -> 2; {expired 5} -> ValueError from poll and results. Revert 7/8 red."
 context_for_next_session:
   - WHEN_SUMMING_AN_SDK_ENUM_ENUMERATE_THE_SDK_TYPE_NOT_THE_CASES_YOU_REMEMBER_the_wheel_is_the_spec
+session: 2026-10-07T10:42Z
+duration_min: 5
+issue: 273
+branch: session/2026-10-07-lco-entropy-text-block
+focus: ENTROPY_SIGNAL_READ_CONTENT_0_SO_A_LEADING_THINKING_BLOCK_DISABLED_ESCALATION
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 6
+  suite: "1356 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: [thinking, text] -> value None trip False. Revert 4/6 red."
+context_for_next_session:
+  - CONTENT_0_IS_NOT_THE_TEXT_BLOCK_once_thinking_and_tool_use_exist_grep_for_content_0_across_the_portfolio
 followups: []
 ---

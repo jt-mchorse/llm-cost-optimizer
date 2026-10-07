@@ -2858,3 +2858,9 @@ the batch backend didn't count that category. A batch where everything expired
 added up to zero requests, which the code treats as impossible, so the batch
 could never be polled or have its results read. Expired requests are now
 counted, and their rows come back marked "expired".
+## 2026-10-07 — the router's uncertainty signal works with extended thinking (#273)
+
+The router's entropy signal read the first block of a response, assuming it was
+text. With extended thinking the first block is a "thinking" block, so the
+signal silently gave up on every call and never escalated to the stronger
+model. It now reads the first text block.
