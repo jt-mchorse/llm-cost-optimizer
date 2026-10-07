@@ -2832,3 +2832,12 @@ not the strategy, drove the result. It now rounds to the closest split that
 still adds up; the default 500-row run and its committed results are
 unchanged. I also filed #261 for JT: on tiny batches the batch saving
 percentage is distorted by rounding the dollar totals first.
+
+## 2026-10-07 — the Redis cache backend honours fractional TTLs (#264)
+
+The Redis backend stored expiry in whole seconds, rounding 1.9 s down to 1 s
+and raising 0.2 s to 1 s, and it never checked a record's expiry time when
+reading. Compared with the in-memory backend it served stale answers in one
+case and dropped live ones (causing paid calls) in the other. Expiry is now set
+in milliseconds and rounded up, and reads apply the same expiry rule the
+in-memory backend uses, so both backends agree, including under a test clock.

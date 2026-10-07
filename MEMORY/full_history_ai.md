@@ -2923,3 +2923,23 @@ context_for_next_session:
   - MERGE_ORDER_lco_260_263_independent
 followups: ["#261"]
 ---
+
+---
+session: 2026-10-07T07:35Z
+duration_min: 2   # computed from GitHub: plan comment 07:33:26Z -> PR ~07:35:30Z
+issue: 264
+branch: session/2026-10-07-lco-redis-ttl
+focus: RedisStorage_WHOLE_SECOND_TTL_AND_NO_READ_SIDE_EXPIRY_CHECK_BROKE_BACKEND_PARITY_BOTH_WAYS
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 4
+  tests_changed: 2
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "revert probes over 8 tests: main 6 red; PEXPIRE half only 3; read check only 2; int-ms neighbour 1 (after tightening); fix 0."
+context_for_next_session:
+  - MY_FIRST_ROUNDS_UP_ARM_WAS_A_PTTL_BAND_1890_TO_1901_AND_ADMITTED_THE_TRUNCATING_NEIGHBOUR_a_wall_clock_readback_cannot_separate_1900_from_1901_RECORD_THE_ARGUMENT
+  - A_PARITY_TEST_THAT_ASSERTS_ONE_BACKEND_AFTER_THE_INTERESTING_INSTANT_IS_A_DOCUMENTED_GAP_read_its_comment_as_a_bug_report
+followups: []
+---
