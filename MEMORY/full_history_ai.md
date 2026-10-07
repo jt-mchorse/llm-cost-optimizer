@@ -2943,7 +2943,7 @@ context_for_next_session:
   - A_PARITY_TEST_THAT_ASSERTS_ONE_BACKEND_AFTER_THE_INTERESTING_INSTANT_IS_A_DOCUMENTED_GAP_read_its_comment_as_a_bug_report
 followups: []
 session: 2026-10-07T07:43Z
-duration_min: 5   # computed from GitHub: plan comment 2026-10-07T07:37:03Z -> PR 07:43Z
+duration_min: 6   # computed from GitHub: plan comment 2026-10-07T07:37:03Z -> PR 07:43Z
 issue: 266
 branch: session/2026-10-07-lco-cache-minimum
 focus: THE_HEADLINE_84_PERCENT_CACHING_ROW_PRICED_A_108_TOKEN_PREFIX_HAIKU_4_5_WILL_NOT_CACHE_MINIMUM_4096
