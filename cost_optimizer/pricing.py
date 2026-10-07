@@ -2,7 +2,8 @@
 
 Anthropic prompt caching has two cost multipliers vs. baseline input price:
 
-- Cache **write** (a.k.a. cache creation): 1.25× the input rate. This is the
+- Cache **write** (a.k.a. cache creation): 1.25× the input rate for the
+  default 5-minute TTL, 2× for a ``ttl: "1h"`` write (#271). This is the
   surcharge paid the first time a prefix is cached.
 - Cache **read** (a.k.a. cache hit): 0.10× the input rate. This is the
   90%-discounted rate on subsequent reads of the cached prefix.
@@ -74,6 +75,10 @@ class ModelPricing:
     # constant. `None` means "not specified" and applies no minimum; every
     # entry in `_PRICING` sets it.
     min_cacheable_tokens: int | None = None
+    # A write with `cache_control: {"type": "ephemeral", "ttl": "1h"}` bills at
+    # 2x the input rate, not 1.25x (#271). The response reports those tokens
+    # under `usage.cache_creation.ephemeral_1h_input_tokens`.
+    cache_write_1h_multiplier: float = 2.0
 
     def __post_init__(self) -> None:
         # D-003 extends from "no invented model" to "no invented numbers within
@@ -94,6 +99,7 @@ class ModelPricing:
             ("input_per_mtok", self.input_per_mtok),
             ("cache_write_multiplier", self.cache_write_multiplier),
             ("cache_read_multiplier", self.cache_read_multiplier),
+            ("cache_write_1h_multiplier", self.cache_write_1h_multiplier),
         ):
             # `isinstance` first (short-circuits before `math.isfinite`): a
             # present-but-non-numeric rate (a str/None from a JSON-decoded or
