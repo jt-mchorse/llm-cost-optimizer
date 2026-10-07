@@ -66,7 +66,7 @@ from cost_optimizer.batch import (  # noqa: E402
     InMemoryBatchBackend,
     compare_realtime_vs_batch,
 )
-from cost_optimizer.pricing import get_pricing  # noqa: E402
+from cost_optimizer.pricing import ModelPricing, get_pricing  # noqa: E402
 from cost_optimizer.router import EntropySignal, UncertaintyRouter  # noqa: E402
 from cost_optimizer.semantic_cache import (  # noqa: E402
     HashEmbedder,
@@ -193,9 +193,11 @@ def _build_workload(n: int = 500, seed: int = 0xC057) -> list[WorkloadRow]:
     """
     n_redundant, n_easy, n_hard = _mix_counts(n)
 
-    # A long stable system prompt — this is the prefix prompt caching
-    # bites. 200 words ≈ 250-300 input tokens at Claude's real
-    # tokenizer; we use whitespace count as a documented approximation.
+    # A stable system prompt shared by every row: the prefix prompt caching
+    # would cache. It is 108 whitespace words (the bench's documented token
+    # approximation), which is far below Haiku 4.5's 4096-token minimum
+    # cacheable prefix, so `_run_prompt_cache` credits no caching on it (#266).
+    # This comment used to say "200 words", and nothing checked it.
     system_prompt = (
         "You are a support assistant. Be concise, accurate, and refuse "
         "to answer when the question is outside the policy documents. "
@@ -436,6 +438,29 @@ def _run_baseline(workload: list[WorkloadRow]) -> StrategyResult:
     )
 
 
+def _prompt_cache_row_cost(
+    r: WorkloadRow, pricing: ModelPricing, seen_prefix: dict[str, bool]
+) -> tuple[float, str]:
+    """One row's input dollars under prompt caching, and what the API did.
+
+    Returns ``(cost, kind)`` with ``kind`` one of ``"write"``, ``"read"`` or
+    ``"uncached"``. The API does not cache a prefix shorter than the model's
+    minimum (#266): such a row is billed as ordinary input, with no write
+    surcharge and no read discount. The strategy row and the cumulative series
+    both price rows through here, so the two cannot drift apart. They did
+    once: the series kept its own copy of this arithmetic.
+    """
+    rate = pricing.input_per_mtok / 1_000_000
+    user_tokens = max(1, r.prompt_tokens - _ws_count(r.system))
+    prefix_tokens = r.prompt_tokens - user_tokens
+    if prefix_tokens < (pricing.min_cacheable_tokens or 0):
+        return r.prompt_tokens * rate, "uncached"
+    if not seen_prefix.get(r.system, False):
+        seen_prefix[r.system] = True
+        return prefix_tokens * rate * pricing.cache_write_multiplier + user_tokens * rate, "write"
+    return prefix_tokens * rate * pricing.cache_read_multiplier + user_tokens * rate, "read"
+
+
 def _run_prompt_cache(workload: list[WorkloadRow], baseline: StrategyResult) -> StrategyResult:
     """Anthropic prompt caching: pay 1.25× on first cache write per system
     prefix, 0.10× on every subsequent hit of that prefix.
@@ -448,30 +473,23 @@ def _run_prompt_cache(workload: list[WorkloadRow], baseline: StrategyResult) -> 
     is the conservative number — real apps will cache more.
     """
     pricing = get_pricing(CHEAP_MODEL)
-    rate = pricing.input_per_mtok / 1_000_000
 
     total = 0.0
-    n_writes = 0
-    n_reads = 0
+    counts = {"write": 0, "read": 0, "uncached": 0}
     qualities = 0.0
     seen_prefix: dict[str, bool] = {}
+    # A prefix below the model's minimum cacheable length is not cached (#266).
+    # This row used to charge 1 write + 499 reads on a 108-token prefix that
+    # Haiku 4.5 (minimum 4096) would never cache, and published 84% saved; it
+    # now carries the prefix length and the minimum so the zero explains itself.
+    max_prefix = 0
     for r in workload:
-        prefix_key = r.system  # stable across the workload
-        user_tokens = max(1, r.prompt_tokens - _ws_count(r.system))
-        prefix_tokens = r.prompt_tokens - user_tokens
-        if not seen_prefix.get(prefix_key, False):
-            # Cold path: pay write multiplier on the prefix; user portion
-            # at standard rate.
-            total += prefix_tokens * rate * pricing.cache_write_multiplier
-            total += user_tokens * rate
-            seen_prefix[prefix_key] = True
-            n_writes += 1
-        else:
-            # Warm path: pay read multiplier on the prefix; user portion
-            # at standard rate.
-            total += prefix_tokens * rate * pricing.cache_read_multiplier
-            total += user_tokens * rate
-            n_reads += 1
+        cost, kind = _prompt_cache_row_cost(r, pricing, seen_prefix)
+        total += cost
+        counts[kind] += 1
+        max_prefix = max(
+            max_prefix, r.prompt_tokens - max(1, r.prompt_tokens - _ws_count(r.system))
+        )
         qualities += r.cheap_quality
 
     n = len(workload)
@@ -486,7 +504,12 @@ def _run_prompt_cache(workload: list[WorkloadRow], baseline: StrategyResult) -> 
         saved_usd=saved,
         saved_pct=pct,
         mean_quality=_ratio_or_none(qualities, n),
-        extra={"cache_writes": n_writes, "cache_reads": n_reads},
+        extra={
+            "cache_writes": counts["write"],
+            "cache_reads": counts["read"],
+            "prefix_tokens": max_prefix,
+            "min_cacheable_tokens": pricing.min_cacheable_tokens,
+        },
     )
 
 
@@ -778,13 +801,7 @@ def _cumulative_savings(workload: list[WorkloadRow], strategy: str) -> list[Cumu
         running_baseline += row_baseline
 
         if strategy == "prompt_cache":
-            user_tokens = max(1, r.prompt_tokens - _ws_count(r.system))
-            prefix_tokens = r.prompt_tokens - user_tokens
-            if not seen_prefix.get(r.system, False):
-                cost = prefix_tokens * rate * pricing.cache_write_multiplier + user_tokens * rate
-                seen_prefix[r.system] = True
-            else:
-                cost = prefix_tokens * rate * pricing.cache_read_multiplier + user_tokens * rate
+            cost, _ = _prompt_cache_row_cost(r, pricing, seen_prefix)
         elif strategy == "semantic_cache":
             result = cache.lookup(r.prompt, model=CHEAP_MODEL)
             if result.hit:

@@ -4007,4002 +4007,4002 @@
       {
         "baseline_total_usd": 0.000111,
         "class": "easy",
-        "cumulative_saved_usd": -2.7e-05,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0123",
         "row_index": 1,
-        "strategy_total_usd": 0.000138
+        "strategy_total_usd": 0.000111
       },
       {
         "baseline_total_usd": 0.000224,
         "class": "easy",
-        "cumulative_saved_usd": 7e-05,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0053",
         "row_index": 2,
-        "strategy_total_usd": 0.000154
+        "strategy_total_usd": 0.000224
       },
       {
         "baseline_total_usd": 0.000341,
         "class": "redundant",
-        "cumulative_saved_usd": 0.000167,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0199",
         "row_index": 3,
-        "strategy_total_usd": 0.000174
+        "strategy_total_usd": 0.000341
       },
       {
         "baseline_total_usd": 0.00046,
         "class": "redundant",
-        "cumulative_saved_usd": 0.000265,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0284",
         "row_index": 4,
-        "strategy_total_usd": 0.000195
+        "strategy_total_usd": 0.00046
       },
       {
         "baseline_total_usd": 0.000572,
         "class": "easy",
-        "cumulative_saved_usd": 0.000362,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0122",
         "row_index": 5,
-        "strategy_total_usd": 0.00021
+        "strategy_total_usd": 0.000572
       },
       {
         "baseline_total_usd": 0.000692,
         "class": "redundant",
-        "cumulative_saved_usd": 0.000459,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0067",
         "row_index": 6,
-        "strategy_total_usd": 0.000233
+        "strategy_total_usd": 0.000692
       },
       {
         "baseline_total_usd": 0.000804,
         "class": "easy",
-        "cumulative_saved_usd": 0.000556,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0098",
         "row_index": 7,
-        "strategy_total_usd": 0.000248
+        "strategy_total_usd": 0.000804
       },
       {
         "baseline_total_usd": 0.000924,
         "class": "hard",
-        "cumulative_saved_usd": 0.000653,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0007",
         "row_index": 8,
-        "strategy_total_usd": 0.000271
+        "strategy_total_usd": 0.000924
       },
       {
         "baseline_total_usd": 0.001041,
         "class": "easy",
-        "cumulative_saved_usd": 0.000751,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0052",
         "row_index": 9,
-        "strategy_total_usd": 0.00029
+        "strategy_total_usd": 0.001041
       },
       {
         "baseline_total_usd": 0.001155,
         "class": "redundant",
-        "cumulative_saved_usd": 0.000848,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0153",
         "row_index": 10,
-        "strategy_total_usd": 0.000307
+        "strategy_total_usd": 0.001155
       },
       {
         "baseline_total_usd": 0.00127,
         "class": "redundant",
-        "cumulative_saved_usd": 0.000945,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0180",
         "row_index": 11,
-        "strategy_total_usd": 0.000325
+        "strategy_total_usd": 0.00127
       },
       {
         "baseline_total_usd": 0.001388,
         "class": "hard",
-        "cumulative_saved_usd": 0.001042,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0034",
         "row_index": 12,
-        "strategy_total_usd": 0.000346
+        "strategy_total_usd": 0.001388
       },
       {
         "baseline_total_usd": 0.001502,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001139,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0078",
         "row_index": 13,
-        "strategy_total_usd": 0.000363
+        "strategy_total_usd": 0.001502
       },
       {
         "baseline_total_usd": 0.001616,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001237,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0040",
         "row_index": 14,
-        "strategy_total_usd": 0.000379
+        "strategy_total_usd": 0.001616
       },
       {
         "baseline_total_usd": 0.001732,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001334,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0115",
         "row_index": 15,
-        "strategy_total_usd": 0.000398
+        "strategy_total_usd": 0.001732
       },
       {
         "baseline_total_usd": 0.001846,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001431,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0046",
         "row_index": 16,
-        "strategy_total_usd": 0.000415
+        "strategy_total_usd": 0.001846
       },
       {
         "baseline_total_usd": 0.001962,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001528,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0295",
         "row_index": 17,
-        "strategy_total_usd": 0.000434
+        "strategy_total_usd": 0.001962
       },
       {
         "baseline_total_usd": 0.002074,
         "class": "easy",
-        "cumulative_saved_usd": 0.001625,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0074",
         "row_index": 18,
-        "strategy_total_usd": 0.000449
+        "strategy_total_usd": 0.002074
       },
       {
         "baseline_total_usd": 0.002188,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001723,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0081",
         "row_index": 19,
-        "strategy_total_usd": 0.000465
+        "strategy_total_usd": 0.002188
       },
       {
         "baseline_total_usd": 0.002302,
         "class": "easy",
-        "cumulative_saved_usd": 0.00182,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0142",
         "row_index": 20,
-        "strategy_total_usd": 0.000482
+        "strategy_total_usd": 0.002302
       },
       {
         "baseline_total_usd": 0.002421,
         "class": "redundant",
-        "cumulative_saved_usd": 0.001917,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0212",
         "row_index": 21,
-        "strategy_total_usd": 0.000504
+        "strategy_total_usd": 0.002421
       },
       {
         "baseline_total_usd": 0.002539,
         "class": "hard",
-        "cumulative_saved_usd": 0.002014,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0033",
         "row_index": 22,
-        "strategy_total_usd": 0.000525
+        "strategy_total_usd": 0.002539
       },
       {
         "baseline_total_usd": 0.002654,
         "class": "redundant",
-        "cumulative_saved_usd": 0.002111,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0159",
         "row_index": 23,
-        "strategy_total_usd": 0.000543
+        "strategy_total_usd": 0.002654
       },
       {
         "baseline_total_usd": 0.002774,
         "class": "hard",
-        "cumulative_saved_usd": 0.002209,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0047",
         "row_index": 24,
-        "strategy_total_usd": 0.000565
+        "strategy_total_usd": 0.002774
       },
       {
         "baseline_total_usd": 0.002886,
         "class": "easy",
-        "cumulative_saved_usd": 0.002306,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0082",
         "row_index": 25,
-        "strategy_total_usd": 0.00058
+        "strategy_total_usd": 0.002886
       },
       {
         "baseline_total_usd": 0.003,
         "class": "easy",
-        "cumulative_saved_usd": 0.002403,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0046",
         "row_index": 26,
-        "strategy_total_usd": 0.000597
+        "strategy_total_usd": 0.003
       },
       {
         "baseline_total_usd": 0.003117,
         "class": "redundant",
-        "cumulative_saved_usd": 0.0025,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0206",
         "row_index": 27,
-        "strategy_total_usd": 0.000617
+        "strategy_total_usd": 0.003117
       },
       {
         "baseline_total_usd": 0.003231,
         "class": "redundant",
-        "cumulative_saved_usd": 0.002597,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0190",
         "row_index": 28,
-        "strategy_total_usd": 0.000634
+        "strategy_total_usd": 0.003231
       },
       {
         "baseline_total_usd": 0.003349,
         "class": "redundant",
-        "cumulative_saved_usd": 0.002695,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0246",
         "row_index": 29,
-        "strategy_total_usd": 0.000654
+        "strategy_total_usd": 0.003349
       },
       {
         "baseline_total_usd": 0.003467,
         "class": "redundant",
-        "cumulative_saved_usd": 0.002792,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0279",
         "row_index": 30,
-        "strategy_total_usd": 0.000675
+        "strategy_total_usd": 0.003467
       },
       {
         "baseline_total_usd": 0.003581,
         "class": "redundant",
-        "cumulative_saved_usd": 0.002889,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0256",
         "row_index": 31,
-        "strategy_total_usd": 0.000692
+        "strategy_total_usd": 0.003581
       },
       {
         "baseline_total_usd": 0.003701,
         "class": "hard",
-        "cumulative_saved_usd": 0.002986,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0027",
         "row_index": 32,
-        "strategy_total_usd": 0.000715
+        "strategy_total_usd": 0.003701
       },
       {
         "baseline_total_usd": 0.003818,
         "class": "redundant",
-        "cumulative_saved_usd": 0.003083,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0098",
         "row_index": 33,
-        "strategy_total_usd": 0.000735
+        "strategy_total_usd": 0.003818
       },
       {
         "baseline_total_usd": 0.003931,
         "class": "easy",
-        "cumulative_saved_usd": 0.003181,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0085",
         "row_index": 34,
-        "strategy_total_usd": 0.00075
+        "strategy_total_usd": 0.003931
       },
       {
         "baseline_total_usd": 0.004046,
         "class": "redundant",
-        "cumulative_saved_usd": 0.003278,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0093",
         "row_index": 35,
-        "strategy_total_usd": 0.000768
+        "strategy_total_usd": 0.004046
       },
       {
         "baseline_total_usd": 0.00416,
         "class": "easy",
-        "cumulative_saved_usd": 0.003375,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0134",
         "row_index": 36,
-        "strategy_total_usd": 0.000785
+        "strategy_total_usd": 0.00416
       },
       {
         "baseline_total_usd": 0.004275,
         "class": "redundant",
-        "cumulative_saved_usd": 0.003472,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0018",
         "row_index": 37,
-        "strategy_total_usd": 0.000803
+        "strategy_total_usd": 0.004275
       },
       {
         "baseline_total_usd": 0.004387,
         "class": "easy",
-        "cumulative_saved_usd": 0.003569,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0138",
         "row_index": 38,
-        "strategy_total_usd": 0.000818
+        "strategy_total_usd": 0.004387
       },
       {
         "baseline_total_usd": 0.004499,
         "class": "easy",
-        "cumulative_saved_usd": 0.003667,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0066",
         "row_index": 39,
-        "strategy_total_usd": 0.000832
+        "strategy_total_usd": 0.004499
       },
       {
         "baseline_total_usd": 0.004617,
         "class": "hard",
-        "cumulative_saved_usd": 0.003764,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0030",
         "row_index": 40,
-        "strategy_total_usd": 0.000853
+        "strategy_total_usd": 0.004617
       },
       {
         "baseline_total_usd": 0.004735,
         "class": "hard",
-        "cumulative_saved_usd": 0.003861,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0025",
         "row_index": 41,
-        "strategy_total_usd": 0.000874
+        "strategy_total_usd": 0.004735
       },
       {
         "baseline_total_usd": 0.004849,
         "class": "easy",
-        "cumulative_saved_usd": 0.003958,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0112",
         "row_index": 42,
-        "strategy_total_usd": 0.000891
+        "strategy_total_usd": 0.004849
       },
       {
         "baseline_total_usd": 0.004963,
         "class": "redundant",
-        "cumulative_saved_usd": 0.004055,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0118",
         "row_index": 43,
-        "strategy_total_usd": 0.000908
+        "strategy_total_usd": 0.004963
       },
       {
         "baseline_total_usd": 0.005078,
         "class": "redundant",
-        "cumulative_saved_usd": 0.004153,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0216",
         "row_index": 44,
-        "strategy_total_usd": 0.000925
+        "strategy_total_usd": 0.005078
       },
       {
         "baseline_total_usd": 0.005194,
         "class": "redundant",
-        "cumulative_saved_usd": 0.00425,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0079",
         "row_index": 45,
-        "strategy_total_usd": 0.000944
+        "strategy_total_usd": 0.005194
       },
       {
         "baseline_total_usd": 0.005306,
         "class": "easy",
-        "cumulative_saved_usd": 0.004347,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0097",
         "row_index": 46,
-        "strategy_total_usd": 0.000959
+        "strategy_total_usd": 0.005306
       },
       {
         "baseline_total_usd": 0.00542,
         "class": "redundant",
-        "cumulative_saved_usd": 0.004444,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0095",
         "row_index": 47,
-        "strategy_total_usd": 0.000976
+        "strategy_total_usd": 0.00542
       },
       {
         "baseline_total_usd": 0.00554,
         "class": "hard",
-        "cumulative_saved_usd": 0.004541,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0011",
         "row_index": 48,
-        "strategy_total_usd": 0.000999
+        "strategy_total_usd": 0.00554
       },
       {
         "baseline_total_usd": 0.005655,
         "class": "redundant",
-        "cumulative_saved_usd": 0.004639,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0231",
         "row_index": 49,
-        "strategy_total_usd": 0.001016
+        "strategy_total_usd": 0.005655
       },
       {
         "baseline_total_usd": 0.005771,
         "class": "redundant",
-        "cumulative_saved_usd": 0.004736,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0029",
         "row_index": 50,
-        "strategy_total_usd": 0.001035
+        "strategy_total_usd": 0.005771
       },
       {
         "baseline_total_usd": 0.005885,
         "class": "redundant",
-        "cumulative_saved_usd": 0.004833,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0086",
         "row_index": 51,
-        "strategy_total_usd": 0.001052
+        "strategy_total_usd": 0.005885
       },
       {
         "baseline_total_usd": 0.006,
         "class": "redundant",
-        "cumulative_saved_usd": 0.00493,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0036",
         "row_index": 52,
-        "strategy_total_usd": 0.00107
+        "strategy_total_usd": 0.006
       },
       {
         "baseline_total_usd": 0.006116,
         "class": "redundant",
-        "cumulative_saved_usd": 0.005027,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0137",
         "row_index": 53,
-        "strategy_total_usd": 0.001089
+        "strategy_total_usd": 0.006116
       },
       {
         "baseline_total_usd": 0.006229,
         "class": "easy",
-        "cumulative_saved_usd": 0.005125,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0013",
         "row_index": 54,
-        "strategy_total_usd": 0.001104
+        "strategy_total_usd": 0.006229
       },
       {
         "baseline_total_usd": 0.006343,
         "class": "easy",
-        "cumulative_saved_usd": 0.005222,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0022",
         "row_index": 55,
-        "strategy_total_usd": 0.001121
+        "strategy_total_usd": 0.006343
       },
       {
         "baseline_total_usd": 0.006459,
         "class": "redundant",
-        "cumulative_saved_usd": 0.005319,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0101",
         "row_index": 56,
-        "strategy_total_usd": 0.00114
+        "strategy_total_usd": 0.006459
       },
       {
         "baseline_total_usd": 0.00657,
         "class": "easy",
-        "cumulative_saved_usd": 0.005416,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0067",
         "row_index": 57,
-        "strategy_total_usd": 0.001154
+        "strategy_total_usd": 0.00657
       },
       {
         "baseline_total_usd": 0.006685,
         "class": "redundant",
-        "cumulative_saved_usd": 0.005513,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0072",
         "row_index": 58,
-        "strategy_total_usd": 0.001172
+        "strategy_total_usd": 0.006685
       },
       {
         "baseline_total_usd": 0.0068,
         "class": "redundant",
-        "cumulative_saved_usd": 0.005611,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0196",
         "row_index": 59,
-        "strategy_total_usd": 0.001189
+        "strategy_total_usd": 0.0068
       },
       {
         "baseline_total_usd": 0.00692,
         "class": "hard",
-        "cumulative_saved_usd": 0.005708,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0019",
         "row_index": 60,
-        "strategy_total_usd": 0.001212
+        "strategy_total_usd": 0.00692
       },
       {
         "baseline_total_usd": 0.007036,
         "class": "redundant",
-        "cumulative_saved_usd": 0.005805,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0007",
         "row_index": 61,
-        "strategy_total_usd": 0.001231
+        "strategy_total_usd": 0.007036
       },
       {
         "baseline_total_usd": 0.007148,
         "class": "easy",
-        "cumulative_saved_usd": 0.005902,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0049",
         "row_index": 62,
-        "strategy_total_usd": 0.001246
+        "strategy_total_usd": 0.007148
       },
       {
         "baseline_total_usd": 0.007263,
         "class": "redundant",
-        "cumulative_saved_usd": 0.005999,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0160",
         "row_index": 63,
-        "strategy_total_usd": 0.001264
+        "strategy_total_usd": 0.007263
       },
       {
         "baseline_total_usd": 0.007383,
         "class": "redundant",
-        "cumulative_saved_usd": 0.006097,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0139",
         "row_index": 64,
-        "strategy_total_usd": 0.001286
+        "strategy_total_usd": 0.007383
       },
       {
         "baseline_total_usd": 0.007499,
         "class": "redundant",
-        "cumulative_saved_usd": 0.006194,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0236",
         "row_index": 65,
-        "strategy_total_usd": 0.001305
+        "strategy_total_usd": 0.007499
       },
       {
         "baseline_total_usd": 0.007612,
         "class": "redundant",
-        "cumulative_saved_usd": 0.006291,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0161",
         "row_index": 66,
-        "strategy_total_usd": 0.001321
+        "strategy_total_usd": 0.007612
       },
       {
         "baseline_total_usd": 0.007727,
         "class": "redundant",
-        "cumulative_saved_usd": 0.006388,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0058",
         "row_index": 67,
-        "strategy_total_usd": 0.001339
+        "strategy_total_usd": 0.007727
       },
       {
         "baseline_total_usd": 0.007844,
         "class": "easy",
-        "cumulative_saved_usd": 0.006485,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0092",
         "row_index": 68,
-        "strategy_total_usd": 0.001359
+        "strategy_total_usd": 0.007844
       },
       {
         "baseline_total_usd": 0.007962,
         "class": "redundant",
-        "cumulative_saved_usd": 0.006583,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0214",
         "row_index": 69,
-        "strategy_total_usd": 0.001379
+        "strategy_total_usd": 0.007962
       },
       {
         "baseline_total_usd": 0.008074,
         "class": "redundant",
-        "cumulative_saved_usd": 0.00668,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0113",
         "row_index": 70,
-        "strategy_total_usd": 0.001394
+        "strategy_total_usd": 0.008074
       },
       {
         "baseline_total_usd": 0.008192,
         "class": "hard",
-        "cumulative_saved_usd": 0.006777,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0005",
         "row_index": 71,
-        "strategy_total_usd": 0.001415
+        "strategy_total_usd": 0.008192
       },
       {
         "baseline_total_usd": 0.008311,
         "class": "redundant",
-        "cumulative_saved_usd": 0.006874,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0240",
         "row_index": 72,
-        "strategy_total_usd": 0.001437
+        "strategy_total_usd": 0.008311
       },
       {
         "baseline_total_usd": 0.008425,
         "class": "easy",
-        "cumulative_saved_usd": 0.006971,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0064",
         "row_index": 73,
-        "strategy_total_usd": 0.001454
+        "strategy_total_usd": 0.008425
       },
       {
         "baseline_total_usd": 0.008538,
         "class": "redundant",
-        "cumulative_saved_usd": 0.007069,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0182",
         "row_index": 74,
-        "strategy_total_usd": 0.001469
+        "strategy_total_usd": 0.008538
       },
       {
         "baseline_total_usd": 0.008658,
         "class": "hard",
-        "cumulative_saved_usd": 0.007166,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0048",
         "row_index": 75,
-        "strategy_total_usd": 0.001492
+        "strategy_total_usd": 0.008658
       },
       {
         "baseline_total_usd": 0.008771,
         "class": "easy",
-        "cumulative_saved_usd": 0.007263,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0093",
         "row_index": 76,
-        "strategy_total_usd": 0.001508
+        "strategy_total_usd": 0.008771
       },
       {
         "baseline_total_usd": 0.008889,
         "class": "hard",
-        "cumulative_saved_usd": 0.00736,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0029",
         "row_index": 77,
-        "strategy_total_usd": 0.001529
+        "strategy_total_usd": 0.008889
       },
       {
         "baseline_total_usd": 0.009003,
         "class": "redundant",
-        "cumulative_saved_usd": 0.007457,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0122",
         "row_index": 78,
-        "strategy_total_usd": 0.001546
+        "strategy_total_usd": 0.009003
       },
       {
         "baseline_total_usd": 0.009121,
         "class": "redundant",
-        "cumulative_saved_usd": 0.007555,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0142",
         "row_index": 79,
-        "strategy_total_usd": 0.001566
+        "strategy_total_usd": 0.009121
       },
       {
         "baseline_total_usd": 0.009236,
         "class": "redundant",
-        "cumulative_saved_usd": 0.007652,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0124",
         "row_index": 80,
-        "strategy_total_usd": 0.001584
+        "strategy_total_usd": 0.009236
       },
       {
         "baseline_total_usd": 0.009353,
         "class": "redundant",
-        "cumulative_saved_usd": 0.007749,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0107",
         "row_index": 81,
-        "strategy_total_usd": 0.001604
+        "strategy_total_usd": 0.009353
       },
       {
         "baseline_total_usd": 0.009465,
         "class": "easy",
-        "cumulative_saved_usd": 0.007846,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0143",
         "row_index": 82,
-        "strategy_total_usd": 0.001619
+        "strategy_total_usd": 0.009465
       },
       {
         "baseline_total_usd": 0.00958,
         "class": "redundant",
-        "cumulative_saved_usd": 0.007943,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0201",
         "row_index": 83,
-        "strategy_total_usd": 0.001637
+        "strategy_total_usd": 0.00958
       },
       {
         "baseline_total_usd": 0.009698,
         "class": "redundant",
-        "cumulative_saved_usd": 0.008041,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0069",
         "row_index": 84,
-        "strategy_total_usd": 0.001657
+        "strategy_total_usd": 0.009698
       },
       {
         "baseline_total_usd": 0.009816,
         "class": "redundant",
-        "cumulative_saved_usd": 0.008138,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0049",
         "row_index": 85,
-        "strategy_total_usd": 0.001678
+        "strategy_total_usd": 0.009816
       },
       {
         "baseline_total_usd": 0.009936,
         "class": "hard",
-        "cumulative_saved_usd": 0.008235,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0028",
         "row_index": 86,
-        "strategy_total_usd": 0.001701
+        "strategy_total_usd": 0.009936
       },
       {
         "baseline_total_usd": 0.010047,
         "class": "easy",
-        "cumulative_saved_usd": 0.008332,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0131",
         "row_index": 87,
-        "strategy_total_usd": 0.001715
+        "strategy_total_usd": 0.010047
       },
       {
         "baseline_total_usd": 0.010164,
         "class": "easy",
-        "cumulative_saved_usd": 0.008429,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0012",
         "row_index": 88,
-        "strategy_total_usd": 0.001735
+        "strategy_total_usd": 0.010164
       },
       {
         "baseline_total_usd": 0.010278,
         "class": "redundant",
-        "cumulative_saved_usd": 0.008527,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0189",
         "row_index": 89,
-        "strategy_total_usd": 0.001751
+        "strategy_total_usd": 0.010278
       },
       {
         "baseline_total_usd": 0.01039,
         "class": "easy",
-        "cumulative_saved_usd": 0.008624,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0058",
         "row_index": 90,
-        "strategy_total_usd": 0.001766
+        "strategy_total_usd": 0.01039
       },
       {
         "baseline_total_usd": 0.010506,
         "class": "redundant",
-        "cumulative_saved_usd": 0.008721,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0092",
         "row_index": 91,
-        "strategy_total_usd": 0.001785
+        "strategy_total_usd": 0.010506
       },
       {
         "baseline_total_usd": 0.01062,
         "class": "easy",
-        "cumulative_saved_usd": 0.008818,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0118",
         "row_index": 92,
-        "strategy_total_usd": 0.001802
+        "strategy_total_usd": 0.01062
       },
       {
         "baseline_total_usd": 0.010741,
         "class": "redundant",
-        "cumulative_saved_usd": 0.008915,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0169",
         "row_index": 93,
-        "strategy_total_usd": 0.001826
+        "strategy_total_usd": 0.010741
       },
       {
         "baseline_total_usd": 0.010855,
         "class": "easy",
-        "cumulative_saved_usd": 0.009013,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0086",
         "row_index": 94,
-        "strategy_total_usd": 0.001842
+        "strategy_total_usd": 0.010855
       },
       {
         "baseline_total_usd": 0.010969,
         "class": "redundant",
-        "cumulative_saved_usd": 0.00911,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0082",
         "row_index": 95,
-        "strategy_total_usd": 0.001859
+        "strategy_total_usd": 0.010969
       },
       {
         "baseline_total_usd": 0.011089,
         "class": "hard",
-        "cumulative_saved_usd": 0.009207,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0012",
         "row_index": 96,
-        "strategy_total_usd": 0.001882
+        "strategy_total_usd": 0.011089
       },
       {
         "baseline_total_usd": 0.011206,
         "class": "redundant",
-        "cumulative_saved_usd": 0.009304,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0242",
         "row_index": 97,
-        "strategy_total_usd": 0.001902
+        "strategy_total_usd": 0.011206
       },
       {
         "baseline_total_usd": 0.011322,
         "class": "redundant",
-        "cumulative_saved_usd": 0.009401,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0264",
         "row_index": 98,
-        "strategy_total_usd": 0.001921
+        "strategy_total_usd": 0.011322
       },
       {
         "baseline_total_usd": 0.011438,
         "class": "redundant",
-        "cumulative_saved_usd": 0.009499,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0043",
         "row_index": 99,
-        "strategy_total_usd": 0.001939
+        "strategy_total_usd": 0.011438
       },
       {
         "baseline_total_usd": 0.011556,
         "class": "hard",
-        "cumulative_saved_usd": 0.009596,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0046",
         "row_index": 100,
-        "strategy_total_usd": 0.00196
+        "strategy_total_usd": 0.011556
       },
       {
         "baseline_total_usd": 0.01167,
         "class": "redundant",
-        "cumulative_saved_usd": 0.009693,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0131",
         "row_index": 101,
-        "strategy_total_usd": 0.001977
+        "strategy_total_usd": 0.01167
       },
       {
         "baseline_total_usd": 0.011788,
         "class": "redundant",
-        "cumulative_saved_usd": 0.00979,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0013",
         "row_index": 102,
-        "strategy_total_usd": 0.001998
+        "strategy_total_usd": 0.011788
       },
       {
         "baseline_total_usd": 0.011901,
         "class": "easy",
-        "cumulative_saved_usd": 0.009887,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0061",
         "row_index": 103,
-        "strategy_total_usd": 0.002014
+        "strategy_total_usd": 0.011901
       },
       {
         "baseline_total_usd": 0.012014,
         "class": "redundant",
-        "cumulative_saved_usd": 0.009985,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0299",
         "row_index": 104,
-        "strategy_total_usd": 0.002029
+        "strategy_total_usd": 0.012014
       },
       {
         "baseline_total_usd": 0.012128,
         "class": "redundant",
-        "cumulative_saved_usd": 0.010082,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0039",
         "row_index": 105,
-        "strategy_total_usd": 0.002046
+        "strategy_total_usd": 0.012128
       },
       {
         "baseline_total_usd": 0.012246,
         "class": "redundant",
-        "cumulative_saved_usd": 0.010179,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0070",
         "row_index": 106,
-        "strategy_total_usd": 0.002067
+        "strategy_total_usd": 0.012246
       },
       {
         "baseline_total_usd": 0.012367,
         "class": "redundant",
-        "cumulative_saved_usd": 0.010276,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0241",
         "row_index": 107,
-        "strategy_total_usd": 0.002091
+        "strategy_total_usd": 0.012367
       },
       {
         "baseline_total_usd": 0.012481,
         "class": "easy",
-        "cumulative_saved_usd": 0.010373,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0096",
         "row_index": 108,
-        "strategy_total_usd": 0.002108
+        "strategy_total_usd": 0.012481
       },
       {
         "baseline_total_usd": 0.012593,
         "class": "easy",
-        "cumulative_saved_usd": 0.010471,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0114",
         "row_index": 109,
-        "strategy_total_usd": 0.002122
+        "strategy_total_usd": 0.012593
       },
       {
         "baseline_total_usd": 0.01271,
         "class": "redundant",
-        "cumulative_saved_usd": 0.010568,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0109",
         "row_index": 110,
-        "strategy_total_usd": 0.002142
+        "strategy_total_usd": 0.01271
       },
       {
         "baseline_total_usd": 0.012823,
         "class": "easy",
-        "cumulative_saved_usd": 0.010665,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0149",
         "row_index": 111,
-        "strategy_total_usd": 0.002158
+        "strategy_total_usd": 0.012823
       },
       {
         "baseline_total_usd": 0.01294,
         "class": "redundant",
-        "cumulative_saved_usd": 0.010762,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0253",
         "row_index": 112,
-        "strategy_total_usd": 0.002178
+        "strategy_total_usd": 0.01294
       },
       {
         "baseline_total_usd": 0.013051,
         "class": "easy",
-        "cumulative_saved_usd": 0.010859,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0075",
         "row_index": 113,
-        "strategy_total_usd": 0.002192
+        "strategy_total_usd": 0.013051
       },
       {
         "baseline_total_usd": 0.013164,
         "class": "redundant",
-        "cumulative_saved_usd": 0.010957,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0197",
         "row_index": 114,
-        "strategy_total_usd": 0.002207
+        "strategy_total_usd": 0.013164
       },
       {
         "baseline_total_usd": 0.013276,
         "class": "easy",
-        "cumulative_saved_usd": 0.011054,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0137",
         "row_index": 115,
-        "strategy_total_usd": 0.002222
+        "strategy_total_usd": 0.013276
       },
       {
         "baseline_total_usd": 0.013389,
         "class": "redundant",
-        "cumulative_saved_usd": 0.011151,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0227",
         "row_index": 116,
-        "strategy_total_usd": 0.002238
+        "strategy_total_usd": 0.013389
       },
       {
         "baseline_total_usd": 0.013501,
         "class": "easy",
-        "cumulative_saved_usd": 0.011248,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0041",
         "row_index": 117,
-        "strategy_total_usd": 0.002253
+        "strategy_total_usd": 0.013501
       },
       {
         "baseline_total_usd": 0.013615,
         "class": "redundant",
-        "cumulative_saved_usd": 0.011345,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0076",
         "row_index": 118,
-        "strategy_total_usd": 0.00227
+        "strategy_total_usd": 0.013615
       },
       {
         "baseline_total_usd": 0.013729,
         "class": "easy",
-        "cumulative_saved_usd": 0.011443,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0038",
         "row_index": 119,
-        "strategy_total_usd": 0.002286
+        "strategy_total_usd": 0.013729
       },
       {
         "baseline_total_usd": 0.013841,
         "class": "easy",
-        "cumulative_saved_usd": 0.01154,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0089",
         "row_index": 120,
-        "strategy_total_usd": 0.002301
+        "strategy_total_usd": 0.013841
       },
       {
         "baseline_total_usd": 0.013953,
         "class": "easy",
-        "cumulative_saved_usd": 0.011637,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0050",
         "row_index": 121,
-        "strategy_total_usd": 0.002316
+        "strategy_total_usd": 0.013953
       },
       {
         "baseline_total_usd": 0.014067,
         "class": "redundant",
-        "cumulative_saved_usd": 0.011734,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0255",
         "row_index": 122,
-        "strategy_total_usd": 0.002333
+        "strategy_total_usd": 0.014067
       },
       {
         "baseline_total_usd": 0.014182,
         "class": "redundant",
-        "cumulative_saved_usd": 0.011831,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0080",
         "row_index": 123,
-        "strategy_total_usd": 0.002351
+        "strategy_total_usd": 0.014182
       },
       {
         "baseline_total_usd": 0.014295,
         "class": "easy",
-        "cumulative_saved_usd": 0.011929,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0133",
         "row_index": 124,
-        "strategy_total_usd": 0.002366
+        "strategy_total_usd": 0.014295
       },
       {
         "baseline_total_usd": 0.014415,
         "class": "hard",
-        "cumulative_saved_usd": 0.012026,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0015",
         "row_index": 125,
-        "strategy_total_usd": 0.002389
+        "strategy_total_usd": 0.014415
       },
       {
         "baseline_total_usd": 0.01453,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012123,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0273",
         "row_index": 126,
-        "strategy_total_usd": 0.002407
+        "strategy_total_usd": 0.01453
       },
       {
         "baseline_total_usd": 0.014649,
         "class": "redundant",
-        "cumulative_saved_usd": 0.01222,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0276",
         "row_index": 127,
-        "strategy_total_usd": 0.002429
+        "strategy_total_usd": 0.014649
       },
       {
         "baseline_total_usd": 0.014765,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012317,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0281",
         "row_index": 128,
-        "strategy_total_usd": 0.002448
+        "strategy_total_usd": 0.014765
       },
       {
         "baseline_total_usd": 0.014882,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012415,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0289",
         "row_index": 129,
-        "strategy_total_usd": 0.002467
+        "strategy_total_usd": 0.014882
       },
       {
         "baseline_total_usd": 0.015002,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012512,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0283",
         "row_index": 130,
-        "strategy_total_usd": 0.00249
+        "strategy_total_usd": 0.015002
       },
       {
         "baseline_total_usd": 0.015117,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012609,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0268",
         "row_index": 131,
-        "strategy_total_usd": 0.002508
+        "strategy_total_usd": 0.015117
       },
       {
         "baseline_total_usd": 0.015231,
         "class": "easy",
-        "cumulative_saved_usd": 0.012706,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0014",
         "row_index": 132,
-        "strategy_total_usd": 0.002525
+        "strategy_total_usd": 0.015231
       },
       {
         "baseline_total_usd": 0.015346,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012803,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0022",
         "row_index": 133,
-        "strategy_total_usd": 0.002543
+        "strategy_total_usd": 0.015346
       },
       {
         "baseline_total_usd": 0.015459,
         "class": "redundant",
-        "cumulative_saved_usd": 0.012901,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0017",
         "row_index": 134,
-        "strategy_total_usd": 0.002558
+        "strategy_total_usd": 0.015459
       },
       {
         "baseline_total_usd": 0.015577,
         "class": "hard",
-        "cumulative_saved_usd": 0.012998,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0049",
         "row_index": 135,
-        "strategy_total_usd": 0.002579
+        "strategy_total_usd": 0.015577
       },
       {
         "baseline_total_usd": 0.015695,
         "class": "hard",
-        "cumulative_saved_usd": 0.013095,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0006",
         "row_index": 136,
-        "strategy_total_usd": 0.0026
+        "strategy_total_usd": 0.015695
       },
       {
         "baseline_total_usd": 0.015807,
         "class": "easy",
-        "cumulative_saved_usd": 0.013192,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0127",
         "row_index": 137,
-        "strategy_total_usd": 0.002615
+        "strategy_total_usd": 0.015807
       },
       {
         "baseline_total_usd": 0.015927,
         "class": "hard",
-        "cumulative_saved_usd": 0.013289,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0036",
         "row_index": 138,
-        "strategy_total_usd": 0.002638
+        "strategy_total_usd": 0.015927
       },
       {
         "baseline_total_usd": 0.016042,
         "class": "redundant",
-        "cumulative_saved_usd": 0.013387,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0237",
         "row_index": 139,
-        "strategy_total_usd": 0.002655
+        "strategy_total_usd": 0.016042
       },
       {
         "baseline_total_usd": 0.016156,
         "class": "easy",
-        "cumulative_saved_usd": 0.013484,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0144",
         "row_index": 140,
-        "strategy_total_usd": 0.002672
+        "strategy_total_usd": 0.016156
       },
       {
         "baseline_total_usd": 0.016274,
         "class": "hard",
-        "cumulative_saved_usd": 0.013581,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0021",
         "row_index": 141,
-        "strategy_total_usd": 0.002693
+        "strategy_total_usd": 0.016274
       },
       {
         "baseline_total_usd": 0.016386,
         "class": "redundant",
-        "cumulative_saved_usd": 0.013678,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0257",
         "row_index": 142,
-        "strategy_total_usd": 0.002708
+        "strategy_total_usd": 0.016386
       },
       {
         "baseline_total_usd": 0.016497,
         "class": "easy",
-        "cumulative_saved_usd": 0.013775,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0043",
         "row_index": 143,
-        "strategy_total_usd": 0.002722
+        "strategy_total_usd": 0.016497
       },
       {
         "baseline_total_usd": 0.016611,
         "class": "redundant",
-        "cumulative_saved_usd": 0.013873,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0023",
         "row_index": 144,
-        "strategy_total_usd": 0.002738
+        "strategy_total_usd": 0.016611
       },
       {
         "baseline_total_usd": 0.016723,
         "class": "easy",
-        "cumulative_saved_usd": 0.01397,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0079",
         "row_index": 145,
-        "strategy_total_usd": 0.002753
+        "strategy_total_usd": 0.016723
       },
       {
         "baseline_total_usd": 0.016838,
         "class": "redundant",
-        "cumulative_saved_usd": 0.014067,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0238",
         "row_index": 146,
-        "strategy_total_usd": 0.002771
+        "strategy_total_usd": 0.016838
       },
       {
         "baseline_total_usd": 0.016956,
         "class": "hard",
-        "cumulative_saved_usd": 0.014164,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0037",
         "row_index": 147,
-        "strategy_total_usd": 0.002792
+        "strategy_total_usd": 0.016956
       },
       {
         "baseline_total_usd": 0.017067,
         "class": "easy",
-        "cumulative_saved_usd": 0.014261,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0099",
         "row_index": 148,
-        "strategy_total_usd": 0.002806
+        "strategy_total_usd": 0.017067
       },
       {
         "baseline_total_usd": 0.017181,
         "class": "redundant",
-        "cumulative_saved_usd": 0.014359,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0183",
         "row_index": 149,
-        "strategy_total_usd": 0.002822
+        "strategy_total_usd": 0.017181
       },
       {
         "baseline_total_usd": 0.017301,
         "class": "hard",
-        "cumulative_saved_usd": 0.014456,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0003",
         "row_index": 150,
-        "strategy_total_usd": 0.002845
+        "strategy_total_usd": 0.017301
       },
       {
         "baseline_total_usd": 0.017416,
         "class": "redundant",
-        "cumulative_saved_usd": 0.014553,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0270",
         "row_index": 151,
-        "strategy_total_usd": 0.002863
+        "strategy_total_usd": 0.017416
       },
       {
         "baseline_total_usd": 0.017534,
         "class": "redundant",
-        "cumulative_saved_usd": 0.01465,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0157",
         "row_index": 152,
-        "strategy_total_usd": 0.002884
+        "strategy_total_usd": 0.017534
       },
       {
         "baseline_total_usd": 0.017654,
         "class": "hard",
-        "cumulative_saved_usd": 0.014747,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0004",
         "row_index": 153,
-        "strategy_total_usd": 0.002907
+        "strategy_total_usd": 0.017654
       },
       {
         "baseline_total_usd": 0.017768,
         "class": "redundant",
-        "cumulative_saved_usd": 0.014845,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0004",
         "row_index": 154,
-        "strategy_total_usd": 0.002923
+        "strategy_total_usd": 0.017768
       },
       {
         "baseline_total_usd": 0.017882,
         "class": "easy",
-        "cumulative_saved_usd": 0.014942,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0102",
         "row_index": 155,
-        "strategy_total_usd": 0.00294
+        "strategy_total_usd": 0.017882
       },
       {
         "baseline_total_usd": 0.017995,
         "class": "redundant",
-        "cumulative_saved_usd": 0.015039,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0146",
         "row_index": 156,
-        "strategy_total_usd": 0.002956
+        "strategy_total_usd": 0.017995
       },
       {
         "baseline_total_usd": 0.018113,
         "class": "hard",
-        "cumulative_saved_usd": 0.015136,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0010",
         "row_index": 157,
-        "strategy_total_usd": 0.002977
+        "strategy_total_usd": 0.018113
       },
       {
         "baseline_total_usd": 0.018227,
         "class": "easy",
-        "cumulative_saved_usd": 0.015233,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0128",
         "row_index": 158,
-        "strategy_total_usd": 0.002994
+        "strategy_total_usd": 0.018227
       },
       {
         "baseline_total_usd": 0.018341,
         "class": "redundant",
-        "cumulative_saved_usd": 0.015331,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0220",
         "row_index": 159,
-        "strategy_total_usd": 0.00301
+        "strategy_total_usd": 0.018341
       },
       {
         "baseline_total_usd": 0.018454,
         "class": "redundant",
-        "cumulative_saved_usd": 0.015428,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0218",
         "row_index": 160,
-        "strategy_total_usd": 0.003026
+        "strategy_total_usd": 0.018454
       },
       {
         "baseline_total_usd": 0.018572,
         "class": "redundant",
-        "cumulative_saved_usd": 0.015525,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0265",
         "row_index": 161,
-        "strategy_total_usd": 0.003047
+        "strategy_total_usd": 0.018572
       },
       {
         "baseline_total_usd": 0.018686,
         "class": "easy",
-        "cumulative_saved_usd": 0.015622,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0104",
         "row_index": 162,
-        "strategy_total_usd": 0.003064
+        "strategy_total_usd": 0.018686
       },
       {
         "baseline_total_usd": 0.018801,
         "class": "redundant",
-        "cumulative_saved_usd": 0.015719,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0094",
         "row_index": 163,
-        "strategy_total_usd": 0.003082
+        "strategy_total_usd": 0.018801
       },
       {
         "baseline_total_usd": 0.018918,
         "class": "easy",
-        "cumulative_saved_usd": 0.015817,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0108",
         "row_index": 164,
-        "strategy_total_usd": 0.003101
+        "strategy_total_usd": 0.018918
       },
       {
         "baseline_total_usd": 0.019032,
         "class": "easy",
-        "cumulative_saved_usd": 0.015914,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0070",
         "row_index": 165,
-        "strategy_total_usd": 0.003118
+        "strategy_total_usd": 0.019032
       },
       {
         "baseline_total_usd": 0.019146,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016011,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0010",
         "row_index": 166,
-        "strategy_total_usd": 0.003135
+        "strategy_total_usd": 0.019146
       },
       {
         "baseline_total_usd": 0.019263,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016108,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0037",
         "row_index": 167,
-        "strategy_total_usd": 0.003155
+        "strategy_total_usd": 0.019263
       },
       {
         "baseline_total_usd": 0.019384,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016205,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0277",
         "row_index": 168,
-        "strategy_total_usd": 0.003179
+        "strategy_total_usd": 0.019384
       },
       {
         "baseline_total_usd": 0.019501,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016303,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0001",
         "row_index": 169,
-        "strategy_total_usd": 0.003198
+        "strategy_total_usd": 0.019501
       },
       {
         "baseline_total_usd": 0.019615,
         "class": "easy",
-        "cumulative_saved_usd": 0.0164,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0032",
         "row_index": 170,
-        "strategy_total_usd": 0.003215
+        "strategy_total_usd": 0.019615
       },
       {
         "baseline_total_usd": 0.019734,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016497,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0140",
         "row_index": 171,
-        "strategy_total_usd": 0.003237
+        "strategy_total_usd": 0.019734
       },
       {
         "baseline_total_usd": 0.019851,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016594,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0181",
         "row_index": 172,
-        "strategy_total_usd": 0.003257
+        "strategy_total_usd": 0.019851
       },
       {
         "baseline_total_usd": 0.019966,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016691,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0195",
         "row_index": 173,
-        "strategy_total_usd": 0.003275
+        "strategy_total_usd": 0.019966
       },
       {
         "baseline_total_usd": 0.020085,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016789,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0096",
         "row_index": 174,
-        "strategy_total_usd": 0.003296
+        "strategy_total_usd": 0.020085
       },
       {
         "baseline_total_usd": 0.020205,
         "class": "hard",
-        "cumulative_saved_usd": 0.016886,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0043",
         "row_index": 175,
-        "strategy_total_usd": 0.003319
+        "strategy_total_usd": 0.020205
       },
       {
         "baseline_total_usd": 0.020318,
         "class": "redundant",
-        "cumulative_saved_usd": 0.016983,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0083",
         "row_index": 176,
-        "strategy_total_usd": 0.003335
+        "strategy_total_usd": 0.020318
       },
       {
         "baseline_total_usd": 0.020432,
         "class": "redundant",
-        "cumulative_saved_usd": 0.01708,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0009",
         "row_index": 177,
-        "strategy_total_usd": 0.003352
+        "strategy_total_usd": 0.020432
       },
       {
         "baseline_total_usd": 0.020549,
         "class": "redundant",
-        "cumulative_saved_usd": 0.017177,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0215",
         "row_index": 178,
-        "strategy_total_usd": 0.003372
+        "strategy_total_usd": 0.020549
       },
       {
         "baseline_total_usd": 0.020667,
         "class": "hard",
-        "cumulative_saved_usd": 0.017275,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0038",
         "row_index": 179,
-        "strategy_total_usd": 0.003392
+        "strategy_total_usd": 0.020667
       },
       {
         "baseline_total_usd": 0.020782,
         "class": "redundant",
-        "cumulative_saved_usd": 0.017372,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0021",
         "row_index": 180,
-        "strategy_total_usd": 0.00341
+        "strategy_total_usd": 0.020782
       },
       {
         "baseline_total_usd": 0.020896,
         "class": "redundant",
-        "cumulative_saved_usd": 0.017469,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0003",
         "row_index": 181,
-        "strategy_total_usd": 0.003427
+        "strategy_total_usd": 0.020896
       },
       {
         "baseline_total_usd": 0.02101,
         "class": "redundant",
-        "cumulative_saved_usd": 0.017566,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0014",
         "row_index": 182,
-        "strategy_total_usd": 0.003444
+        "strategy_total_usd": 0.02101
       },
       {
         "baseline_total_usd": 0.021122,
         "class": "easy",
-        "cumulative_saved_usd": 0.017663,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0042",
         "row_index": 183,
-        "strategy_total_usd": 0.003459
+        "strategy_total_usd": 0.021122
       },
       {
         "baseline_total_usd": 0.021235,
         "class": "easy",
-        "cumulative_saved_usd": 0.017761,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0125",
         "row_index": 184,
-        "strategy_total_usd": 0.003474
+        "strategy_total_usd": 0.021235
       },
       {
         "baseline_total_usd": 0.02135,
         "class": "redundant",
-        "cumulative_saved_usd": 0.017858,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0260",
         "row_index": 185,
-        "strategy_total_usd": 0.003492
+        "strategy_total_usd": 0.02135
       },
       {
         "baseline_total_usd": 0.021465,
         "class": "redundant",
-        "cumulative_saved_usd": 0.017955,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0162",
         "row_index": 186,
-        "strategy_total_usd": 0.00351
+        "strategy_total_usd": 0.021465
       },
       {
         "baseline_total_usd": 0.021576,
         "class": "easy",
-        "cumulative_saved_usd": 0.018052,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0019",
         "row_index": 187,
-        "strategy_total_usd": 0.003524
+        "strategy_total_usd": 0.021576
       },
       {
         "baseline_total_usd": 0.021688,
         "class": "easy",
-        "cumulative_saved_usd": 0.018149,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0106",
         "row_index": 188,
-        "strategy_total_usd": 0.003539
+        "strategy_total_usd": 0.021688
       },
       {
         "baseline_total_usd": 0.021802,
         "class": "easy",
-        "cumulative_saved_usd": 0.018247,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0072",
         "row_index": 189,
-        "strategy_total_usd": 0.003555
+        "strategy_total_usd": 0.021802
       },
       {
         "baseline_total_usd": 0.02192,
         "class": "redundant",
-        "cumulative_saved_usd": 0.018344,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0286",
         "row_index": 190,
-        "strategy_total_usd": 0.003576
+        "strategy_total_usd": 0.02192
       },
       {
         "baseline_total_usd": 0.022035,
         "class": "redundant",
-        "cumulative_saved_usd": 0.018441,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0044",
         "row_index": 191,
-        "strategy_total_usd": 0.003594
+        "strategy_total_usd": 0.022035
       },
       {
         "baseline_total_usd": 0.02215,
         "class": "redundant",
-        "cumulative_saved_usd": 0.018538,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0015",
         "row_index": 192,
-        "strategy_total_usd": 0.003612
+        "strategy_total_usd": 0.02215
       },
       {
         "baseline_total_usd": 0.022262,
         "class": "easy",
-        "cumulative_saved_usd": 0.018635,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0103",
         "row_index": 193,
-        "strategy_total_usd": 0.003627
+        "strategy_total_usd": 0.022262
       },
       {
         "baseline_total_usd": 0.022375,
         "class": "redundant",
-        "cumulative_saved_usd": 0.018733,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0233",
         "row_index": 194,
-        "strategy_total_usd": 0.003642
+        "strategy_total_usd": 0.022375
       },
       {
         "baseline_total_usd": 0.022487,
         "class": "easy",
-        "cumulative_saved_usd": 0.01883,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0071",
         "row_index": 195,
-        "strategy_total_usd": 0.003657
+        "strategy_total_usd": 0.022487
       },
       {
         "baseline_total_usd": 0.022598,
         "class": "easy",
-        "cumulative_saved_usd": 0.018927,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0107",
         "row_index": 196,
-        "strategy_total_usd": 0.003671
+        "strategy_total_usd": 0.022598
       },
       {
         "baseline_total_usd": 0.022712,
         "class": "easy",
-        "cumulative_saved_usd": 0.019024,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0136",
         "row_index": 197,
-        "strategy_total_usd": 0.003688
+        "strategy_total_usd": 0.022712
       },
       {
         "baseline_total_usd": 0.022823,
         "class": "easy",
-        "cumulative_saved_usd": 0.019121,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0011",
         "row_index": 198,
-        "strategy_total_usd": 0.003702
+        "strategy_total_usd": 0.022823
       },
       {
         "baseline_total_usd": 0.02294,
         "class": "easy",
-        "cumulative_saved_usd": 0.019219,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0060",
         "row_index": 199,
-        "strategy_total_usd": 0.003721
+        "strategy_total_usd": 0.02294
       },
       {
         "baseline_total_usd": 0.023056,
         "class": "redundant",
-        "cumulative_saved_usd": 0.019316,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0048",
         "row_index": 200,
-        "strategy_total_usd": 0.00374
+        "strategy_total_usd": 0.023056
       },
       {
         "baseline_total_usd": 0.023174,
         "class": "hard",
-        "cumulative_saved_usd": 0.019413,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0002",
         "row_index": 201,
-        "strategy_total_usd": 0.003761
+        "strategy_total_usd": 0.023174
       },
       {
         "baseline_total_usd": 0.023292,
         "class": "hard",
-        "cumulative_saved_usd": 0.01951,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0045",
         "row_index": 202,
-        "strategy_total_usd": 0.003782
+        "strategy_total_usd": 0.023292
       },
       {
         "baseline_total_usd": 0.023409,
         "class": "redundant",
-        "cumulative_saved_usd": 0.019607,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0287",
         "row_index": 203,
-        "strategy_total_usd": 0.003802
+        "strategy_total_usd": 0.023409
       },
       {
         "baseline_total_usd": 0.023524,
         "class": "redundant",
-        "cumulative_saved_usd": 0.019705,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0000",
         "row_index": 204,
-        "strategy_total_usd": 0.003819
+        "strategy_total_usd": 0.023524
       },
       {
         "baseline_total_usd": 0.023636,
         "class": "easy",
-        "cumulative_saved_usd": 0.019802,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0146",
         "row_index": 205,
-        "strategy_total_usd": 0.003834
+        "strategy_total_usd": 0.023636
       },
       {
         "baseline_total_usd": 0.023754,
         "class": "redundant",
-        "cumulative_saved_usd": 0.019899,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0250",
         "row_index": 206,
-        "strategy_total_usd": 0.003855
+        "strategy_total_usd": 0.023754
       },
       {
         "baseline_total_usd": 0.023865,
         "class": "easy",
-        "cumulative_saved_usd": 0.019996,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0059",
         "row_index": 207,
-        "strategy_total_usd": 0.003869
+        "strategy_total_usd": 0.023865
       },
       {
         "baseline_total_usd": 0.02398,
         "class": "redundant",
-        "cumulative_saved_usd": 0.020093,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0166",
         "row_index": 208,
-        "strategy_total_usd": 0.003887
+        "strategy_total_usd": 0.02398
       },
       {
         "baseline_total_usd": 0.024093,
         "class": "easy",
-        "cumulative_saved_usd": 0.020191,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0077",
         "row_index": 209,
-        "strategy_total_usd": 0.003902
+        "strategy_total_usd": 0.024093
       },
       {
         "baseline_total_usd": 0.024213,
         "class": "hard",
-        "cumulative_saved_usd": 0.020288,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0039",
         "row_index": 210,
-        "strategy_total_usd": 0.003925
+        "strategy_total_usd": 0.024213
       },
       {
         "baseline_total_usd": 0.02433,
         "class": "redundant",
-        "cumulative_saved_usd": 0.020385,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0071",
         "row_index": 211,
-        "strategy_total_usd": 0.003945
+        "strategy_total_usd": 0.02433
       },
       {
         "baseline_total_usd": 0.024448,
         "class": "redundant",
-        "cumulative_saved_usd": 0.020482,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0033",
         "row_index": 212,
-        "strategy_total_usd": 0.003966
+        "strategy_total_usd": 0.024448
       },
       {
         "baseline_total_usd": 0.024564,
         "class": "redundant",
-        "cumulative_saved_usd": 0.020579,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0200",
         "row_index": 213,
-        "strategy_total_usd": 0.003985
+        "strategy_total_usd": 0.024564
       },
       {
         "baseline_total_usd": 0.024684,
         "class": "hard",
-        "cumulative_saved_usd": 0.020677,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0023",
         "row_index": 214,
-        "strategy_total_usd": 0.004007
+        "strategy_total_usd": 0.024684
       },
       {
         "baseline_total_usd": 0.0248,
         "class": "redundant",
-        "cumulative_saved_usd": 0.020774,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0272",
         "row_index": 215,
-        "strategy_total_usd": 0.004026
+        "strategy_total_usd": 0.0248
       },
       {
         "baseline_total_usd": 0.024915,
         "class": "redundant",
-        "cumulative_saved_usd": 0.020871,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0090",
         "row_index": 216,
-        "strategy_total_usd": 0.004044
+        "strategy_total_usd": 0.024915
       },
       {
         "baseline_total_usd": 0.025028,
         "class": "easy",
-        "cumulative_saved_usd": 0.020968,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0069",
         "row_index": 217,
-        "strategy_total_usd": 0.00406
+        "strategy_total_usd": 0.025028
       },
       {
         "baseline_total_usd": 0.025139,
         "class": "easy",
-        "cumulative_saved_usd": 0.021065,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0115",
         "row_index": 218,
-        "strategy_total_usd": 0.004074
+        "strategy_total_usd": 0.025139
       },
       {
         "baseline_total_usd": 0.025256,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021163,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0170",
         "row_index": 219,
-        "strategy_total_usd": 0.004093
+        "strategy_total_usd": 0.025256
       },
       {
         "baseline_total_usd": 0.02537,
         "class": "redundant",
-        "cumulative_saved_usd": 0.02126,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0186",
         "row_index": 220,
-        "strategy_total_usd": 0.00411
+        "strategy_total_usd": 0.02537
       },
       {
         "baseline_total_usd": 0.025487,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021357,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0134",
         "row_index": 221,
-        "strategy_total_usd": 0.00413
+        "strategy_total_usd": 0.025487
       },
       {
         "baseline_total_usd": 0.025604,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021454,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0217",
         "row_index": 222,
-        "strategy_total_usd": 0.00415
+        "strategy_total_usd": 0.025604
       },
       {
         "baseline_total_usd": 0.02572,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021551,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0228",
         "row_index": 223,
-        "strategy_total_usd": 0.004169
+        "strategy_total_usd": 0.02572
       },
       {
         "baseline_total_usd": 0.025834,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021649,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0291",
         "row_index": 224,
-        "strategy_total_usd": 0.004185
+        "strategy_total_usd": 0.025834
       },
       {
         "baseline_total_usd": 0.025953,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021746,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0176",
         "row_index": 225,
-        "strategy_total_usd": 0.004207
+        "strategy_total_usd": 0.025953
       },
       {
         "baseline_total_usd": 0.026071,
         "class": "redundant",
-        "cumulative_saved_usd": 0.021843,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0141",
         "row_index": 226,
-        "strategy_total_usd": 0.004228
+        "strategy_total_usd": 0.026071
       },
       {
         "baseline_total_usd": 0.026184,
         "class": "redundant",
-        "cumulative_saved_usd": 0.02194,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0038",
         "row_index": 227,
-        "strategy_total_usd": 0.004244
+        "strategy_total_usd": 0.026184
       },
       {
         "baseline_total_usd": 0.026298,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022037,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0117",
         "row_index": 228,
-        "strategy_total_usd": 0.004261
+        "strategy_total_usd": 0.026298
       },
       {
         "baseline_total_usd": 0.026416,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022135,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0063",
         "row_index": 229,
-        "strategy_total_usd": 0.004281
+        "strategy_total_usd": 0.026416
       },
       {
         "baseline_total_usd": 0.026531,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022232,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0116",
         "row_index": 230,
-        "strategy_total_usd": 0.004299
+        "strategy_total_usd": 0.026531
       },
       {
         "baseline_total_usd": 0.026648,
         "class": "easy",
-        "cumulative_saved_usd": 0.022329,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0044",
         "row_index": 231,
-        "strategy_total_usd": 0.004319
+        "strategy_total_usd": 0.026648
       },
       {
         "baseline_total_usd": 0.026766,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022426,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0171",
         "row_index": 232,
-        "strategy_total_usd": 0.00434
+        "strategy_total_usd": 0.026766
       },
       {
         "baseline_total_usd": 0.02688,
         "class": "easy",
-        "cumulative_saved_usd": 0.022523,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0040",
         "row_index": 233,
-        "strategy_total_usd": 0.004357
+        "strategy_total_usd": 0.02688
       },
       {
         "baseline_total_usd": 0.026996,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022621,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0192",
         "row_index": 234,
-        "strategy_total_usd": 0.004375
+        "strategy_total_usd": 0.026996
       },
       {
         "baseline_total_usd": 0.02711,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022718,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0184",
         "row_index": 235,
-        "strategy_total_usd": 0.004392
+        "strategy_total_usd": 0.02711
       },
       {
         "baseline_total_usd": 0.027223,
         "class": "easy",
-        "cumulative_saved_usd": 0.022815,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0117",
         "row_index": 236,
-        "strategy_total_usd": 0.004408
+        "strategy_total_usd": 0.027223
       },
       {
         "baseline_total_usd": 0.027337,
         "class": "redundant",
-        "cumulative_saved_usd": 0.022912,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0239",
         "row_index": 237,
-        "strategy_total_usd": 0.004425
+        "strategy_total_usd": 0.027337
       },
       {
         "baseline_total_usd": 0.027451,
         "class": "redundant",
-        "cumulative_saved_usd": 0.023009,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0225",
         "row_index": 238,
-        "strategy_total_usd": 0.004442
+        "strategy_total_usd": 0.027451
       },
       {
         "baseline_total_usd": 0.027568,
         "class": "redundant",
-        "cumulative_saved_usd": 0.023107,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0163",
         "row_index": 239,
-        "strategy_total_usd": 0.004461
+        "strategy_total_usd": 0.027568
       },
       {
         "baseline_total_usd": 0.027686,
         "class": "redundant",
-        "cumulative_saved_usd": 0.023204,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0100",
         "row_index": 240,
-        "strategy_total_usd": 0.004482
+        "strategy_total_usd": 0.027686
       },
       {
         "baseline_total_usd": 0.0278,
         "class": "redundant",
-        "cumulative_saved_usd": 0.023301,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0075",
         "row_index": 241,
-        "strategy_total_usd": 0.004499
+        "strategy_total_usd": 0.0278
       },
       {
         "baseline_total_usd": 0.027917,
         "class": "easy",
-        "cumulative_saved_usd": 0.023398,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0124",
         "row_index": 242,
-        "strategy_total_usd": 0.004519
+        "strategy_total_usd": 0.027917
       },
       {
         "baseline_total_usd": 0.028034,
         "class": "redundant",
-        "cumulative_saved_usd": 0.023495,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0091",
         "row_index": 243,
-        "strategy_total_usd": 0.004539
+        "strategy_total_usd": 0.028034
       },
       {
         "baseline_total_usd": 0.028146,
         "class": "easy",
-        "cumulative_saved_usd": 0.023593,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0033",
         "row_index": 244,
-        "strategy_total_usd": 0.004553
+        "strategy_total_usd": 0.028146
       },
       {
         "baseline_total_usd": 0.028258,
         "class": "easy",
-        "cumulative_saved_usd": 0.02369,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0065",
         "row_index": 245,
-        "strategy_total_usd": 0.004568
+        "strategy_total_usd": 0.028258
       },
       {
         "baseline_total_usd": 0.028376,
         "class": "redundant",
-        "cumulative_saved_usd": 0.023787,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0174",
         "row_index": 246,
-        "strategy_total_usd": 0.004589
+        "strategy_total_usd": 0.028376
       },
       {
         "baseline_total_usd": 0.02849,
         "class": "easy",
-        "cumulative_saved_usd": 0.023884,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0054",
         "row_index": 247,
-        "strategy_total_usd": 0.004606
+        "strategy_total_usd": 0.02849
       },
       {
         "baseline_total_usd": 0.02861,
         "class": "hard",
-        "cumulative_saved_usd": 0.023981,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0000",
         "row_index": 248,
-        "strategy_total_usd": 0.004629
+        "strategy_total_usd": 0.02861
       },
       {
         "baseline_total_usd": 0.028722,
         "class": "easy",
-        "cumulative_saved_usd": 0.024079,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0017",
         "row_index": 249,
-        "strategy_total_usd": 0.004643
+        "strategy_total_usd": 0.028722
       },
       {
         "baseline_total_usd": 0.028839,
         "class": "redundant",
-        "cumulative_saved_usd": 0.024176,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0271",
         "row_index": 250,
-        "strategy_total_usd": 0.004663
+        "strategy_total_usd": 0.028839
       },
       {
         "baseline_total_usd": 0.028951,
         "class": "easy",
-        "cumulative_saved_usd": 0.024273,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0121",
         "row_index": 251,
-        "strategy_total_usd": 0.004678
+        "strategy_total_usd": 0.028951
       },
       {
         "baseline_total_usd": 0.029066,
         "class": "redundant",
-        "cumulative_saved_usd": 0.02437,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0274",
         "row_index": 252,
-        "strategy_total_usd": 0.004696
+        "strategy_total_usd": 0.029066
       },
       {
         "baseline_total_usd": 0.029177,
         "class": "easy",
-        "cumulative_saved_usd": 0.024467,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0147",
         "row_index": 253,
-        "strategy_total_usd": 0.00471
+        "strategy_total_usd": 0.029177
       },
       {
         "baseline_total_usd": 0.029294,
         "class": "redundant",
-        "cumulative_saved_usd": 0.024565,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0073",
         "row_index": 254,
-        "strategy_total_usd": 0.004729
+        "strategy_total_usd": 0.029294
       },
       {
         "baseline_total_usd": 0.029406,
         "class": "easy",
-        "cumulative_saved_usd": 0.024662,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0087",
         "row_index": 255,
-        "strategy_total_usd": 0.004744
+        "strategy_total_usd": 0.029406
       },
       {
         "baseline_total_usd": 0.02952,
         "class": "redundant",
-        "cumulative_saved_usd": 0.024759,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0294",
         "row_index": 256,
-        "strategy_total_usd": 0.004761
+        "strategy_total_usd": 0.02952
       },
       {
         "baseline_total_usd": 0.029632,
         "class": "easy",
-        "cumulative_saved_usd": 0.024856,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0055",
         "row_index": 257,
-        "strategy_total_usd": 0.004776
+        "strategy_total_usd": 0.029632
       },
       {
         "baseline_total_usd": 0.029744,
         "class": "easy",
-        "cumulative_saved_usd": 0.024953,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0023",
         "row_index": 258,
-        "strategy_total_usd": 0.004791
+        "strategy_total_usd": 0.029744
       },
       {
         "baseline_total_usd": 0.029856,
         "class": "easy",
-        "cumulative_saved_usd": 0.025051,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0095",
         "row_index": 259,
-        "strategy_total_usd": 0.004805
+        "strategy_total_usd": 0.029856
       },
       {
         "baseline_total_usd": 0.029972,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025148,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0245",
         "row_index": 260,
-        "strategy_total_usd": 0.004824
+        "strategy_total_usd": 0.029972
       },
       {
         "baseline_total_usd": 0.030085,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025245,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0191",
         "row_index": 261,
-        "strategy_total_usd": 0.00484
+        "strategy_total_usd": 0.030085
       },
       {
         "baseline_total_usd": 0.030199,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025342,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0226",
         "row_index": 262,
-        "strategy_total_usd": 0.004857
+        "strategy_total_usd": 0.030199
       },
       {
         "baseline_total_usd": 0.03031,
         "class": "easy",
-        "cumulative_saved_usd": 0.025439,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0139",
         "row_index": 263,
-        "strategy_total_usd": 0.004871
+        "strategy_total_usd": 0.03031
       },
       {
         "baseline_total_usd": 0.030426,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025537,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0187",
         "row_index": 264,
-        "strategy_total_usd": 0.004889
+        "strategy_total_usd": 0.030426
       },
       {
         "baseline_total_usd": 0.030538,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025634,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0077",
         "row_index": 265,
-        "strategy_total_usd": 0.004904
+        "strategy_total_usd": 0.030538
       },
       {
         "baseline_total_usd": 0.030655,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025731,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0062",
         "row_index": 266,
-        "strategy_total_usd": 0.004924
+        "strategy_total_usd": 0.030655
       },
       {
         "baseline_total_usd": 0.030773,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025828,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0285",
         "row_index": 267,
-        "strategy_total_usd": 0.004945
+        "strategy_total_usd": 0.030773
       },
       {
         "baseline_total_usd": 0.030888,
         "class": "redundant",
-        "cumulative_saved_usd": 0.025925,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0054",
         "row_index": 268,
-        "strategy_total_usd": 0.004963
+        "strategy_total_usd": 0.030888
       },
       {
         "baseline_total_usd": 0.031002,
         "class": "easy",
-        "cumulative_saved_usd": 0.026023,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0008",
         "row_index": 269,
-        "strategy_total_usd": 0.004979
+        "strategy_total_usd": 0.031002
       },
       {
         "baseline_total_usd": 0.031122,
         "class": "hard",
-        "cumulative_saved_usd": 0.02612,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0020",
         "row_index": 270,
-        "strategy_total_usd": 0.005002
+        "strategy_total_usd": 0.031122
       },
       {
         "baseline_total_usd": 0.031235,
         "class": "easy",
-        "cumulative_saved_usd": 0.026217,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0045",
         "row_index": 271,
-        "strategy_total_usd": 0.005018
+        "strategy_total_usd": 0.031235
       },
       {
         "baseline_total_usd": 0.031347,
         "class": "easy",
-        "cumulative_saved_usd": 0.026314,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0010",
         "row_index": 272,
-        "strategy_total_usd": 0.005033
+        "strategy_total_usd": 0.031347
       },
       {
         "baseline_total_usd": 0.031464,
         "class": "redundant",
-        "cumulative_saved_usd": 0.026411,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0179",
         "row_index": 273,
-        "strategy_total_usd": 0.005053
+        "strategy_total_usd": 0.031464
       },
       {
         "baseline_total_usd": 0.031579,
         "class": "redundant",
-        "cumulative_saved_usd": 0.026509,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0008",
         "row_index": 274,
-        "strategy_total_usd": 0.00507
+        "strategy_total_usd": 0.031579
       },
       {
         "baseline_total_usd": 0.031695,
         "class": "redundant",
-        "cumulative_saved_usd": 0.026606,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0120",
         "row_index": 275,
-        "strategy_total_usd": 0.005089
+        "strategy_total_usd": 0.031695
       },
       {
         "baseline_total_usd": 0.031807,
         "class": "easy",
-        "cumulative_saved_usd": 0.026703,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0031",
         "row_index": 276,
-        "strategy_total_usd": 0.005104
+        "strategy_total_usd": 0.031807
       },
       {
         "baseline_total_usd": 0.031918,
         "class": "easy",
-        "cumulative_saved_usd": 0.0268,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0091",
         "row_index": 277,
-        "strategy_total_usd": 0.005118
+        "strategy_total_usd": 0.031918
       },
       {
         "baseline_total_usd": 0.032033,
         "class": "redundant",
-        "cumulative_saved_usd": 0.026897,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0165",
         "row_index": 278,
-        "strategy_total_usd": 0.005136
+        "strategy_total_usd": 0.032033
       },
       {
         "baseline_total_usd": 0.032147,
         "class": "easy",
-        "cumulative_saved_usd": 0.026995,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0110",
         "row_index": 279,
-        "strategy_total_usd": 0.005152
+        "strategy_total_usd": 0.032147
       },
       {
         "baseline_total_usd": 0.032263,
         "class": "redundant",
-        "cumulative_saved_usd": 0.027092,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0223",
         "row_index": 280,
-        "strategy_total_usd": 0.005171
+        "strategy_total_usd": 0.032263
       },
       {
         "baseline_total_usd": 0.03238,
         "class": "easy",
-        "cumulative_saved_usd": 0.027189,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0148",
         "row_index": 281,
-        "strategy_total_usd": 0.005191
+        "strategy_total_usd": 0.03238
       },
       {
         "baseline_total_usd": 0.032496,
         "class": "redundant",
-        "cumulative_saved_usd": 0.027286,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0128",
         "row_index": 282,
-        "strategy_total_usd": 0.00521
+        "strategy_total_usd": 0.032496
       },
       {
         "baseline_total_usd": 0.03261,
         "class": "easy",
-        "cumulative_saved_usd": 0.027383,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0120",
         "row_index": 283,
-        "strategy_total_usd": 0.005227
+        "strategy_total_usd": 0.03261
       },
       {
         "baseline_total_usd": 0.032721,
         "class": "easy",
-        "cumulative_saved_usd": 0.027481,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0027",
         "row_index": 284,
-        "strategy_total_usd": 0.00524
+        "strategy_total_usd": 0.032721
       },
       {
         "baseline_total_usd": 0.032836,
         "class": "redundant",
-        "cumulative_saved_usd": 0.027578,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0057",
         "row_index": 285,
-        "strategy_total_usd": 0.005258
+        "strategy_total_usd": 0.032836
       },
       {
         "baseline_total_usd": 0.032954,
         "class": "redundant",
-        "cumulative_saved_usd": 0.027675,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0121",
         "row_index": 286,
-        "strategy_total_usd": 0.005279
+        "strategy_total_usd": 0.032954
       },
       {
         "baseline_total_usd": 0.033072,
         "class": "redundant",
-        "cumulative_saved_usd": 0.027772,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0213",
         "row_index": 287,
-        "strategy_total_usd": 0.0053
+        "strategy_total_usd": 0.033072
       },
       {
         "baseline_total_usd": 0.033193,
         "class": "redundant",
-        "cumulative_saved_usd": 0.027869,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0133",
         "row_index": 288,
-        "strategy_total_usd": 0.005324
+        "strategy_total_usd": 0.033193
       },
       {
         "baseline_total_usd": 0.033306,
         "class": "easy",
-        "cumulative_saved_usd": 0.027967,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0021",
         "row_index": 289,
-        "strategy_total_usd": 0.005339
+        "strategy_total_usd": 0.033306
       },
       {
         "baseline_total_usd": 0.033427,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028064,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0205",
         "row_index": 290,
-        "strategy_total_usd": 0.005363
+        "strategy_total_usd": 0.033427
       },
       {
         "baseline_total_usd": 0.033543,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028161,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0156",
         "row_index": 291,
-        "strategy_total_usd": 0.005382
+        "strategy_total_usd": 0.033543
       },
       {
         "baseline_total_usd": 0.033663,
         "class": "hard",
-        "cumulative_saved_usd": 0.028258,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0008",
         "row_index": 292,
-        "strategy_total_usd": 0.005405
+        "strategy_total_usd": 0.033663
       },
       {
         "baseline_total_usd": 0.03378,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028355,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0019",
         "row_index": 293,
-        "strategy_total_usd": 0.005425
+        "strategy_total_usd": 0.03378
       },
       {
         "baseline_total_usd": 0.0339,
         "class": "hard",
-        "cumulative_saved_usd": 0.028453,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0044",
         "row_index": 294,
-        "strategy_total_usd": 0.005447
+        "strategy_total_usd": 0.0339
       },
       {
         "baseline_total_usd": 0.034013,
         "class": "redundant",
-        "cumulative_saved_usd": 0.02855,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0110",
         "row_index": 295,
-        "strategy_total_usd": 0.005463
+        "strategy_total_usd": 0.034013
       },
       {
         "baseline_total_usd": 0.03413,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028647,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0251",
         "row_index": 296,
-        "strategy_total_usd": 0.005483
+        "strategy_total_usd": 0.03413
       },
       {
         "baseline_total_usd": 0.03425,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028744,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0247",
         "row_index": 297,
-        "strategy_total_usd": 0.005506
+        "strategy_total_usd": 0.03425
       },
       {
         "baseline_total_usd": 0.034362,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028841,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0005",
         "row_index": 298,
-        "strategy_total_usd": 0.005521
+        "strategy_total_usd": 0.034362
       },
       {
         "baseline_total_usd": 0.03448,
         "class": "redundant",
-        "cumulative_saved_usd": 0.028939,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0106",
         "row_index": 299,
-        "strategy_total_usd": 0.005541
+        "strategy_total_usd": 0.03448
       },
       {
         "baseline_total_usd": 0.034593,
         "class": "easy",
-        "cumulative_saved_usd": 0.029036,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0101",
         "row_index": 300,
-        "strategy_total_usd": 0.005557
+        "strategy_total_usd": 0.034593
       },
       {
         "baseline_total_usd": 0.034708,
         "class": "redundant",
-        "cumulative_saved_usd": 0.029133,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0232",
         "row_index": 301,
-        "strategy_total_usd": 0.005575
+        "strategy_total_usd": 0.034708
       },
       {
         "baseline_total_usd": 0.034826,
         "class": "hard",
-        "cumulative_saved_usd": 0.02923,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0018",
         "row_index": 302,
-        "strategy_total_usd": 0.005596
+        "strategy_total_usd": 0.034826
       },
       {
         "baseline_total_usd": 0.034944,
         "class": "redundant",
-        "cumulative_saved_usd": 0.029327,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0027",
         "row_index": 303,
-        "strategy_total_usd": 0.005617
+        "strategy_total_usd": 0.034944
       },
       {
         "baseline_total_usd": 0.035061,
         "class": "easy",
-        "cumulative_saved_usd": 0.029425,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0076",
         "row_index": 304,
-        "strategy_total_usd": 0.005636
+        "strategy_total_usd": 0.035061
       },
       {
         "baseline_total_usd": 0.035178,
         "class": "redundant",
-        "cumulative_saved_usd": 0.029522,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0035",
         "row_index": 305,
-        "strategy_total_usd": 0.005656
+        "strategy_total_usd": 0.035178
       },
       {
         "baseline_total_usd": 0.035296,
         "class": "redundant",
-        "cumulative_saved_usd": 0.029619,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0085",
         "row_index": 306,
-        "strategy_total_usd": 0.005677
+        "strategy_total_usd": 0.035296
       },
       {
         "baseline_total_usd": 0.035416,
         "class": "hard",
-        "cumulative_saved_usd": 0.029716,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0035",
         "row_index": 307,
-        "strategy_total_usd": 0.0057
+        "strategy_total_usd": 0.035416
       },
       {
         "baseline_total_usd": 0.035531,
         "class": "redundant",
-        "cumulative_saved_usd": 0.029813,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0123",
         "row_index": 308,
-        "strategy_total_usd": 0.005718
+        "strategy_total_usd": 0.035531
       },
       {
         "baseline_total_usd": 0.035646,
         "class": "redundant",
-        "cumulative_saved_usd": 0.029911,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0188",
         "row_index": 309,
-        "strategy_total_usd": 0.005735
+        "strategy_total_usd": 0.035646
       },
       {
         "baseline_total_usd": 0.035766,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030008,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0175",
         "row_index": 310,
-        "strategy_total_usd": 0.005758
+        "strategy_total_usd": 0.035766
       },
       {
         "baseline_total_usd": 0.035877,
         "class": "easy",
-        "cumulative_saved_usd": 0.030105,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0051",
         "row_index": 311,
-        "strategy_total_usd": 0.005772
+        "strategy_total_usd": 0.035877
       },
       {
         "baseline_total_usd": 0.035995,
         "class": "hard",
-        "cumulative_saved_usd": 0.030202,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0026",
         "row_index": 312,
-        "strategy_total_usd": 0.005793
+        "strategy_total_usd": 0.035995
       },
       {
         "baseline_total_usd": 0.036109,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030299,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0050",
         "row_index": 313,
-        "strategy_total_usd": 0.00581
+        "strategy_total_usd": 0.036109
       },
       {
         "baseline_total_usd": 0.036227,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030397,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0282",
         "row_index": 314,
-        "strategy_total_usd": 0.00583
+        "strategy_total_usd": 0.036227
       },
       {
         "baseline_total_usd": 0.036342,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030494,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0198",
         "row_index": 315,
-        "strategy_total_usd": 0.005848
+        "strategy_total_usd": 0.036342
       },
       {
         "baseline_total_usd": 0.036457,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030591,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0130",
         "row_index": 316,
-        "strategy_total_usd": 0.005866
+        "strategy_total_usd": 0.036457
       },
       {
         "baseline_total_usd": 0.036571,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030688,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0222",
         "row_index": 317,
-        "strategy_total_usd": 0.005883
+        "strategy_total_usd": 0.036571
       },
       {
         "baseline_total_usd": 0.036684,
         "class": "redundant",
-        "cumulative_saved_usd": 0.030785,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0074",
         "row_index": 318,
-        "strategy_total_usd": 0.005899
+        "strategy_total_usd": 0.036684
       },
       {
         "baseline_total_usd": 0.036796,
         "class": "easy",
-        "cumulative_saved_usd": 0.030883,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0025",
         "row_index": 319,
-        "strategy_total_usd": 0.005913
+        "strategy_total_usd": 0.036796
       },
       {
         "baseline_total_usd": 0.036911,
         "class": "redundant",
-        "cumulative_saved_usd": 0.03098,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0224",
         "row_index": 320,
-        "strategy_total_usd": 0.005931
+        "strategy_total_usd": 0.036911
       },
       {
         "baseline_total_usd": 0.037032,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031077,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0097",
         "row_index": 321,
-        "strategy_total_usd": 0.005955
+        "strategy_total_usd": 0.037032
       },
       {
         "baseline_total_usd": 0.037146,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031174,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0045",
         "row_index": 322,
-        "strategy_total_usd": 0.005972
+        "strategy_total_usd": 0.037146
       },
       {
         "baseline_total_usd": 0.037264,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031271,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0193",
         "row_index": 323,
-        "strategy_total_usd": 0.005993
+        "strategy_total_usd": 0.037264
       },
       {
         "baseline_total_usd": 0.037378,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031369,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0258",
         "row_index": 324,
-        "strategy_total_usd": 0.006009
+        "strategy_total_usd": 0.037378
       },
       {
         "baseline_total_usd": 0.037495,
         "class": "easy",
-        "cumulative_saved_usd": 0.031466,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0036",
         "row_index": 325,
-        "strategy_total_usd": 0.006029
+        "strategy_total_usd": 0.037495
       },
       {
         "baseline_total_usd": 0.037609,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031563,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0042",
         "row_index": 326,
-        "strategy_total_usd": 0.006046
+        "strategy_total_usd": 0.037609
       },
       {
         "baseline_total_usd": 0.037722,
         "class": "redundant",
-        "cumulative_saved_usd": 0.03166,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0254",
         "row_index": 327,
-        "strategy_total_usd": 0.006062
+        "strategy_total_usd": 0.037722
       },
       {
         "baseline_total_usd": 0.037839,
         "class": "easy",
-        "cumulative_saved_usd": 0.031757,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0004",
         "row_index": 328,
-        "strategy_total_usd": 0.006082
+        "strategy_total_usd": 0.037839
       },
       {
         "baseline_total_usd": 0.037956,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031855,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0143",
         "row_index": 329,
-        "strategy_total_usd": 0.006101
+        "strategy_total_usd": 0.037956
       },
       {
         "baseline_total_usd": 0.03807,
         "class": "redundant",
-        "cumulative_saved_usd": 0.031952,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0150",
         "row_index": 330,
-        "strategy_total_usd": 0.006118
+        "strategy_total_usd": 0.03807
       },
       {
         "baseline_total_usd": 0.038189,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032049,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0132",
         "row_index": 331,
-        "strategy_total_usd": 0.00614
+        "strategy_total_usd": 0.038189
       },
       {
         "baseline_total_usd": 0.038302,
         "class": "easy",
-        "cumulative_saved_usd": 0.032146,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0029",
         "row_index": 332,
-        "strategy_total_usd": 0.006156
+        "strategy_total_usd": 0.038302
       },
       {
         "baseline_total_usd": 0.03842,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032243,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0244",
         "row_index": 333,
-        "strategy_total_usd": 0.006177
+        "strategy_total_usd": 0.03842
       },
       {
         "baseline_total_usd": 0.038532,
         "class": "easy",
-        "cumulative_saved_usd": 0.032341,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0015",
         "row_index": 334,
-        "strategy_total_usd": 0.006191
+        "strategy_total_usd": 0.038532
       },
       {
         "baseline_total_usd": 0.038647,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032438,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0144",
         "row_index": 335,
-        "strategy_total_usd": 0.006209
+        "strategy_total_usd": 0.038647
       },
       {
         "baseline_total_usd": 0.038762,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032535,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0052",
         "row_index": 336,
-        "strategy_total_usd": 0.006227
+        "strategy_total_usd": 0.038762
       },
       {
         "baseline_total_usd": 0.038882,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032632,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0103",
         "row_index": 337,
-        "strategy_total_usd": 0.00625
+        "strategy_total_usd": 0.038882
       },
       {
         "baseline_total_usd": 0.039,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032729,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0030",
         "row_index": 338,
-        "strategy_total_usd": 0.006271
+        "strategy_total_usd": 0.039
       },
       {
         "baseline_total_usd": 0.039118,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032827,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0066",
         "row_index": 339,
-        "strategy_total_usd": 0.006291
+        "strategy_total_usd": 0.039118
       },
       {
         "baseline_total_usd": 0.039233,
         "class": "redundant",
-        "cumulative_saved_usd": 0.032924,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0252",
         "row_index": 340,
-        "strategy_total_usd": 0.006309
+        "strategy_total_usd": 0.039233
       },
       {
         "baseline_total_usd": 0.039346,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033021,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0047",
         "row_index": 341,
-        "strategy_total_usd": 0.006325
+        "strategy_total_usd": 0.039346
       },
       {
         "baseline_total_usd": 0.039463,
         "class": "easy",
-        "cumulative_saved_usd": 0.033118,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0140",
         "row_index": 342,
-        "strategy_total_usd": 0.006345
+        "strategy_total_usd": 0.039463
       },
       {
         "baseline_total_usd": 0.039576,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033215,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0125",
         "row_index": 343,
-        "strategy_total_usd": 0.006361
+        "strategy_total_usd": 0.039576
       },
       {
         "baseline_total_usd": 0.039694,
         "class": "hard",
-        "cumulative_saved_usd": 0.033313,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0009",
         "row_index": 344,
-        "strategy_total_usd": 0.006381
+        "strategy_total_usd": 0.039694
       },
       {
         "baseline_total_usd": 0.039811,
         "class": "easy",
-        "cumulative_saved_usd": 0.03341,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0132",
         "row_index": 345,
-        "strategy_total_usd": 0.006401
+        "strategy_total_usd": 0.039811
       },
       {
         "baseline_total_usd": 0.039929,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033507,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0135",
         "row_index": 346,
-        "strategy_total_usd": 0.006422
+        "strategy_total_usd": 0.039929
       },
       {
         "baseline_total_usd": 0.040043,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033604,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0148",
         "row_index": 347,
-        "strategy_total_usd": 0.006439
+        "strategy_total_usd": 0.040043
       },
       {
         "baseline_total_usd": 0.04016,
         "class": "easy",
-        "cumulative_saved_usd": 0.033701,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0084",
         "row_index": 348,
-        "strategy_total_usd": 0.006459
+        "strategy_total_usd": 0.04016
       },
       {
         "baseline_total_usd": 0.040274,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033799,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0219",
         "row_index": 349,
-        "strategy_total_usd": 0.006475
+        "strategy_total_usd": 0.040274
       },
       {
         "baseline_total_usd": 0.04039,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033896,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0065",
         "row_index": 350,
-        "strategy_total_usd": 0.006494
+        "strategy_total_usd": 0.04039
       },
       {
         "baseline_total_usd": 0.040506,
         "class": "redundant",
-        "cumulative_saved_usd": 0.033993,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0084",
         "row_index": 351,
-        "strategy_total_usd": 0.006513
+        "strategy_total_usd": 0.040506
       },
       {
         "baseline_total_usd": 0.04062,
         "class": "redundant",
-        "cumulative_saved_usd": 0.03409,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0112",
         "row_index": 352,
-        "strategy_total_usd": 0.00653
+        "strategy_total_usd": 0.04062
       },
       {
         "baseline_total_usd": 0.040738,
         "class": "redundant",
-        "cumulative_saved_usd": 0.034187,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0229",
         "row_index": 353,
-        "strategy_total_usd": 0.006551
+        "strategy_total_usd": 0.040738
       },
       {
         "baseline_total_usd": 0.040856,
         "class": "hard",
-        "cumulative_saved_usd": 0.034285,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0022",
         "row_index": 354,
-        "strategy_total_usd": 0.006571
+        "strategy_total_usd": 0.040856
       },
       {
         "baseline_total_usd": 0.040968,
         "class": "easy",
-        "cumulative_saved_usd": 0.034382,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0145",
         "row_index": 355,
-        "strategy_total_usd": 0.006586
+        "strategy_total_usd": 0.040968
       },
       {
         "baseline_total_usd": 0.041082,
         "class": "redundant",
-        "cumulative_saved_usd": 0.034479,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0059",
         "row_index": 356,
-        "strategy_total_usd": 0.006603
+        "strategy_total_usd": 0.041082
       },
       {
         "baseline_total_usd": 0.041201,
         "class": "redundant",
-        "cumulative_saved_usd": 0.034576,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0032",
         "row_index": 357,
-        "strategy_total_usd": 0.006625
+        "strategy_total_usd": 0.041201
       },
       {
         "baseline_total_usd": 0.041318,
         "class": "easy",
-        "cumulative_saved_usd": 0.034673,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0116",
         "row_index": 358,
-        "strategy_total_usd": 0.006645
+        "strategy_total_usd": 0.041318
       },
       {
         "baseline_total_usd": 0.041435,
         "class": "redundant",
-        "cumulative_saved_usd": 0.034771,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0145",
         "row_index": 359,
-        "strategy_total_usd": 0.006664
+        "strategy_total_usd": 0.041435
       },
       {
         "baseline_total_usd": 0.041548,
         "class": "redundant",
-        "cumulative_saved_usd": 0.034868,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0011",
         "row_index": 360,
-        "strategy_total_usd": 0.00668
+        "strategy_total_usd": 0.041548
       },
       {
         "baseline_total_usd": 0.041662,
         "class": "redundant",
-        "cumulative_saved_usd": 0.034965,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0261",
         "row_index": 361,
-        "strategy_total_usd": 0.006697
+        "strategy_total_usd": 0.041662
       },
       {
         "baseline_total_usd": 0.041779,
         "class": "easy",
-        "cumulative_saved_usd": 0.035062,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0020",
         "row_index": 362,
-        "strategy_total_usd": 0.006717
+        "strategy_total_usd": 0.041779
       },
       {
         "baseline_total_usd": 0.041897,
         "class": "hard",
-        "cumulative_saved_usd": 0.035159,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0014",
         "row_index": 363,
-        "strategy_total_usd": 0.006738
+        "strategy_total_usd": 0.041897
       },
       {
         "baseline_total_usd": 0.042015,
         "class": "hard",
-        "cumulative_saved_usd": 0.035257,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0001",
         "row_index": 364,
-        "strategy_total_usd": 0.006758
+        "strategy_total_usd": 0.042015
       },
       {
         "baseline_total_usd": 0.042129,
         "class": "redundant",
-        "cumulative_saved_usd": 0.035354,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0203",
         "row_index": 365,
-        "strategy_total_usd": 0.006775
+        "strategy_total_usd": 0.042129
       },
       {
         "baseline_total_usd": 0.042245,
         "class": "redundant",
-        "cumulative_saved_usd": 0.035451,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0259",
         "row_index": 366,
-        "strategy_total_usd": 0.006794
+        "strategy_total_usd": 0.042245
       },
       {
         "baseline_total_usd": 0.042364,
         "class": "redundant",
-        "cumulative_saved_usd": 0.035548,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0248",
         "row_index": 367,
-        "strategy_total_usd": 0.006816
+        "strategy_total_usd": 0.042364
       },
       {
         "baseline_total_usd": 0.042477,
         "class": "easy",
-        "cumulative_saved_usd": 0.035645,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0005",
         "row_index": 368,
-        "strategy_total_usd": 0.006832
+        "strategy_total_usd": 0.042477
       },
       {
         "baseline_total_usd": 0.042591,
         "class": "redundant",
-        "cumulative_saved_usd": 0.035743,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0167",
         "row_index": 369,
-        "strategy_total_usd": 0.006848
+        "strategy_total_usd": 0.042591
       },
       {
         "baseline_total_usd": 0.042703,
         "class": "easy",
-        "cumulative_saved_usd": 0.03584,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0129",
         "row_index": 370,
-        "strategy_total_usd": 0.006863
+        "strategy_total_usd": 0.042703
       },
       {
         "baseline_total_usd": 0.042817,
         "class": "redundant",
-        "cumulative_saved_usd": 0.035937,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0262",
         "row_index": 371,
-        "strategy_total_usd": 0.00688
+        "strategy_total_usd": 0.042817
       },
       {
         "baseline_total_usd": 0.042938,
         "class": "redundant",
-        "cumulative_saved_usd": 0.036034,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0025",
         "row_index": 372,
-        "strategy_total_usd": 0.006904
+        "strategy_total_usd": 0.042938
       },
       {
         "baseline_total_usd": 0.04305,
         "class": "easy",
-        "cumulative_saved_usd": 0.036131,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0119",
         "row_index": 373,
-        "strategy_total_usd": 0.006919
+        "strategy_total_usd": 0.04305
       },
       {
         "baseline_total_usd": 0.043168,
         "class": "redundant",
-        "cumulative_saved_usd": 0.036229,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0102",
         "row_index": 374,
-        "strategy_total_usd": 0.006939
+        "strategy_total_usd": 0.043168
       },
       {
         "baseline_total_usd": 0.043282,
         "class": "redundant",
-        "cumulative_saved_usd": 0.036326,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0147",
         "row_index": 375,
-        "strategy_total_usd": 0.006956
+        "strategy_total_usd": 0.043282
       },
       {
         "baseline_total_usd": 0.043396,
         "class": "easy",
-        "cumulative_saved_usd": 0.036423,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0048",
         "row_index": 376,
-        "strategy_total_usd": 0.006973
+        "strategy_total_usd": 0.043396
       },
       {
         "baseline_total_usd": 0.043511,
         "class": "redundant",
-        "cumulative_saved_usd": 0.03652,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0288",
         "row_index": 377,
-        "strategy_total_usd": 0.006991
+        "strategy_total_usd": 0.043511
       },
       {
         "baseline_total_usd": 0.043623,
         "class": "redundant",
-        "cumulative_saved_usd": 0.036617,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0221",
         "row_index": 378,
-        "strategy_total_usd": 0.007006
+        "strategy_total_usd": 0.043623
       },
       {
         "baseline_total_usd": 0.043738,
         "class": "redundant",
-        "cumulative_saved_usd": 0.036715,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0202",
         "row_index": 379,
-        "strategy_total_usd": 0.007023
+        "strategy_total_usd": 0.043738
       },
       {
         "baseline_total_usd": 0.043856,
         "class": "redundant",
-        "cumulative_saved_usd": 0.036812,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0249",
         "row_index": 380,
-        "strategy_total_usd": 0.007044
+        "strategy_total_usd": 0.043856
       },
       {
         "baseline_total_usd": 0.04397,
         "class": "easy",
-        "cumulative_saved_usd": 0.036909,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0088",
         "row_index": 381,
-        "strategy_total_usd": 0.007061
+        "strategy_total_usd": 0.04397
       },
       {
         "baseline_total_usd": 0.044084,
         "class": "redundant",
-        "cumulative_saved_usd": 0.037006,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0298",
         "row_index": 382,
-        "strategy_total_usd": 0.007078
+        "strategy_total_usd": 0.044084
       },
       {
         "baseline_total_usd": 0.044196,
         "class": "easy",
-        "cumulative_saved_usd": 0.037103,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0105",
         "row_index": 383,
-        "strategy_total_usd": 0.007093
+        "strategy_total_usd": 0.044196
       },
       {
         "baseline_total_usd": 0.044314,
         "class": "redundant",
-        "cumulative_saved_usd": 0.037201,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0028",
         "row_index": 384,
-        "strategy_total_usd": 0.007113
+        "strategy_total_usd": 0.044314
       },
       {
         "baseline_total_usd": 0.044428,
         "class": "easy",
-        "cumulative_saved_usd": 0.037298,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0094",
         "row_index": 385,
-        "strategy_total_usd": 0.00713
+        "strategy_total_usd": 0.044428
       },
       {
         "baseline_total_usd": 0.044542,
         "class": "easy",
-        "cumulative_saved_usd": 0.037395,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0000",
         "row_index": 386,
-        "strategy_total_usd": 0.007147
+        "strategy_total_usd": 0.044542
       },
       {
         "baseline_total_usd": 0.044654,
         "class": "easy",
-        "cumulative_saved_usd": 0.037492,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0039",
         "row_index": 387,
-        "strategy_total_usd": 0.007162
+        "strategy_total_usd": 0.044654
       },
       {
         "baseline_total_usd": 0.044772,
         "class": "redundant",
-        "cumulative_saved_usd": 0.037589,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0177",
         "row_index": 388,
-        "strategy_total_usd": 0.007183
+        "strategy_total_usd": 0.044772
       },
       {
         "baseline_total_usd": 0.044886,
         "class": "easy",
-        "cumulative_saved_usd": 0.037687,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0006",
         "row_index": 389,
-        "strategy_total_usd": 0.007199
+        "strategy_total_usd": 0.044886
       },
       {
         "baseline_total_usd": 0.045004,
         "class": "hard",
-        "cumulative_saved_usd": 0.037784,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0041",
         "row_index": 390,
-        "strategy_total_usd": 0.00722
+        "strategy_total_usd": 0.045004
       },
       {
         "baseline_total_usd": 0.045119,
         "class": "redundant",
-        "cumulative_saved_usd": 0.037881,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0126",
         "row_index": 391,
-        "strategy_total_usd": 0.007238
+        "strategy_total_usd": 0.045119
       },
       {
         "baseline_total_usd": 0.045231,
         "class": "redundant",
-        "cumulative_saved_usd": 0.037978,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0041",
         "row_index": 392,
-        "strategy_total_usd": 0.007253
+        "strategy_total_usd": 0.045231
       },
       {
         "baseline_total_usd": 0.045346,
         "class": "redundant",
-        "cumulative_saved_usd": 0.038075,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0087",
         "row_index": 393,
-        "strategy_total_usd": 0.007271
+        "strategy_total_usd": 0.045346
       },
       {
         "baseline_total_usd": 0.04546,
         "class": "easy",
-        "cumulative_saved_usd": 0.038173,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0030",
         "row_index": 394,
-        "strategy_total_usd": 0.007287
+        "strategy_total_usd": 0.04546
       },
       {
         "baseline_total_usd": 0.045574,
         "class": "redundant",
-        "cumulative_saved_usd": 0.03827,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0275",
         "row_index": 395,
-        "strategy_total_usd": 0.007304
+        "strategy_total_usd": 0.045574
       },
       {
         "baseline_total_usd": 0.045692,
         "class": "redundant",
-        "cumulative_saved_usd": 0.038367,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0138",
         "row_index": 396,
-        "strategy_total_usd": 0.007325
+        "strategy_total_usd": 0.045692
       },
       {
         "baseline_total_usd": 0.045806,
         "class": "redundant",
-        "cumulative_saved_usd": 0.038464,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0154",
         "row_index": 397,
-        "strategy_total_usd": 0.007342
+        "strategy_total_usd": 0.045806
       },
       {
         "baseline_total_usd": 0.045926,
         "class": "redundant",
-        "cumulative_saved_usd": 0.038561,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0031",
         "row_index": 398,
-        "strategy_total_usd": 0.007365
+        "strategy_total_usd": 0.045926
       },
       {
         "baseline_total_usd": 0.046038,
         "class": "easy",
-        "cumulative_saved_usd": 0.038659,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0007",
         "row_index": 399,
-        "strategy_total_usd": 0.007379
+        "strategy_total_usd": 0.046038
       },
       {
         "baseline_total_usd": 0.046151,
         "class": "easy",
-        "cumulative_saved_usd": 0.038756,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0037",
         "row_index": 400,
-        "strategy_total_usd": 0.007395
+        "strategy_total_usd": 0.046151
       },
       {
         "baseline_total_usd": 0.046265,
         "class": "easy",
-        "cumulative_saved_usd": 0.038853,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0126",
         "row_index": 401,
-        "strategy_total_usd": 0.007412
+        "strategy_total_usd": 0.046265
       },
       {
         "baseline_total_usd": 0.046383,
         "class": "redundant",
-        "cumulative_saved_usd": 0.03895,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0034",
         "row_index": 402,
-        "strategy_total_usd": 0.007433
+        "strategy_total_usd": 0.046383
       },
       {
         "baseline_total_usd": 0.046502,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039047,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0204",
         "row_index": 403,
-        "strategy_total_usd": 0.007455
+        "strategy_total_usd": 0.046502
       },
       {
         "baseline_total_usd": 0.046618,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039145,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0164",
         "row_index": 404,
-        "strategy_total_usd": 0.007473
+        "strategy_total_usd": 0.046618
       },
       {
         "baseline_total_usd": 0.04673,
         "class": "easy",
-        "cumulative_saved_usd": 0.039242,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0002",
         "row_index": 405,
-        "strategy_total_usd": 0.007488
+        "strategy_total_usd": 0.04673
       },
       {
         "baseline_total_usd": 0.046847,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039339,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0235",
         "row_index": 406,
-        "strategy_total_usd": 0.007508
+        "strategy_total_usd": 0.046847
       },
       {
         "baseline_total_usd": 0.046963,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039436,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0020",
         "row_index": 407,
-        "strategy_total_usd": 0.007527
+        "strategy_total_usd": 0.046963
       },
       {
         "baseline_total_usd": 0.047074,
         "class": "easy",
-        "cumulative_saved_usd": 0.039533,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0003",
         "row_index": 408,
-        "strategy_total_usd": 0.007541
+        "strategy_total_usd": 0.047074
       },
       {
         "baseline_total_usd": 0.04719,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039631,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0209",
         "row_index": 409,
-        "strategy_total_usd": 0.007559
+        "strategy_total_usd": 0.04719
       },
       {
         "baseline_total_usd": 0.047309,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039728,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0060",
         "row_index": 410,
-        "strategy_total_usd": 0.007581
+        "strategy_total_usd": 0.047309
       },
       {
         "baseline_total_usd": 0.047428,
         "class": "redundant",
-        "cumulative_saved_usd": 0.039825,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0104",
         "row_index": 411,
-        "strategy_total_usd": 0.007603
+        "strategy_total_usd": 0.047428
       },
       {
         "baseline_total_usd": 0.047541,
         "class": "easy",
-        "cumulative_saved_usd": 0.039922,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0109",
         "row_index": 412,
-        "strategy_total_usd": 0.007619
+        "strategy_total_usd": 0.047541
       },
       {
         "baseline_total_usd": 0.047655,
         "class": "redundant",
-        "cumulative_saved_usd": 0.040019,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0297",
         "row_index": 413,
-        "strategy_total_usd": 0.007636
+        "strategy_total_usd": 0.047655
       },
       {
         "baseline_total_usd": 0.04777,
         "class": "redundant",
-        "cumulative_saved_usd": 0.040117,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0108",
         "row_index": 414,
-        "strategy_total_usd": 0.007653
+        "strategy_total_usd": 0.04777
       },
       {
         "baseline_total_usd": 0.04789,
         "class": "hard",
-        "cumulative_saved_usd": 0.040214,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0024",
         "row_index": 415,
-        "strategy_total_usd": 0.007676
+        "strategy_total_usd": 0.04789
       },
       {
         "baseline_total_usd": 0.048002,
         "class": "easy",
-        "cumulative_saved_usd": 0.040311,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0001",
         "row_index": 416,
-        "strategy_total_usd": 0.007691
+        "strategy_total_usd": 0.048002
       },
       {
         "baseline_total_usd": 0.048116,
         "class": "redundant",
-        "cumulative_saved_usd": 0.040408,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0158",
         "row_index": 417,
-        "strategy_total_usd": 0.007708
+        "strategy_total_usd": 0.048116
       },
       {
         "baseline_total_usd": 0.048228,
         "class": "easy",
-        "cumulative_saved_usd": 0.040505,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0026",
         "row_index": 418,
-        "strategy_total_usd": 0.007723
+        "strategy_total_usd": 0.048228
       },
       {
         "baseline_total_usd": 0.048342,
         "class": "easy",
-        "cumulative_saved_usd": 0.040603,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0062",
         "row_index": 419,
-        "strategy_total_usd": 0.007739
+        "strategy_total_usd": 0.048342
       },
       {
         "baseline_total_usd": 0.048454,
         "class": "easy",
-        "cumulative_saved_usd": 0.0407,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0047",
         "row_index": 420,
-        "strategy_total_usd": 0.007754
+        "strategy_total_usd": 0.048454
       },
       {
         "baseline_total_usd": 0.048572,
         "class": "redundant",
-        "cumulative_saved_usd": 0.040797,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0105",
         "row_index": 421,
-        "strategy_total_usd": 0.007775
+        "strategy_total_usd": 0.048572
       },
       {
         "baseline_total_usd": 0.048691,
         "class": "redundant",
-        "cumulative_saved_usd": 0.040894,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0024",
         "row_index": 422,
-        "strategy_total_usd": 0.007797
+        "strategy_total_usd": 0.048691
       },
       {
         "baseline_total_usd": 0.048804,
         "class": "redundant",
-        "cumulative_saved_usd": 0.040991,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0089",
         "row_index": 423,
-        "strategy_total_usd": 0.007813
+        "strategy_total_usd": 0.048804
       },
       {
         "baseline_total_usd": 0.048916,
         "class": "easy",
-        "cumulative_saved_usd": 0.041089,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0111",
         "row_index": 424,
-        "strategy_total_usd": 0.007827
+        "strategy_total_usd": 0.048916
       },
       {
         "baseline_total_usd": 0.049034,
         "class": "redundant",
-        "cumulative_saved_usd": 0.041186,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0280",
         "row_index": 425,
-        "strategy_total_usd": 0.007848
+        "strategy_total_usd": 0.049034
       },
       {
         "baseline_total_usd": 0.049146,
         "class": "easy",
-        "cumulative_saved_usd": 0.041283,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0090",
         "row_index": 426,
-        "strategy_total_usd": 0.007863
+        "strategy_total_usd": 0.049146
       },
       {
         "baseline_total_usd": 0.049261,
         "class": "redundant",
-        "cumulative_saved_usd": 0.04138,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0267",
         "row_index": 427,
-        "strategy_total_usd": 0.007881
+        "strategy_total_usd": 0.049261
       },
       {
         "baseline_total_usd": 0.049376,
         "class": "redundant",
-        "cumulative_saved_usd": 0.041477,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0296",
         "row_index": 428,
-        "strategy_total_usd": 0.007899
+        "strategy_total_usd": 0.049376
       },
       {
         "baseline_total_usd": 0.049495,
         "class": "redundant",
-        "cumulative_saved_usd": 0.041575,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0068",
         "row_index": 429,
-        "strategy_total_usd": 0.00792
+        "strategy_total_usd": 0.049495
       },
       {
         "baseline_total_usd": 0.049609,
         "class": "redundant",
-        "cumulative_saved_usd": 0.041672,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0266",
         "row_index": 430,
-        "strategy_total_usd": 0.007937
+        "strategy_total_usd": 0.049609
       },
       {
         "baseline_total_usd": 0.049722,
         "class": "redundant",
-        "cumulative_saved_usd": 0.041769,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0263",
         "row_index": 431,
-        "strategy_total_usd": 0.007953
+        "strategy_total_usd": 0.049722
       },
       {
         "baseline_total_usd": 0.049837,
         "class": "redundant",
-        "cumulative_saved_usd": 0.041866,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0088",
         "row_index": 432,
-        "strategy_total_usd": 0.007971
+        "strategy_total_usd": 0.049837
       },
       {
         "baseline_total_usd": 0.049949,
         "class": "easy",
-        "cumulative_saved_usd": 0.041963,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0130",
         "row_index": 433,
-        "strategy_total_usd": 0.007986
+        "strategy_total_usd": 0.049949
       },
       {
         "baseline_total_usd": 0.050061,
         "class": "easy",
-        "cumulative_saved_usd": 0.042061,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0018",
         "row_index": 434,
-        "strategy_total_usd": 0.008
+        "strategy_total_usd": 0.050061
       },
       {
         "baseline_total_usd": 0.050175,
         "class": "easy",
-        "cumulative_saved_usd": 0.042158,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0078",
         "row_index": 435,
-        "strategy_total_usd": 0.008017
+        "strategy_total_usd": 0.050175
       },
       {
         "baseline_total_usd": 0.050293,
         "class": "hard",
-        "cumulative_saved_usd": 0.042255,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0017",
         "row_index": 436,
-        "strategy_total_usd": 0.008038
+        "strategy_total_usd": 0.050293
       },
       {
         "baseline_total_usd": 0.050406,
         "class": "easy",
-        "cumulative_saved_usd": 0.042352,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0141",
         "row_index": 437,
-        "strategy_total_usd": 0.008054
+        "strategy_total_usd": 0.050406
       },
       {
         "baseline_total_usd": 0.05052,
         "class": "redundant",
-        "cumulative_saved_usd": 0.042449,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0194",
         "row_index": 438,
-        "strategy_total_usd": 0.008071
+        "strategy_total_usd": 0.05052
       },
       {
         "baseline_total_usd": 0.050632,
         "class": "redundant",
-        "cumulative_saved_usd": 0.042547,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0149",
         "row_index": 439,
-        "strategy_total_usd": 0.008085
+        "strategy_total_usd": 0.050632
       },
       {
         "baseline_total_usd": 0.050751,
         "class": "redundant",
-        "cumulative_saved_usd": 0.042644,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0168",
         "row_index": 440,
-        "strategy_total_usd": 0.008107
+        "strategy_total_usd": 0.050751
       },
       {
         "baseline_total_usd": 0.050864,
         "class": "redundant",
-        "cumulative_saved_usd": 0.042741,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0269",
         "row_index": 441,
-        "strategy_total_usd": 0.008123
+        "strategy_total_usd": 0.050864
       },
       {
         "baseline_total_usd": 0.050981,
         "class": "easy",
-        "cumulative_saved_usd": 0.042838,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0100",
         "row_index": 442,
-        "strategy_total_usd": 0.008143
+        "strategy_total_usd": 0.050981
       },
       {
         "baseline_total_usd": 0.051095,
         "class": "easy",
-        "cumulative_saved_usd": 0.042935,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0016",
         "row_index": 443,
-        "strategy_total_usd": 0.00816
+        "strategy_total_usd": 0.051095
       },
       {
         "baseline_total_usd": 0.051208,
         "class": "redundant",
-        "cumulative_saved_usd": 0.043033,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0053",
         "row_index": 444,
-        "strategy_total_usd": 0.008175
+        "strategy_total_usd": 0.051208
       },
       {
         "baseline_total_usd": 0.051319,
         "class": "easy",
-        "cumulative_saved_usd": 0.04313,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0083",
         "row_index": 445,
-        "strategy_total_usd": 0.008189
+        "strategy_total_usd": 0.051319
       },
       {
         "baseline_total_usd": 0.051432,
         "class": "redundant",
-        "cumulative_saved_usd": 0.043227,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0290",
         "row_index": 446,
-        "strategy_total_usd": 0.008205
+        "strategy_total_usd": 0.051432
       },
       {
         "baseline_total_usd": 0.051546,
         "class": "easy",
-        "cumulative_saved_usd": 0.043324,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0024",
         "row_index": 447,
-        "strategy_total_usd": 0.008222
+        "strategy_total_usd": 0.051546
       },
       {
         "baseline_total_usd": 0.051666,
         "class": "hard",
-        "cumulative_saved_usd": 0.043421,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0016",
         "row_index": 448,
-        "strategy_total_usd": 0.008245
+        "strategy_total_usd": 0.051666
       },
       {
         "baseline_total_usd": 0.051784,
         "class": "redundant",
-        "cumulative_saved_usd": 0.043519,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0210",
         "row_index": 449,
-        "strategy_total_usd": 0.008265
+        "strategy_total_usd": 0.051784
       },
       {
         "baseline_total_usd": 0.051898,
         "class": "redundant",
-        "cumulative_saved_usd": 0.043616,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0111",
         "row_index": 450,
-        "strategy_total_usd": 0.008282
+        "strategy_total_usd": 0.051898
       },
       {
         "baseline_total_usd": 0.052016,
         "class": "redundant",
-        "cumulative_saved_usd": 0.043713,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0172",
         "row_index": 451,
-        "strategy_total_usd": 0.008303
+        "strategy_total_usd": 0.052016
       },
       {
         "baseline_total_usd": 0.052128,
         "class": "easy",
-        "cumulative_saved_usd": 0.04381,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0063",
         "row_index": 452,
-        "strategy_total_usd": 0.008318
+        "strategy_total_usd": 0.052128
       },
       {
         "baseline_total_usd": 0.052241,
         "class": "redundant",
-        "cumulative_saved_usd": 0.043907,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0002",
         "row_index": 453,
-        "strategy_total_usd": 0.008334
+        "strategy_total_usd": 0.052241
       },
       {
         "baseline_total_usd": 0.052353,
         "class": "easy",
-        "cumulative_saved_usd": 0.044005,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0135",
         "row_index": 454,
-        "strategy_total_usd": 0.008348
+        "strategy_total_usd": 0.052353
       },
       {
         "baseline_total_usd": 0.052473,
         "class": "hard",
-        "cumulative_saved_usd": 0.044102,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0040",
         "row_index": 455,
-        "strategy_total_usd": 0.008371
+        "strategy_total_usd": 0.052473
       },
       {
         "baseline_total_usd": 0.052594,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044199,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0061",
         "row_index": 456,
-        "strategy_total_usd": 0.008395
+        "strategy_total_usd": 0.052594
       },
       {
         "baseline_total_usd": 0.052708,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044296,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0292",
         "row_index": 457,
-        "strategy_total_usd": 0.008412
+        "strategy_total_usd": 0.052708
       },
       {
         "baseline_total_usd": 0.052821,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044393,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0119",
         "row_index": 458,
-        "strategy_total_usd": 0.008428
+        "strategy_total_usd": 0.052821
       },
       {
         "baseline_total_usd": 0.052936,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044491,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0152",
         "row_index": 459,
-        "strategy_total_usd": 0.008445
+        "strategy_total_usd": 0.052936
       },
       {
         "baseline_total_usd": 0.053051,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044588,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0234",
         "row_index": 460,
-        "strategy_total_usd": 0.008463
+        "strategy_total_usd": 0.053051
       },
       {
         "baseline_total_usd": 0.053163,
         "class": "easy",
-        "cumulative_saved_usd": 0.044685,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0073",
         "row_index": 461,
-        "strategy_total_usd": 0.008478
+        "strategy_total_usd": 0.053163
       },
       {
         "baseline_total_usd": 0.053277,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044782,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0230",
         "row_index": 462,
-        "strategy_total_usd": 0.008495
+        "strategy_total_usd": 0.053277
       },
       {
         "baseline_total_usd": 0.053393,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044879,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0151",
         "row_index": 463,
-        "strategy_total_usd": 0.008514
+        "strategy_total_usd": 0.053393
       },
       {
         "baseline_total_usd": 0.053507,
         "class": "redundant",
-        "cumulative_saved_usd": 0.044977,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0114",
         "row_index": 464,
-        "strategy_total_usd": 0.00853
+        "strategy_total_usd": 0.053507
       },
       {
         "baseline_total_usd": 0.053619,
         "class": "easy",
-        "cumulative_saved_usd": 0.045074,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0113",
         "row_index": 465,
-        "strategy_total_usd": 0.008545
+        "strategy_total_usd": 0.053619
       },
       {
         "baseline_total_usd": 0.053737,
         "class": "redundant",
-        "cumulative_saved_usd": 0.045171,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0099",
         "row_index": 466,
-        "strategy_total_usd": 0.008566
+        "strategy_total_usd": 0.053737
       },
       {
         "baseline_total_usd": 0.053851,
         "class": "easy",
-        "cumulative_saved_usd": 0.045268,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0080",
         "row_index": 467,
-        "strategy_total_usd": 0.008583
+        "strategy_total_usd": 0.053851
       },
       {
         "baseline_total_usd": 0.053967,
         "class": "redundant",
-        "cumulative_saved_usd": 0.045365,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0173",
         "row_index": 468,
-        "strategy_total_usd": 0.008602
+        "strategy_total_usd": 0.053967
       },
       {
         "baseline_total_usd": 0.054079,
         "class": "easy",
-        "cumulative_saved_usd": 0.045463,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0034",
         "row_index": 469,
-        "strategy_total_usd": 0.008616
+        "strategy_total_usd": 0.054079
       },
       {
         "baseline_total_usd": 0.054199,
         "class": "redundant",
-        "cumulative_saved_usd": 0.04556,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0211",
         "row_index": 470,
-        "strategy_total_usd": 0.008639
+        "strategy_total_usd": 0.054199
       },
       {
         "baseline_total_usd": 0.054311,
         "class": "easy",
-        "cumulative_saved_usd": 0.045657,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0009",
         "row_index": 471,
-        "strategy_total_usd": 0.008654
+        "strategy_total_usd": 0.054311
       },
       {
         "baseline_total_usd": 0.054425,
         "class": "redundant",
-        "cumulative_saved_usd": 0.045754,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0006",
         "row_index": 472,
-        "strategy_total_usd": 0.008671
+        "strategy_total_usd": 0.054425
       },
       {
         "baseline_total_usd": 0.054543,
         "class": "hard",
-        "cumulative_saved_usd": 0.045851,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0013",
         "row_index": 473,
-        "strategy_total_usd": 0.008692
+        "strategy_total_usd": 0.054543
       },
       {
         "baseline_total_usd": 0.054656,
         "class": "redundant",
-        "cumulative_saved_usd": 0.045949,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0155",
         "row_index": 474,
-        "strategy_total_usd": 0.008707
+        "strategy_total_usd": 0.054656
       },
       {
         "baseline_total_usd": 0.054773,
         "class": "redundant",
-        "cumulative_saved_usd": 0.046046,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0278",
         "row_index": 475,
-        "strategy_total_usd": 0.008727
+        "strategy_total_usd": 0.054773
       },
       {
         "baseline_total_usd": 0.05489,
         "class": "easy",
-        "cumulative_saved_usd": 0.046143,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0068",
         "row_index": 476,
-        "strategy_total_usd": 0.008747
+        "strategy_total_usd": 0.05489
       },
       {
         "baseline_total_usd": 0.055008,
         "class": "hard",
-        "cumulative_saved_usd": 0.04624,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0042",
         "row_index": 477,
-        "strategy_total_usd": 0.008768
+        "strategy_total_usd": 0.055008
       },
       {
         "baseline_total_usd": 0.055126,
         "class": "redundant",
-        "cumulative_saved_usd": 0.046337,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0243",
         "row_index": 478,
-        "strategy_total_usd": 0.008789
+        "strategy_total_usd": 0.055126
       },
       {
         "baseline_total_usd": 0.055238,
         "class": "easy",
-        "cumulative_saved_usd": 0.046435,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0057",
         "row_index": 479,
-        "strategy_total_usd": 0.008803
+        "strategy_total_usd": 0.055238
       },
       {
         "baseline_total_usd": 0.05535,
         "class": "easy",
-        "cumulative_saved_usd": 0.046532,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0081",
         "row_index": 480,
-        "strategy_total_usd": 0.008818
+        "strategy_total_usd": 0.05535
       },
       {
         "baseline_total_usd": 0.055468,
         "class": "redundant",
-        "cumulative_saved_usd": 0.046629,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0178",
         "row_index": 481,
-        "strategy_total_usd": 0.008839
+        "strategy_total_usd": 0.055468
       },
       {
         "baseline_total_usd": 0.055585,
         "class": "redundant",
-        "cumulative_saved_usd": 0.046726,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0055",
         "row_index": 482,
-        "strategy_total_usd": 0.008859
+        "strategy_total_usd": 0.055585
       },
       {
         "baseline_total_usd": 0.055696,
         "class": "easy",
-        "cumulative_saved_usd": 0.046823,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0035",
         "row_index": 483,
-        "strategy_total_usd": 0.008873
+        "strategy_total_usd": 0.055696
       },
       {
         "baseline_total_usd": 0.055812,
         "class": "redundant",
-        "cumulative_saved_usd": 0.046921,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0012",
         "row_index": 484,
-        "strategy_total_usd": 0.008891
+        "strategy_total_usd": 0.055812
       },
       {
         "baseline_total_usd": 0.05593,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047018,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0136",
         "row_index": 485,
-        "strategy_total_usd": 0.008912
+        "strategy_total_usd": 0.05593
       },
       {
         "baseline_total_usd": 0.056042,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047115,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0293",
         "row_index": 486,
-        "strategy_total_usd": 0.008927
+        "strategy_total_usd": 0.056042
       },
       {
         "baseline_total_usd": 0.05616,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047212,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0208",
         "row_index": 487,
-        "strategy_total_usd": 0.008948
+        "strategy_total_usd": 0.05616
       },
       {
         "baseline_total_usd": 0.056275,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047309,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0016",
         "row_index": 488,
-        "strategy_total_usd": 0.008966
+        "strategy_total_usd": 0.056275
       },
       {
         "baseline_total_usd": 0.056393,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047407,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0064",
         "row_index": 489,
-        "strategy_total_usd": 0.008986
+        "strategy_total_usd": 0.056393
       },
       {
         "baseline_total_usd": 0.056508,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047504,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0129",
         "row_index": 490,
-        "strategy_total_usd": 0.009004
+        "strategy_total_usd": 0.056508
       },
       {
         "baseline_total_usd": 0.056628,
         "class": "hard",
-        "cumulative_saved_usd": 0.047601,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0032",
         "row_index": 491,
-        "strategy_total_usd": 0.009027
+        "strategy_total_usd": 0.056628
       },
       {
         "baseline_total_usd": 0.056745,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047698,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0026",
         "row_index": 492,
-        "strategy_total_usd": 0.009047
+        "strategy_total_usd": 0.056745
       },
       {
         "baseline_total_usd": 0.056865,
         "class": "hard",
-        "cumulative_saved_usd": 0.047795,
+        "cumulative_saved_usd": 0.0,
         "row_id": "hard-0031",
         "row_index": 493,
-        "strategy_total_usd": 0.00907
+        "strategy_total_usd": 0.056865
       },
       {
         "baseline_total_usd": 0.056983,
         "class": "redundant",
-        "cumulative_saved_usd": 0.047893,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0207",
         "row_index": 494,
-        "strategy_total_usd": 0.00909
+        "strategy_total_usd": 0.056983
       },
       {
         "baseline_total_usd": 0.0571,
         "class": "easy",
-        "cumulative_saved_usd": 0.04799,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0028",
         "row_index": 495,
-        "strategy_total_usd": 0.00911
+        "strategy_total_usd": 0.0571
       },
       {
         "baseline_total_usd": 0.057214,
         "class": "easy",
-        "cumulative_saved_usd": 0.048087,
+        "cumulative_saved_usd": 0.0,
         "row_id": "easy-0056",
         "row_index": 496,
-        "strategy_total_usd": 0.009127
+        "strategy_total_usd": 0.057214
       },
       {
         "baseline_total_usd": 0.05733,
         "class": "redundant",
-        "cumulative_saved_usd": 0.048184,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0056",
         "row_index": 497,
-        "strategy_total_usd": 0.009146
+        "strategy_total_usd": 0.05733
       },
       {
         "baseline_total_usd": 0.057442,
         "class": "redundant",
-        "cumulative_saved_usd": 0.048281,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0185",
         "row_index": 498,
-        "strategy_total_usd": 0.009161
+        "strategy_total_usd": 0.057442
       },
       {
         "baseline_total_usd": 0.057559,
         "class": "redundant",
-        "cumulative_saved_usd": 0.048379,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0127",
         "row_index": 499,
-        "strategy_total_usd": 0.00918
+        "strategy_total_usd": 0.057559
       },
       {
         "baseline_total_usd": 0.057674,
         "class": "redundant",
-        "cumulative_saved_usd": 0.048476,
+        "cumulative_saved_usd": 0.0,
         "row_id": "red-0051",
         "row_index": 500,
-        "strategy_total_usd": 0.009198
+        "strategy_total_usd": 0.057674
       }
     ],
     "router": [
@@ -16029,16 +16029,18 @@
     {
       "baseline_usd": 0.057674,
       "extra": {
-        "cache_reads": 499,
-        "cache_writes": 1
+        "cache_reads": 0,
+        "cache_writes": 0,
+        "min_cacheable_tokens": 4096,
+        "prefix_tokens": 108
       },
       "mean_quality": 0.886,
       "n_rows": 500,
       "router_stats": null,
-      "saved_pct": 0.8405,
-      "saved_usd": 0.048476,
+      "saved_pct": 0.0,
+      "saved_usd": 0.0,
       "strategy": "prompt caching (system prefix)",
-      "total_usd": 0.009198
+      "total_usd": 0.057674
     },
     {
       "baseline_usd": 0.057674,

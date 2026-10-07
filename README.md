@@ -25,7 +25,7 @@ Each layer is adoptable on its own; the architecture diagram below shows the sea
 
 ## Architecture
 
-Five layers ship today plus a live-API integration posture. Each layer is adoptable on its own — semantic cache → uncertainty router → prompt-cache wrapper at runtime, batch-API as the offline sibling, and the savings dashboard reading bench artifacts that are produced from the same pricing table the runtime layers use. The full integrated diagram, per-layer flows, and the design decisions behind each one (D-002…D-024) live in **[docs/architecture.md](docs/architecture.md)**.
+Five layers ship today plus a live-API integration posture. Each layer is adoptable on its own — semantic cache → uncertainty router → prompt-cache wrapper at runtime, batch-API as the offline sibling, and the savings dashboard reading bench artifacts that are produced from the same pricing table the runtime layers use. The full integrated diagram, per-layer flows, and the design decisions behind each one (D-002…D-025) live in **[docs/architecture.md](docs/architecture.md)**.
 
 ## Quickstart
 
@@ -320,16 +320,23 @@ strategies so each row of the table is like-for-like):
 | Strategy | Rows | $ spent | $ saved | % saved | Mean quality | Extra |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | baseline (no optimization, cheap model) | 500 | $0.0577 | $0.0000 | 0.0% | 0.886 | — |
-| prompt caching (system prefix) | 500 | $0.0092 | $0.0485 | 84.0% | 0.886 | 1 write + 499 reads |
+| prompt caching (system prefix) | 500 | $0.0577 | $0.0000 | 0.0% | 0.886 | 0 writes: 108-token prefix < 4096 minimum |
 | semantic cache (threshold 0.95) | 500 | $0.0253 | $0.0324 | 56.2% | 0.886 | 280 hits / 220 misses |
 | uncertainty router (entropy 1.5) | 500 | $0.0874 | $-0.0297 | -51.6% | 0.921 | 50 escalated (10%) |
 | batch API (discount 0.50×) | 500 | $0.0288 | $0.0288 | 50.0% | 0.886 | — |
 
 A few honest notes the README leads with rather than buries:
 
-- **Prompt caching is the cheapest line item by far** because the workload
-  shares a stable system prompt across every row. Real apps that fan out
-  to many distinct system prefixes will see smaller wins on this layer.
+- **Prompt caching saves nothing on this workload, and that is the real
+  answer.** Every row shares one stable system prompt, but it is 108 tokens,
+  and Anthropic does not cache a prefix shorter than the model's minimum:
+  4096 tokens on Claude Haiku 4.5, the cheap model here (512 to 4096
+  depending on the model; the table is in `cost_optimizer/pricing.py`). A
+  short prefix marked `cache_control` is not an error; it is silently
+  billed as ordinary input. This row used to show 84% saved on 1 write and
+  499 reads, a saving the API could not have produced (#266). Caching pays
+  on a long shared prefix: the bench's math for that case is pinned by
+  `tests/test_bench_savings.py`.
 - **The uncertainty router shows a *negative* dollar saving** against the
   cheap-on-everything baseline — that's the design. The router *spends
   more* to buy higher quality on hard rows (mean quality 0.886 → 0.921).

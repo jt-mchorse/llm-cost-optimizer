@@ -100,7 +100,9 @@ def test_the_sums_keep_their_real_zero() -> None:
             assert row[key] == 0, f"{row['strategy']}.{key} = {row[key]!r}, expected 0"
         # Counts behind the absent rates are real too.
         for key, value in row["extra"].items():
-            if key in _EXTRA_RATIOS.values() or key == "discount_factor":
+            # Configuration, not counts: the batch discount and the cheap
+            # model's minimum cacheable prefix (#266) are the same on any run.
+            if key in _EXTRA_RATIOS.values() or key in ("discount_factor", "min_cacheable_tokens"):
                 continue
             assert value == 0, f"{row['strategy']}.extra[{key}] = {value!r}"
 

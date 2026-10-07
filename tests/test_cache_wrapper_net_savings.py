@@ -163,6 +163,12 @@ def _bench_saved_for(n_calls: int, prefix_words: int) -> tuple[float, list[tuple
     return cached.saved_usd, stream
 
 
+# Above the cheap model's minimum cacheable prefix (4096 on Haiku 4.5), so the
+# stream below is one the real API would actually report. These arms used 4000
+# words, which the API would not have cached at all (#266).
+_CACHEABLE_WORDS = 5_000
+
+
 @pytest.mark.parametrize("n_calls", [1, 2, 3, 10, 50])
 def test_net_savings_matches_the_bench(n_calls: int) -> None:
     """One token stream, two independent cost models, same answer.
@@ -174,7 +180,7 @@ def test_net_savings_matches_the_bench(n_calls: int) -> None:
     Those rearrange to each other, and before #196 the wrapper's half was
     missing its second term.
     """
-    bench_saved, stream = _bench_saved_for(n_calls, prefix_words=4_000)
+    bench_saved, stream = _bench_saved_for(n_calls, prefix_words=_CACHEABLE_WORDS)
     # The bench prices `CHEAP_MODEL`; drive the wrapper on the same model.
     telem = _drive(stream, model=CHEAP_MODEL)
     assert telem.net_dollars_saved == pytest.approx(bench_saved, rel=1e-12, abs=1e-15)
@@ -183,8 +189,20 @@ def test_net_savings_matches_the_bench(n_calls: int) -> None:
 def test_the_single_call_case_is_the_one_that_flips() -> None:
     """`n_calls=1` is a cache write with no read -- and the bench, which has
     always charged the write multiplier, has always called that a loss."""
-    bench_saved, _stream = _bench_saved_for(1, prefix_words=4_000)
+    bench_saved, _stream = _bench_saved_for(1, prefix_words=_CACHEABLE_WORDS)
     assert bench_saved < 0
+
+
+@pytest.mark.parametrize("n_calls", [1, 10])
+def test_below_the_minimum_both_sides_see_no_caching(n_calls: int) -> None:
+    """A prefix one word short of the minimum: the API reports no cache tokens
+    at all, so the stream is all zeros, and the bench must agree it saved 0."""
+    minimum = get_pricing(CHEAP_MODEL).min_cacheable_tokens
+    assert minimum is not None
+    bench_saved, _stream = _bench_saved_for(n_calls, prefix_words=minimum - 1)
+    telem = _drive([(0, 0)] * n_calls, model=CHEAP_MODEL)
+    assert bench_saved == 0.0
+    assert telem.net_dollars_saved == pytest.approx(bench_saved, abs=1e-15)
 
 
 # --- the premium's own arithmetic -------------------------------------------

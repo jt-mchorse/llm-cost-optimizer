@@ -88,8 +88,12 @@ genuinely cheaper than not caching.
 **What it costs.** One wrapper call per API call. No persistent state
 besides the in-process aggregate. The first call to a new prefix pays
 the 1.25× write multiplier; subsequent calls within the cache TTL pay
-the 0.10× read multiplier. Worked savings: 84% on the synthetic
-500-row workload (`docs/savings.md`).
+the 0.10× read multiplier, provided the prefix is at least the model's
+minimum cacheable length (`ModelPricing.min_cacheable_tokens`: 4096 on
+Haiku 4.5, 512 on the newest models). A shorter prefix is silently not
+cached. The synthetic 500-row workload's 108-token system prompt is below
+Haiku 4.5's minimum, so its caching row in `docs/savings.md` saves 0%
+(D-025, #266). It used to publish 84%.
 
 ```mermaid
 flowchart LR
