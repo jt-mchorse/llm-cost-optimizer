@@ -2821,3 +2821,14 @@ and the browser opened the old one, showing the previous take's numbers. The
 script now reads the address the new dashboard reports and opens that one. The
 dashboard's start-up banner, which included the operator's public IP address,
 now goes to a log file instead of the terminal being recorded.
+
+## 2026-10-06 — the savings bench keeps its 60/30/10 mix at any size (#262)
+
+The savings benchmark is meant to use 60% redundant, 30% easy and 10% hard
+prompts. For sizes other than the default it rounded the first two down and
+gave everything left over to "hard", so a 3-row run was two-thirds hard. Hard
+prompts are the ones the router sends to the expensive model, so that skew,
+not the strategy, drove the result. It now rounds to the closest split that
+still adds up; the default 500-row run and its committed results are
+unchanged. I also filed #261 for JT: on tiny batches the batch saving
+percentage is distorted by rounding the dollar totals first.

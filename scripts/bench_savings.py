@@ -163,14 +163,35 @@ def _ws_count(text: str) -> int:
     return max(1, len(text.split()))
 
 
+#: D-012's documented mix, in percent: redundant, easy, hard.
+_MIX_PERCENT = (60, 30, 10)
+
+
+def _mix_counts(n: int) -> tuple[int, int, int]:
+    """Split `n` rows 60/30/10 as closely as integers allow (#262).
+
+    Largest remainder: floor each share, then hand the rows left over to the
+    classes with the largest fractional parts (ties in the order redundant,
+    easy, hard). This flooring the first two and giving every remainder to
+    `hard` made `--n 3` 67% hard and `--n 1` 100% hard -- and hard rows are
+    the ones the router escalates, so the mix, not the strategy, moved the
+    headline. Exact at the default `--n 500`.
+    """
+    exact = [n * p / 100 for p in _MIX_PERCENT]
+    counts = [int(x) for x in exact]
+    order = sorted(range(3), key=lambda i: (-(exact[i] - counts[i]), i))
+    for i in order[: n - sum(counts)]:
+        counts[i] += 1
+    return counts[0], counts[1], counts[2]
+
+
 def _build_workload(n: int = 500, seed: int = 0xC057) -> list[WorkloadRow]:
     """Deterministically build a workload of `n` rows.
 
-    Split: 60% redundant, 30% easy, 10% hard (rounded so totals match).
+    Split: 60% redundant, 30% easy, 10% hard, by largest-remainder rounding
+    so the counts sum to `n` and none is more than a row from its share.
     """
-    n_redundant = (n * 60) // 100
-    n_easy = (n * 30) // 100
-    n_hard = n - n_redundant - n_easy
+    n_redundant, n_easy, n_hard = _mix_counts(n)
 
     # A long stable system prompt — this is the prefix prompt caching
     # bites. 200 words ≈ 250-300 input tokens at Claude's real
