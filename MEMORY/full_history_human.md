@@ -2811,6 +2811,17 @@ values, prints enough digits that a flagged and an unflagged delta never look
 the same, and shows a missing quality as "n/a". A test drives the real
 dashboard page on an edited results file.
 
+## 2026-10-06 — the demo opens the dashboard it just started (#259)
+
+With `--launch-streamlit`, the demo script starts the dashboard and opens the
+browser on port 8501. The dashboard deliberately keeps running after the script
+exits so the tour can be recorded, so on a second take port 8501 is still held
+by the first take's dashboard. Streamlit quietly moved the new one to 8502,
+and the browser opened the old one, showing the previous take's numbers. The
+script now reads the address the new dashboard reports and opens that one. The
+dashboard's start-up banner, which included the operator's public IP address,
+now goes to a log file instead of the terminal being recorded.
+
 ## 2026-10-06 — the savings bench keeps its 60/30/10 mix at any size (#262)
 
 The savings benchmark is meant to use 60% redundant, 30% easy and 10% hard

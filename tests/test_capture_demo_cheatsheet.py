@@ -78,7 +78,9 @@ def test_the_cheatsheet_command_points_at_the_runs_own_json(tmp_path: Path) -> N
     assert argv == ["streamlit", "run", "dashboard/app.py", "--", "--json", str(json_path)]
 
 
-def test_launch_streamlit_passes_the_same_json(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_launch_streamlit_passes_the_same_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     calls: list[list[str]] = []
 
     class _Popen:
@@ -89,7 +91,7 @@ def test_launch_streamlit_passes_the_same_json(monkeypatch: pytest.MonkeyPatch) 
 
     monkeypatch.setattr(capture_demo.shutil, "which", lambda _: "/usr/bin/streamlit")
     monkeypatch.setattr(capture_demo.subprocess, "Popen", _Popen)
-    capture_demo._maybe_launch_streamlit(Path("o/savings_demo.json"))
+    capture_demo._maybe_launch_streamlit(Path("o/savings_demo.json"), tmp_path / "streamlit.log")
     (argv,) = calls
     # Streamlit's own option before `--`, the script's after it.
     assert argv == [

@@ -2886,6 +2886,26 @@ followups: []
 ---
 
 ---
+session: 2026-10-06T08:08Z
+duration_min: 2   # computed: plan comment 08:05:51Z -> 08:08Z (date -u); reproduced from ~08:04Z after a sweep agent flagged it as suspected
+issue: 259
+branch: session/2026-10-06-0805-issue-259
+focus: capture_demo_launch_streamlit_OPENED_HARD_CODED_8501_WHILE_ITS_DASHBOARD_BOUND_8502_a_second_take_recorded_the_first_takes_JSON_and_the_banner_printed_the_operators_public_IP
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 4
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "main, two takes: 8501=take 1 (ppid 1), 8502=take 2, browser target 8501. Fixed: take 2 prints and opens :8502; 'External URL' in neither terminal. Revert probe: 4 of 4 new arms red."
+context_for_next_session:
+  - STREAMLIT_FALLS_THROUGH_TO_THE_NEXT_FREE_PORT_WHEN_server_port_IS_NOT_SET_EXPLICITLY_read_its_Local_URL_line
+  - A_CHILD_THAT_OUTLIVES_THE_SCRIPT_MUST_NOT_HAVE_ITS_STDOUT_ON_A_PIPE_nothing_drains_it_after_exit_use_a_log_file
+  - A_RECORDED_TERMINAL_IS_A_PUBLICATION_CHANNEL_streamlits_banner_prints_the_public_IP_check_other_demo_children_for_the_same
+followups: []
+---
+
+---
 session: 2026-10-06T09:38Z
 duration_min: 1   # computed: plan comment 09:37:12Z -> 09:38Z (date -u)
 issue: 262
