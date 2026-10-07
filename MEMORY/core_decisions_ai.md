@@ -275,3 +275,15 @@
   reversibility: cheap
   related_issues: ["#253", "#194"]
   superseded_by: null
+
+- id: D-025
+  date: 2026-10-07
+  decision: THE_MINIMUM_CACHEABLE_PREFIX_IS_PART_OF_THE_IN_REPO_PRICING_TABLE_ModelPricing_min_cacheable_tokens_PER_MODEL_AND_THE_SAVINGS_BENCH_CREDITS_NO_CACHING_ON_A_PREFIX_BELOW_IT_THE_WORKLOAD_IS_UNCHANGED_SO_ITS_CACHING_ROW_PUBLISHES_0_PERCENT_WITH_THE_PREFIX_LENGTH_AND_THE_MINIMUM_BESIDE_IT
+  rationale: the_API_SILENTLY_DOES_NOT_CACHE_a_prefix_shorter_than_the_models_minimum_4096_on_haiku_4_5_THE_CHEAP_MODEL_and_the_bench_charged_1_write_499_reads_on_a_108_token_prefix_and_PUBLISHED_84_PERCENT_a_saving_the_real_API_could_not_produce_EXTENDS_D_003_no_invented_numbers_within_a_known_model
+  THE_MINIMUM_IS_NOT_MONOTONIC: 512_newest_models_1024_opus_4_8_sonnet_4_6_2048_opus_4_7_4096_opus_4_6_haiku_4_5_so_it_is_a_per_model_field_not_a_constant
+  ONE_ROW_COST_FUNCTION: _prompt_cache_row_cost_prices_both_the_strategy_row_and_the_cumulative_series_the_series_had_its_own_copy_and_the_reconciliation_test_caught_it_diverging
+  alternatives_rejected: ["LENGTHEN_THE_WORKLOAD_SYSTEM_PROMPT_PAST_4096_DEFERRED_TO_JT_it_changes_every_row_and_is_D_012s_workload_call", "A_SINGLE_MINIMUM_CONSTANT_REJECTED_the_minimum_differs_8x_across_models_in_the_table", "LEAVE_THE_ROW_AND_ADD_A_FOOTNOTE_REJECTED_the_published_number_is_one_the_API_cannot_produce"]
+  measured: "regenerated with the documented command: caching row $0.0092/84.0% -> $0.0577/0.0%; every other row unchanged. Revert probes listed in the PR."
+  reversibility: cheap
+  related_issues: ["#266"]
+  superseded_by: null
