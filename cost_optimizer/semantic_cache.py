@@ -454,11 +454,17 @@ class RedisStorage:
             # second while the in-memory backend still served it, so the
             # Redis-backed cache silently stopped caching (#172).
             #
-            # `max(1, ...)` stays: it keeps an already-expired record from
-            # becoming `EXPIRE key 0` (an immediate delete). It is only the
-            # floor, not the clock, that was doing the papering-over.
-            ttl = max(1, int(record.expires_at - self.now_fn()))
-            self.client.expire(self._record_key(record.key), ttl)
+            # Milliseconds, rounded UP (#264). `EXPIRE` takes whole seconds, and
+            # `int()` truncated: a 1.9s ttl lived 1s (a live entry dropped, a
+            # paid call), while `max(1, ...)` stretched a 0.2s ttl to 1s (a
+            # stale answer served 5x past its ttl). Rounding up means the key
+            # never disappears before `expires_at`; the read-side check in
+            # `find_nearest` is what stops it being served after.
+            #
+            # The floor stays, now 1 ms: it keeps an already-expired record
+            # from becoming `PEXPIRE key 0`, an immediate delete.
+            ttl_ms = max(1, math.ceil((record.expires_at - self.now_fn()) * 1000))
+            self.client.pexpire(self._record_key(record.key), ttl_ms)
         for tag in record.tags:
             self.client.sadd(self._tag_key(tag), record.key)
 
@@ -502,6 +508,13 @@ class RedisStorage:
             # server-side pre-filter would need a RediSearch index (out of
             # scope, per the class docstring).
             if model is not None and record.model != model:
+                continue
+            # Liveness on the cache's clock, the predicate
+            # `InMemoryStorage.purge_expired` drops on (#264). Redis's own TTL
+            # runs on the server's wall clock, so under an injected `now_fn` a
+            # record outlived its `expires_at` and was served; with this check
+            # Redis's TTL is garbage collection, not the source of truth.
+            if record.expires_at is not None and record.expires_at <= self.now_fn():
                 continue
             sim = cosine(vector, list(record.vector))
             # Same content tiebreak as InMemoryStorage (#188) — see the long
