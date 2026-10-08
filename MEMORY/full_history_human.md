@@ -2851,3 +2851,15 @@ records each model's minimum (decision D-025), the bench applies it, and the
 caching row reads 0% with the reason beside it. The other strategies' numbers
 are unchanged. Whether the demo should use a longer prompt so caching shows a
 real win is a workload choice, left to JT in #267.
+
+## 2026-10-08 — the demo's dashboard reads the file the demo just wrote (#277)
+
+When the demo script starts the dashboard, it runs the dashboard from the
+repository's root folder and passes it the location of the results file. If
+the operator gave the output folder as a relative path (such as
+`docs/demo-artifacts`) while working in some other folder, the dashboard looked
+for that path under the repository instead. It then showed an older take's
+results, and its caption showed exactly the file name the checklist tells the
+operator to confirm, so nothing looked wrong. The script now always passes the
+full path to the file, both to the dashboard it starts and in the printed
+command.
