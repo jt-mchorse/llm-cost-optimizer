@@ -2871,3 +2871,13 @@ If a caller asked for a 1-hour cache, the wrapper replaced that with the
 at the 5-minute rate (1.25x), while 1-hour writes cost 2x, so it understated
 their cost fourfold. The caller's setting is now kept, and writes are priced
 using the per-TTL breakdown the API already returns.
+## 2026-10-08 — the cache wrapper respects the order Anthropic requires for mixed cache lifetimes (#283)
+
+When a request mixes 1-hour and 5-minute cache markers, Anthropic requires
+the 1-hour ones to come first. The wrapper kept a caller's 1-hour marker
+(since #271), but it still added its own 5-minute marker to earlier parts of
+the request. The common case is a caller using automatic caching with a
+1-hour lifetime: the wrapper put a 5-minute marker on the system prompt in
+front of it, which the docs say the API rejects. Now, when the caller has a
+1-hour marker later in the request, the wrapper's earlier markers are 1-hour
+too. Otherwise it still uses the cheaper 5-minute default.
