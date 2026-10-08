@@ -174,6 +174,15 @@ def _streamlit_argv(json_path: Path, *streamlit_options: str) -> list[str]:
     committed file under a cheat-sheet saying it was the run just made.
     Everything after `--` is forwarded to the script by streamlit, so
     streamlit's own options go before it.
+
+    Absolute, against *this* process's cwd (#277). The path is resolved by
+    another process: `--launch-streamlit` runs the child with `cwd=REPO_ROOT`,
+    and the cheat-sheet command only works from the repo root
+    (`dashboard/app.py` is relative). A relative `--output-dir` given from
+    anywhere else therefore named a different file -- with
+    `--output-dir docs/demo-artifacts` it named the repo's own copy from an
+    earlier take, and the page caption then showed exactly the string step 3a
+    tells the operator to confirm.
     """
     return [
         "streamlit",
@@ -182,7 +191,7 @@ def _streamlit_argv(json_path: Path, *streamlit_options: str) -> list[str]:
         *streamlit_options,
         "--",
         "--json",
-        str(json_path),
+        str(json_path.absolute()),
     ]
 
 

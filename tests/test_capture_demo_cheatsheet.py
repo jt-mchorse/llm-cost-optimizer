@@ -102,7 +102,9 @@ def test_launch_streamlit_passes_the_same_json(
         "true",
         "--",
         "--json",
-        "o/savings_demo.json",
+        # Absolute (#277): the child runs with cwd=REPO_ROOT, so a relative
+        # path would be resolved against the wrong directory.
+        str(Path("o/savings_demo.json").absolute()),
     ]
 
 
