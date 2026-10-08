@@ -149,3 +149,57 @@ class TestCurrentFrontierEntries:
         msg = str(exc.value)
         assert "claude-opus-4-8" in msg
         assert "claude-fable-5" in msg
+
+
+# ----------------------------------------------------------------------
+# min_cacheable_tokens (#266, D-025)
+# ----------------------------------------------------------------------
+
+
+_SHIPPED = (
+    "claude-fable-5",
+    "claude-opus-4-8",
+    "claude-opus-4-7",
+    "claude-opus-4-6",
+    "claude-sonnet-4-6",
+    "claude-haiku-4-5",
+)
+
+
+def test_every_shipped_model_states_its_minimum_cacheable_prefix() -> None:
+    # The shipped entries, read from the module source rather than the live
+    # dict: `register_pricing` lets tests add models without a minimum.
+    import inspect
+
+    import cost_optimizer.pricing as pricing_mod
+
+    src = inspect.getsource(pricing_mod)
+    table = src[src.index("_PRICING: dict[str, ModelPricing] = {") :]
+    table = table[: table.index("\n}\n")]
+    assert table.count("ModelPricing(") == len(_SHIPPED)
+    assert table.count("min_cacheable_tokens=") == len(_SHIPPED)
+    for name in _SHIPPED:
+        m = get_pricing(name).min_cacheable_tokens
+        assert isinstance(m, int), name
+        assert m >= 512, name
+
+
+def test_the_documented_minimums() -> None:
+    # Anthropic's prompt-caching reference, checked 2026-10-07. Not monotonic
+    # across generations, which is why it is a per-model field.
+    assert get_pricing("claude-haiku-4-5").min_cacheable_tokens == 4096
+    assert get_pricing("claude-opus-4-6").min_cacheable_tokens == 4096
+    assert get_pricing("claude-opus-4-7").min_cacheable_tokens == 2048
+    assert get_pricing("claude-opus-4-8").min_cacheable_tokens == 1024
+    assert get_pricing("claude-sonnet-4-6").min_cacheable_tokens == 1024
+    assert get_pricing("claude-fable-5").min_cacheable_tokens == 512
+
+
+@pytest.mark.parametrize("bad", [0, -1, 1.5, 1024.0, True, False, "1024"])
+def test_min_cacheable_tokens_must_be_a_positive_int(bad: object) -> None:
+    with pytest.raises(ValueError, match="min_cacheable_tokens"):
+        ModelPricing(model="m", input_per_mtok=1.0, min_cacheable_tokens=bad)  # type: ignore[arg-type]
+
+
+def test_min_cacheable_tokens_none_applies_no_minimum() -> None:
+    assert ModelPricing(model="m", input_per_mtok=1.0).min_cacheable_tokens is None

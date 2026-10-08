@@ -66,6 +66,14 @@ class ModelPricing:
     input_per_mtok: float
     cache_write_multiplier: float = 1.25
     cache_read_multiplier: float = 0.10
+    # The shortest prefix the API will cache for this model, in tokens (#266).
+    # A shorter prefix carrying `cache_control` is silently NOT cached: no
+    # error, `cache_creation_input_tokens: 0`. The minimum is per model and not
+    # monotonic across generations (4096 on Haiku 4.5, 512 on the newest
+    # models), so it lives in this table beside the price rather than as one
+    # constant. `None` means "not specified" and applies no minimum; every
+    # entry in `_PRICING` sets it.
+    min_cacheable_tokens: int | None = None
 
     def __post_init__(self) -> None:
         # D-003 extends from "no invented model" to "no invented numbers within
@@ -105,6 +113,11 @@ class ModelPricing:
                 or value < 0.0
             ):
                 raise ValueError(f"{name} must be a finite number >= 0.0; got {value!r}")
+        # A count, so an int: a float would read as a fractional token, a bool
+        # is an int subclass that would fabricate a minimum of 1 or 0 (#158).
+        m = self.min_cacheable_tokens
+        if m is not None and (isinstance(m, bool) or not isinstance(m, int) or m < 1):
+            raise ValueError(f"min_cacheable_tokens must be a positive int or None; got {m!r}")
 
 
 # Input $/MTok. Update when Anthropic publishes new pricing; the rule is
@@ -121,13 +134,18 @@ class ModelPricing:
 # $5.00 in 2026-06 (#90). opus-4-7 is the escalation target in
 # scripts/bench_savings.py, so that refresh regenerated the savings benchmark
 # and its README snapshot, not just this table.
+#
+# `min_cacheable_tokens` is the minimum cacheable prefix from Anthropic's
+# prompt-caching reference (per-model table; checked 2026-10-07, #266):
+# 512 Fable 5 / Opus 5 family, 1024 Opus 4.8 / Sonnet 4.6, 2048 Opus 4.7,
+# 4096 Opus 4.6 / Haiku 4.5.
 _PRICING: dict[str, ModelPricing] = {
-    "claude-fable-5": ModelPricing("claude-fable-5", 10.00),
-    "claude-opus-4-8": ModelPricing("claude-opus-4-8", 5.00),
-    "claude-opus-4-7": ModelPricing("claude-opus-4-7", 5.00),
-    "claude-opus-4-6": ModelPricing("claude-opus-4-6", 5.00),
-    "claude-sonnet-4-6": ModelPricing("claude-sonnet-4-6", 3.00),
-    "claude-haiku-4-5": ModelPricing("claude-haiku-4-5", 1.00),
+    "claude-fable-5": ModelPricing("claude-fable-5", 10.00, min_cacheable_tokens=512),
+    "claude-opus-4-8": ModelPricing("claude-opus-4-8", 5.00, min_cacheable_tokens=1024),
+    "claude-opus-4-7": ModelPricing("claude-opus-4-7", 5.00, min_cacheable_tokens=2048),
+    "claude-opus-4-6": ModelPricing("claude-opus-4-6", 5.00, min_cacheable_tokens=4096),
+    "claude-sonnet-4-6": ModelPricing("claude-sonnet-4-6", 3.00, min_cacheable_tokens=1024),
+    "claude-haiku-4-5": ModelPricing("claude-haiku-4-5", 1.00, min_cacheable_tokens=4096),
 }
 
 

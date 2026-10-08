@@ -28,14 +28,18 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from cost_optimizer.pricing import get_pricing  # noqa: E402
 from scripts.bench_savings import (  # noqa: E402
     BATCH_DISCOUNT_FACTOR,
     CHEAP_MODEL,
     STRONG_MODEL,
     StrategyResult,
+    WorkloadRow,
     _build_workload,
     _cumulative_savings,
     _format_markdown,
+    _run_baseline,
+    _run_prompt_cache,
     main,
     run_bench,
 )
@@ -73,22 +77,75 @@ def test_each_strategy_math_is_internally_consistent(canonical_bench_payload: di
         assert s["baseline_usd"] == baseline_total
 
 
-def test_prompt_cache_strategy_saves_money_on_redundant_workload(
+def test_prompt_cache_row_credits_nothing_below_the_models_minimum(
     canonical_bench_payload: dict,
 ) -> None:
-    """Regression guard: prompt caching should produce positive savings.
+    """The canonical prefix is too short for the cheap model to cache (#266).
 
-    If a future refactor breaks the cache_write/cache_read pricing math,
-    this number flips sign and the test catches it.
+    The workload's system prompt is 108 tokens (whitespace approximation) and
+    Haiku 4.5's minimum cacheable prefix is 4096, so the real API would write
+    and read nothing. This row used to publish 84% saved on 1 write + 499
+    reads. The row must say why it is zero, not just be zero.
     """
     payload = canonical_bench_payload
     prompt_cache = next(s for s in payload["strategies"] if "prompt caching" in s["strategy"])
-    assert prompt_cache["saved_usd"] > 0
-    # With one stable system prefix across 500 rows, savings should be
-    # at least 50% of baseline (1 write + 499 reads × 0.10).
-    assert prompt_cache["saved_pct"] >= 0.5
-    assert prompt_cache["extra"]["cache_writes"] == 1
-    assert prompt_cache["extra"]["cache_reads"] == 499
+    extra = prompt_cache["extra"]
+    assert extra["min_cacheable_tokens"] == get_pricing(CHEAP_MODEL).min_cacheable_tokens == 4096
+    assert extra["prefix_tokens"] == 108
+    assert extra["cache_writes"] == 0
+    assert extra["cache_reads"] == 0
+    assert prompt_cache["saved_usd"] == 0.0
+    assert prompt_cache["total_usd"] == prompt_cache["baseline_usd"]
+
+
+def _rows_with_prefix(prefix_tokens: int, n: int = 10) -> list[WorkloadRow]:
+    system = " ".join(["policy"] * prefix_tokens)
+    return [
+        WorkloadRow(
+            row_id=f"r{i}",
+            class_="redundant",
+            prompt="how do I refund a charge",
+            system=system,
+            prompt_tokens=prefix_tokens + 5,
+            completion_tokens=8,
+            first_token_logprobs=(-0.1,),
+            cheap_quality=0.9,
+            strong_quality=0.9,
+        )
+        for i in range(n)
+    ]
+
+
+def test_prompt_cache_math_on_a_prefix_that_clears_the_minimum() -> None:
+    """The write/read pricing math, on a prefix the API would cache.
+
+    The guard the canonical-workload test used to be: one write at 1.25x and
+    nine reads at 0.10x of the prefix, the user portion at full rate.
+    """
+    minimum = get_pricing(CHEAP_MODEL).min_cacheable_tokens
+    assert minimum is not None
+    workload = _rows_with_prefix(minimum)
+    baseline = _run_baseline(workload)
+    row = _run_prompt_cache(workload, baseline)
+    rate = get_pricing(CHEAP_MODEL).input_per_mtok / 1_000_000
+    expected = minimum * rate * (1.25 + 9 * 0.10) + 10 * 5 * rate
+    assert row.extra["cache_writes"] == 1
+    assert row.extra["cache_reads"] == 9
+    assert row.total_usd == pytest.approx(round(expected, 6))
+    assert row.saved_usd > 0
+
+
+def test_prompt_cache_boundary_is_the_minimum_itself() -> None:
+    # The API's rule is "at least the minimum"; one token short is not cached.
+    minimum = get_pricing(CHEAP_MODEL).min_cacheable_tokens
+    assert minimum is not None
+    short = _rows_with_prefix(minimum - 1)
+    row = _run_prompt_cache(short, _run_baseline(short))
+    assert (row.extra["cache_writes"], row.extra["cache_reads"]) == (0, 0)
+    assert row.saved_usd == 0.0
+    exact = _rows_with_prefix(minimum)
+    row = _run_prompt_cache(exact, _run_baseline(exact))
+    assert (row.extra["cache_writes"], row.extra["cache_reads"]) == (1, 9)
 
 
 def test_semantic_cache_strategy_saves_money_and_reports_hits(

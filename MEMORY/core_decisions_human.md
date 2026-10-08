@@ -709,3 +709,23 @@ would alter the default layout as well. A hex-only scan pattern, which would tie
 the storage to the key length.
 
 **Reversibility.** Cheap.
+
+## D-025 — the minimum cacheable prefix is part of the pricing table (2026-10-07)
+
+**Context.** The savings bench published "prompt caching saves 84%" on a workload
+whose shared system prompt is 108 tokens. Anthropic does not cache a prefix
+shorter than the model's minimum, which is 4096 tokens on Claude Haiku 4.5, the
+bench's cheap model. A short prefix is not an error; it is silently billed as
+ordinary input. The real API would have saved nothing.
+
+**Decision.** `ModelPricing` carries `min_cacheable_tokens` for every model in
+the table (512 to 4096, and not in generation order). The bench credits no
+caching on a shorter prefix, and its caching row reports the prefix length and
+the minimum. The workload is unchanged, so the row now reads 0%.
+
+**Alternatives rejected.** Lengthening the workload's system prompt: that changes
+every row and is a workload choice (D-012), so it is filed for JT. A single
+minimum constant: the minimum differs eightfold across the table. Keeping the
+84% with a footnote: the number is one the API cannot produce.
+
+**Reversibility.** Cheap.

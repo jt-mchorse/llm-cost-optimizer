@@ -2942,4 +2942,22 @@ context_for_next_session:
   - MY_FIRST_ROUNDS_UP_ARM_WAS_A_PTTL_BAND_1890_TO_1901_AND_ADMITTED_THE_TRUNCATING_NEIGHBOUR_a_wall_clock_readback_cannot_separate_1900_from_1901_RECORD_THE_ARGUMENT
   - A_PARITY_TEST_THAT_ASSERTS_ONE_BACKEND_AFTER_THE_INTERESTING_INSTANT_IS_A_DOCUMENTED_GAP_read_its_comment_as_a_bug_report
 followups: []
+session: 2026-10-07T07:43Z
+duration_min: 6   # computed from GitHub: plan comment 2026-10-07T07:37:03Z -> PR 07:43Z
+issue: 266
+branch: session/2026-10-07-lco-cache-minimum
+focus: THE_HEADLINE_84_PERCENT_CACHING_ROW_PRICED_A_108_TOKEN_PREFIX_HAIKU_4_5_WILL_NOT_CACHE_MINIMUM_4096
+phase: shipped
+delta:
+  files_changed: 11
+  tests_added: 12
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: [D-025]
+measured: "regenerated: caching $0.0092/84.0% -> $0.0577/0.0%, other rows unchanged, workload json byte-identical. Revert: gate removed 7 red, <= boundary 2 red."
+context_for_next_session:
+  - A_SECOND_COPY_OF_THE_SAME_ARITHMETIC_WAS_IN_cumulative_savings_AND_THE_RECONCILIATION_TEST_CAUGHT_IT_extracted_one_row_cost_helper
+  - THE_196_DIFFERENTIAL_TEST_USED_A_4000_WORD_PREFIX_JUST_BELOW_4096_two_independent_implementations_agreed_on_a_stream_the_API_would_never_emit_AGREEMENT_IS_NOT_REALISM
+  - THE_LIVE_TEST_WAS_NEVER_RUN_ITS_1024_CLAIM_AND_3_6K_CHAR_DOCSTRING_WERE_BOTH_WRONG_a_skipped_test_is_documentation_and_rots_like_it
+  - JT_GATED_267_whether_the_workload_should_carry_a_cacheable_prefix
+followups: ["#267"]
 ---

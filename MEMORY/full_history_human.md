@@ -2841,3 +2841,13 @@ reading. Compared with the in-memory backend it served stale answers in one
 case and dropped live ones (causing paid calls) in the other. Expiry is now set
 in milliseconds and rounded up, and reads apply the same expiry rule the
 in-memory backend uses, so both backends agree, including under a test clock.
+## 2026-10-07 — the savings bench stops claiming a caching saving the API can't deliver (#266)
+
+The README's headline said prompt caching saves 84% on the demo workload. But
+Anthropic only caches prompts above a minimum length, 4096 tokens for Claude
+Haiku 4.5 (the bench's cheap model), and the demo's shared system prompt is
+108 tokens. The real API would have cached nothing. The pricing table now
+records each model's minimum (decision D-025), the bench applies it, and the
+caching row reads 0% with the reason beside it. The other strategies' numbers
+are unchanged. Whether the demo should use a longer prompt so caching shows a
+real win is a workload choice, left to JT in #267.
