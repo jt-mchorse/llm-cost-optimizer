@@ -712,13 +712,25 @@ def _run_batch(workload: list[WorkloadRow], baseline: StrategyResult) -> Strateg
     # The bench grades only the input-token axis (output is held constant
     # across strategies); recompute total_usd input-only at the batch
     # rate so the table compares like-for-like.
+    #
+    # A `+=` loop, not `sum()` (#281). Since Python 3.12 `sum()` over floats is
+    # compensated (Neumaier), so it no longer matches the plain left-to-right
+    # accumulation `_run_baseline` and `_cumulative_savings` do. The difference
+    # is a last bit, and on an odd baseline-token count the batch total sits on
+    # a half-micro-dollar, where that bit decides which way `round(., 6)` goes:
+    # on 3.12 the row published 0.000402 beside its own series' 0.000403 (n=7,
+    # seed=99), and 3.11 published the other one. Same for `qualities`, which
+    # must equal the baseline's -- the same model answers every row.
     rate = pricing.input_per_mtok / 1_000_000
-    total = sum(r.prompt_tokens * rate * BATCH_DISCOUNT_FACTOR for r in workload)
+    total = 0.0
+    qualities = 0.0
+    for r in workload:
+        total += r.prompt_tokens * rate * BATCH_DISCOUNT_FACTOR
+        qualities += r.cheap_quality
     n = len(workload)
     total_usd = round(total, 6)
     saved = _published_saved_usd(baseline, total_usd)
     pct = _saved_pct_or_none(saved, baseline)
-    qualities = sum(r.cheap_quality for r in workload)
     return StrategyResult(
         strategy=f"batch API (discount {BATCH_DISCOUNT_FACTOR:.2f}×)",
         n_rows=n,
