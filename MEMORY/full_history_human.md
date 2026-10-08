@@ -2864,3 +2864,10 @@ The router's entropy signal read the first block of a response, assuming it was
 text. With extended thinking the first block is a "thinking" block, so the
 signal silently gave up on every call and never escalated to the stronger
 model. It now reads the first text block.
+## 2026-10-07 — 1-hour prompt caching is kept and priced correctly (#271)
+
+If a caller asked for a 1-hour cache, the wrapper replaced that with the
+5-minute default, so the cache kept expiring. It also priced every cache write
+at the 5-minute rate (1.25x), while 1-hour writes cost 2x, so it understated
+their cost fourfold. The caller's setting is now kept, and writes are priced
+using the per-TTL breakdown the API already returns.

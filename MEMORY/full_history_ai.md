@@ -2988,5 +2988,20 @@ decisions_made: []
 measured: "main: [thinking, text] -> value None trip False. Revert 4/6 red."
 context_for_next_session:
   - CONTENT_0_IS_NOT_THE_TEXT_BLOCK_once_thinking_and_tool_use_exist_grep_for_content_0_across_the_portfolio
+session: 2026-10-07T08:38Z
+duration_min: 6
+issue: 271
+branch: session/2026-10-07-lco-cache-1h
+focus: THE_WRAPPER_OVERWROTE_A_CALLERS_1H_TTL_AND_PRICED_1H_WRITES_AT_1_25X
+phase: shipped
+delta:
+  files_changed: 4
+  tests_added: 16
+  suite: "1366 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: 1h marker replaced on 3 segments; 100k 1h tokens premium 0.125 vs true 0.50. Revert: main wrapper 5/16, overwrite-only 1, no-1h-pricing 4."
+context_for_next_session:
+  - A_HELPER_THAT_ADDS_A_KEY_MUST_ASK_WHETHER_THE_CALLER_ALREADY_SET_IT_dict_spread_with_a_literal_on_the_right_overwrites_silently
+  - A_PRICING_TABLE_WITH_ONE_RATE_PER_EVENT_MISSES_A_TIERED_EVENT_read_the_usage_breakdown_the_SDK_already_returns
 followups: []
 ---
