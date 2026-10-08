@@ -2851,3 +2851,14 @@ records each model's minimum (decision D-025), the bench applies it, and the
 caching row reads 0% with the reason beside it. The other strategies' numbers
 are unchanged. Whether the demo should use a longer prompt so caching shows a
 real win is a workload choice, left to JT in #267.
+
+## 2026-10-08 — the demo's checklist names the dashboard the script started (#275)
+
+The #259 fix made the demo script open whichever port its own dashboard
+actually took, for example 8502 on a second take. The step-by-step checklist
+printed right after that line was not updated. It still told the operator to
+start a dashboard in another terminal and to open port 8501, which on a second
+take is the previous take's dashboard. When the script has started the
+dashboard itself, the checklist now says it is already running (with its
+process id) and names the address that dashboard reported. Without
+`--launch-streamlit` the checklist reads exactly as before.
