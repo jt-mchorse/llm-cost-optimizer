@@ -2871,3 +2871,10 @@ If a caller asked for a 1-hour cache, the wrapper replaced that with the
 at the 5-minute rate (1.25x), while 1-hour writes cost 2x, so it understated
 their cost fourfold. The caller's setting is now kept, and writes are priced
 using the per-TTL breakdown the API already returns.
+## 2026-10-08 — saving to a symlink updates the file it points at (#279)
+
+The helper that saves reports safely (write a temporary file, then swap it
+into place) swapped it onto the symlink itself when the save location was a
+symlink. The link turned into an ordinary file, and the file it pointed at was
+never updated. A plain save writes through the link, and now this helper does
+too. Ordinary paths behave exactly as before.

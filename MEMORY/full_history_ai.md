@@ -3005,3 +3005,22 @@ context_for_next_session:
   - A_PRICING_TABLE_WITH_ONE_RATE_PER_EVENT_MISSES_A_TIERED_EVENT_read_the_usage_breakdown_the_SDK_already_returns
 followups: []
 ---
+
+---
+session: 2026-10-08T07:38Z
+duration_min: 2   # computed from GitHub: plan comment 2026-10-08T07:36:10Z -> commit 07:38Z
+issue: 279
+branch: session/2026-10-08-issue-279
+focus: ATOMIC_WRITE_TEXT_RENAMED_ONTO_A_SYMLINKED_DESTINATION_link_became_a_regular_file_and_the_linked_file_kept_old_contents
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 11
+  suite: "1387 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: atomic_write_text(link) -> islink False, real 'old'; tune_threshold --dry --out <stem> through a link rc 0 with the linked json unchanged. Revert probe (main io_utils.py, __pycache__ cleared): 5 of 11 red, 6 controls green (write_text parity x3, loop x2, plain)."
+context_for_next_session:
+  - SIBLING_OF_python_async_llm_pipelines_157_same_fix_in_vsas_and_prs_this_night
+  - A_LINK_LOOP_IS_LEFT_AS_IS_BY_NON_STRICT_REALPATH_the_ELOOP_comes_from_copy_existing_mode_os_stat_keep_that_call_ahead_of_os_replace
+followups: []
+---
