@@ -108,7 +108,10 @@ Two pluggable Protocols (D-004), parallel to the patterns in
 - **`Storage`** — `put`/`find_nearest`/`invalidate_by_tag`/`purge_expired`.
   Ships with `InMemoryStorage` (dep-free) and `RedisStorage` (lazy-imports
   the `redis` SDK behind the new `[redis]` extra). RedisStorage uses
-  Redis SETs for tag-membership and native Redis TTL for expiry.
+  Redis SETs for tag-membership. Whether a record is live is decided the
+  same way on both backends, `expires_at <= now` on the cache's clock, so a
+  fractional `ttl_s` means the same thing on each; Redis's native TTL (set
+  in milliseconds, rounded up) only garbage-collects the key (#264).
 
 ```python
 from cost_optimizer import HashEmbedder, InMemoryStorage, SemanticCache

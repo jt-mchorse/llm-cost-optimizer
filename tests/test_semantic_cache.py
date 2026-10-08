@@ -1139,13 +1139,17 @@ def test_both_backends_agree_on_liveness_at_a_given_fake_time(fake_redis_client)
     holder[0] = 1000.0 + 61.0  # past it
     # `InMemoryStorage` drops it via `purge_expired`; Redis's own TTL is on the
     # wall clock and hasn't fired yet, so the shared contract here is the
-    # cache-level one: the in-memory backend must not serve a stale entry.
+    # cache-level one: neither backend may serve a stale entry. Redis used to
+    # serve this one (only the in-memory half was asserted); `find_nearest`
+    # now checks `expires_at` on the cache's clock (#264).
     assert caches["memory"].lookup("how do I refund a charge", model="m").hit is False
+    assert caches["redis"].lookup("how do I refund a charge", model="m").hit is False
 
 
-def test_an_already_expired_record_still_floors_at_one_second(fake_redis_client):
-    # The `max(1, ...)` floor stays — it keeps `EXPIRE key 0` (an immediate
-    # delete) from replacing a short TTL. Only the clock was wrong.
+def test_an_already_expired_record_still_floors_at_one_millisecond(fake_redis_client):
+    # The `max(1, ...)` floor stays — it keeps `PEXPIRE key 0` (an immediate
+    # delete) from replacing a short TTL. Only the clock was wrong (#172), and
+    # the unit is milliseconds since #264.
     from cost_optimizer.semantic_cache import CacheRecord, RedisStorage
 
     now_fn, _ = _fake_clock()
@@ -1160,7 +1164,7 @@ def test_an_already_expired_record_still_floors_at_one_second(fake_redis_client)
             model="m",
         )
     )
-    assert fake_redis_client.ttl(storage._record_key("stale")) == 1
+    assert 0 < fake_redis_client.pttl(storage._record_key("stale")) <= 1
 
 
 def test_cache_rejects_a_storage_carrying_a_different_clock(fake_redis_client):
@@ -1189,3 +1193,108 @@ def test_matching_and_default_clocks_are_accepted(fake_redis_client):
     SemanticCache(embedder=HashEmbedder(), storage=RedisStorage(client=fake_redis_client))
     # A backend with no clock of its own is unaffected either way.
     SemanticCache(embedder=HashEmbedder(), storage=InMemoryStorage(), now_fn=now_fn)
+
+
+# ----------------------------------------------------------------------
+# RedisStorage keeps a fractional ttl_s, in both directions (#264)
+# ----------------------------------------------------------------------
+#
+# `PUT` used `EXPIRE key max(1, int(expires_at - now))`: whole seconds,
+# truncated, floored at 1. A 0.2s ttl lived 1s on Redis (a stale hit, 5x past
+# its ttl) and a 1.9s ttl lived 1s (a live entry dropped early: a paid call).
+# These arms run on the wall clock because the bug is the server's TTL.
+
+
+def _wall_clock_pair(fake_redis_client, ttl_s: float):
+    from cost_optimizer.semantic_cache import RedisStorage
+
+    caches = {
+        "memory": SemanticCache(
+            embedder=HashEmbedder(), storage=InMemoryStorage(), default_ttl_s=ttl_s
+        ),
+        "redis": SemanticCache(
+            embedder=HashEmbedder(),
+            storage=RedisStorage(client=fake_redis_client),
+            default_ttl_s=ttl_s,
+        ),
+    }
+    for cache in caches.values():
+        cache.put("how do I refund a charge", "answer-A", model="m")
+    return caches
+
+
+def _hits(caches) -> dict[str, bool]:
+    return {
+        name: cache.lookup("how do I refund a charge", model="m").hit
+        for name, cache in caches.items()
+    }
+
+
+def test_a_sub_second_ttl_is_not_served_after_it_expires(fake_redis_client):
+    import time as _time
+
+    caches = _wall_clock_pair(fake_redis_client, 0.2)
+    _time.sleep(0.5)
+    assert _hits(caches) == {"memory": False, "redis": False}
+
+
+def test_a_fractional_ttl_is_not_truncated_to_whole_seconds(fake_redis_client):
+    import time as _time
+
+    caches = _wall_clock_pair(fake_redis_client, 1.9)
+    _time.sleep(1.3)
+    assert _hits(caches) == {"memory": True, "redis": True}
+
+
+def test_the_redis_ttl_carries_milliseconds_and_rounds_up(fake_redis_client, monkeypatch):
+    from cost_optimizer.semantic_cache import CacheRecord, RedisStorage
+
+    # Record the argument rather than read PTTL back: PTTL is measured against
+    # the wall clock, so it cannot tell 1901 (rounded up) from 1900 (truncated).
+    sent: list[int] = []
+    real_pexpire = fake_redis_client.pexpire
+
+    def recording_pexpire(name, ms, *args, **kwargs):
+        sent.append(ms)
+        return real_pexpire(name, ms, *args, **kwargs)
+
+    monkeypatch.setattr(fake_redis_client, "pexpire", recording_pexpire)
+    now_fn, _ = _fake_clock()
+    storage = RedisStorage(client=fake_redis_client, now_fn=now_fn)
+    storage.put(
+        CacheRecord(
+            key="k",
+            vector=(1.0, 0.0),
+            payload={"answer": "A"},
+            tags=frozenset(),
+            expires_at=1000.0 + 1.9004,  # 1900.4 ms -> 1901 ms, never 1900
+            model="m",
+        )
+    )
+    assert sent == [1901]
+    assert 1890 < fake_redis_client.pttl(storage._record_key("k")) <= 1901
+
+
+def test_redis_misses_at_the_exact_expiry_instant_like_inmemory(fake_redis_client):
+    # `InMemoryStorage.purge_expired` drops `expires_at <= now`; the Redis read
+    # check uses the same `<=`, so the two agree on the boundary itself.
+    from cost_optimizer.semantic_cache import RedisStorage
+
+    now_fn, holder = _fake_clock()
+    caches = {
+        "memory": SemanticCache(
+            embedder=HashEmbedder(), storage=InMemoryStorage(), default_ttl_s=60.0, now_fn=now_fn
+        ),
+        "redis": SemanticCache(
+            embedder=HashEmbedder(),
+            storage=RedisStorage(client=fake_redis_client, now_fn=now_fn),
+            default_ttl_s=60.0,
+            now_fn=now_fn,
+        ),
+    }
+    for cache in caches.values():
+        cache.put("how do I refund a charge", "answer-A", model="m")
+    holder[0] = 1000.0 + 59.999
+    assert _hits(caches) == {"memory": True, "redis": True}
+    holder[0] = 1000.0 + 60.0
+    assert _hits(caches) == {"memory": False, "redis": False}
