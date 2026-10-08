@@ -2960,4 +2960,19 @@ context_for_next_session:
   - THE_LIVE_TEST_WAS_NEVER_RUN_ITS_1024_CLAIM_AND_3_6K_CHAR_DOCSTRING_WERE_BOTH_WRONG_a_skipped_test_is_documentation_and_rots_like_it
   - JT_GATED_267_whether_the_workload_should_carry_a_cacheable_prefix
 followups: ["#267"]
+session: 2026-10-07T08:28Z
+duration_min: 4
+issue: 269
+branch: session/2026-10-07-lco-batch-expired
+focus: EXPIRED_BATCH_REQUESTS_WERE_NOT_COUNTED_SO_A_WHOLLY_EXPIRED_BATCH_COULD_NEVER_BE_POLLED_OR_READ
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 8
+  suite: "1358 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: {succeeded 2, expired 3} -> 2; {expired 5} -> ValueError from poll and results. Revert 7/8 red."
+context_for_next_session:
+  - WHEN_SUMMING_AN_SDK_ENUM_ENUMERATE_THE_SDK_TYPE_NOT_THE_CASES_YOU_REMEMBER_the_wheel_is_the_spec
+followups: []
 ---

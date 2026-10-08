@@ -2851,3 +2851,10 @@ records each model's minimum (decision D-025), the bench applies it, and the
 caching row reads 0% with the reason beside it. The other strategies' numbers
 are unchanged. Whether the demo should use a longer prompt so caching shows a
 real win is a workload choice, left to JT in #267.
+## 2026-10-07 — an expired batch can be read (#269)
+
+Batch API requests that time out after 24 hours are counted as "expired", and
+the batch backend didn't count that category. A batch where everything expired
+added up to zero requests, which the code treats as impossible, so the batch
+could never be polled or have its results read. Expired requests are now
+counted, and their rows come back marked "expired".

@@ -480,7 +480,7 @@ def _sdk_request_total(resp: Any) -> Any:
     """Total request count from a duck-typed SDK Batch object.
 
     Sums the SDK's ``request_counts`` fields (processing/succeeded/errored/
-    canceled) or falls back to a scalar ``n_requests``. Returns an ``int`` for
+    canceled/expired) or falls back to a scalar ``n_requests``. Returns an ``int`` for
     a well-formed count.
 
     A *present-but-non-numeric* count — a ``str``/``list``/``dict``/``None`` off
@@ -519,8 +519,18 @@ def _sdk_request_total(resp: Any) -> Any:
     """
     counts = getattr(resp, "request_counts", None)
     if counts is not None:
-        # SDK exposes processing/succeeded/errored/canceled counts; total is the sum.
-        parts = [getattr(counts, k, 0) for k in ("processing", "succeeded", "errored", "canceled")]
+        # The SDK's `MessageBatchRequestCounts` has FIVE outcomes; the total is
+        # their sum. `expired` was left out (#269): a request that sat past the
+        # 24h window counted nowhere, so a partly expired batch under-reported
+        # `n_requests`, and a wholly expired one summed to 0 and `poll()` --
+        # and therefore `results()`, which polls first -- raised
+        # `BatchJobMeta.n_requests must be an int >= 1`: the batch could never be
+        # retrieved. `getattr(..., 0)` keeps an SDK or fake without the field
+        # summing as before.
+        parts = [
+            getattr(counts, k, 0)
+            for k in ("processing", "succeeded", "errored", "canceled", "expired")
+        ]
     else:
         parts = [getattr(resp, "n_requests", 0)]
     total: float = 0
