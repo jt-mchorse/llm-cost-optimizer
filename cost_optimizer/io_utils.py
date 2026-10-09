@@ -92,8 +92,11 @@ def atomic_write_text(path: str | Path, text: str) -> None:
     guarantees same filesystem so the rename cannot fall back to a
     copy. On any exception between the temp write and the rename,
     the temp is unlinked.
+
+    A symlinked destination is written THROUGH, as ``Path.write_text`` does:
+    the link stays a link and the file it names gets the new contents (#279).
     """
-    target = Path(path)
+    target = _resolve_symlinked_target(Path(path))
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp_path: Path | None = None
     try:
@@ -111,6 +114,31 @@ def atomic_write_text(path: str | Path, text: str) -> None:
         if tmp_path is not None:
             with contextlib.suppress(FileNotFoundError):
                 tmp_path.unlink()
+
+
+def _resolve_symlinked_target(target: Path) -> Path:
+    """The file a write to *target* lands in: through a symlink (#279).
+
+    ``os.replace`` renames onto the LINK, not the file it points at, so a
+    symlinked destination used to become a regular file while the linked file
+    kept its old contents -- where ``Path.write_text``, the call this helper
+    replaced, writes through the link. ``_copy_existing_mode`` already followed
+    the link (``os.stat``), so the helper copied the linked file's mode onto a
+    file that then replaced the link instead. Sibling of
+    python-async-llm-pipelines#157.
+
+    Resolving here, before ``_open_temp``, puts the temp file beside the
+    RESOLVED file, so the rename stays on one filesystem when the link points
+    to another one, and the NAME_MAX cap above is applied to the name actually
+    being replaced. A dangling link resolves to the path it names, which the
+    write then creates, as ``Path.write_text`` would. A link loop is left as
+    is by ``realpath`` and raises ``OSError`` (ELOOP) from the mode copy, again
+    as ``Path.write_text`` does. A plain path is returned unchanged, so no
+    existing caller sees a different path.
+    """
+    if not target.is_symlink():
+        return target
+    return Path(os.path.realpath(target))
 
 
 # File mode (#243, portfolio-ops#81). This helper used to create its temp file
