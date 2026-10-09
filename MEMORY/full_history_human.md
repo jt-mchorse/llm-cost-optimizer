@@ -2901,3 +2901,15 @@ into place) swapped it onto the symlink itself when the save location was a
 symlink. The link turned into an ordinary file, and the file it pointed at was
 never updated. A plain save writes through the link, and now this helper does
 too. Ordinary paths behave exactly as before.
+## 2026-10-08 — the batch row adds up the same way as everything beside it (#281)
+
+The savings bench added up the batch strategy's cost with Python's `sum()`,
+and everything else with a plain running total. Since Python 3.12, `sum()`
+uses a more precise algorithm, so the two could differ in the last digit. When
+the total landed exactly halfway between two micro-dollars, rounding went
+different ways: on 3.12, 42 of 200 workload sizes showed a batch cost one
+micro-dollar away from the batch line on the dashboard chart, and one showed
+a different quality score for the batch row than for the baseline, even though
+the same model answers every row. Python 3.11 printed the other number. The
+batch row now uses the same running total. The committed 500-row numbers
+don't change.
