@@ -2923,3 +2923,12 @@ the request. The common case is a caller using automatic caching with a
 front of it, which the docs say the API rejects. Now, when the caller has a
 1-hour marker later in the request, the wrapper's earlier markers are 1-hour
 too. Otherwise it still uses the cheaper 5-minute default.
+
+## 2026-10-09 — The current Claude models are in the pricing table (#289)
+
+The cost optimizer's pricing table stopped at the Claude 4 generation, so the
+prompt-cache wrapper refused to start for the current default model (Opus 5.5)
+and the other Claude 5 models. I added all five from Anthropic's published
+rates. Opus 5.5 and Fable 5.1 charge less for cache reads than the usual 10%
+of the input price, so their rows say so explicitly. The tests check the
+dollar rate, not just the multiplier.
