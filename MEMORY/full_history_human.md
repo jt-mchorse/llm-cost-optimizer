@@ -2923,3 +2923,10 @@ the request. The common case is a caller using automatic caching with a
 front of it, which the docs say the API rejects. Now, when the caller has a
 1-hour marker later in the request, the wrapper's earlier markers are 1-hour
 too. Otherwise it still uses the cheaper 5-minute default.
+
+## 2026-10-09 — A Redis key prefix that cannot be stored is refused up front (#291)
+
+The Redis cache backend puts its configured key and tag prefixes into every
+key. A prefix containing a broken Unicode character was accepted, and then
+every cache operation failed with an unhelpful encoding error. Such a prefix is
+now refused with a clear message when the backend is created.
