@@ -3005,3 +3005,23 @@ context_for_next_session:
   - A_PRICING_TABLE_WITH_ONE_RATE_PER_EVENT_MISSES_A_TIERED_EVENT_read_the_usage_breakdown_the_SDK_already_returns
 followups: []
 ---
+
+---
+session: 2026-10-08T07:22Z
+duration_min: 6   # computed: plan comment ~07:16Z -> commit 07:22Z (date -u)
+issue: 275
+branch: session/2026-10-08-issue-275
+focus: capture_demo_CHEAT_SHEET_AFTER_launch_streamlit_STILL_SAID_START_A_DASHBOARD_AND_OPEN_8501_WHILE_THE_CHILD_BOUND_8502
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "ac266f1 with a fake streamlit reporting :8502: stdout 'spawned streamlit ... on http://localhost:8502' then cheat-sheet '1. Start the dashboard' and '2. ... http://localhost:8501'. Revert probe (main's capture_demo.py): 2 of 3 new arms red, the no-launch control green."
+context_for_next_session:
+  - SIBLING_INCOMPLETE_FIX_OF_259_it_fixed_the_URL_main_OPENS_and_said_the_no_launch_path_keeps_DASHBOARD_URL_the_cheat_sheet_printed_two_lines_later_was_a_second_consumer_of_the_same_constant
+  - EVERY_259_ARM_PASSED_skip_dashboard_cheatsheet_SO_NO_TEST_EVER_READ_THE_TEXT_AFTER_A_LAUNCH
+  - DEFERRED_pinning_server_port_8501_in_the_operators_printed_command_step_3a_caption_check_already_catches_a_wrong_dashboard
+followups: []
+---
