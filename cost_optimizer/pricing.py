@@ -141,11 +141,28 @@ class ModelPricing:
 # scripts/bench_savings.py, so that refresh regenerated the savings benchmark
 # and its README snapshot, not just this table.
 #
+# The Claude 5 rows were added 2026-10-09 (#289) from the same references
+# (current-models table and prompt-caching economics, cached 2026-09-25):
+# Fable 5.1 $10.00, Opus 5.5 $4.00, Opus 5 $5.00, Sonnet 5.5 and Sonnet 5
+# $2.00 per input MTok. Cache reads are NOT the 0.10x default on two of them:
+# Opus 5.5 reads at $0.20/MTok (0.05x) and Fable 5.1 at $0.25/MTok (0.025x),
+# so those two override `cache_read_multiplier`; writes are 1.25x / 2x on all.
+#
 # `min_cacheable_tokens` is the minimum cacheable prefix from Anthropic's
 # prompt-caching reference (per-model table; checked 2026-10-07, #266):
 # 512 Fable 5 / Opus 5 family, 1024 Opus 4.8 / Sonnet 4.6, 2048 Opus 4.7,
-# 4096 Opus 4.6 / Haiku 4.5.
+# 4096 Opus 4.6 / Haiku 4.5; 512 Fable 5.1 / Opus 5.5 / Opus 5 / Sonnet 5.5,
+# 1024 Sonnet 5 (#289).
 _PRICING: dict[str, ModelPricing] = {
+    "claude-fable-5-1": ModelPricing(
+        "claude-fable-5-1", 10.00, cache_read_multiplier=0.025, min_cacheable_tokens=512
+    ),
+    "claude-opus-5-5": ModelPricing(
+        "claude-opus-5-5", 4.00, cache_read_multiplier=0.05, min_cacheable_tokens=512
+    ),
+    "claude-opus-5": ModelPricing("claude-opus-5", 5.00, min_cacheable_tokens=512),
+    "claude-sonnet-5-5": ModelPricing("claude-sonnet-5-5", 2.00, min_cacheable_tokens=512),
+    "claude-sonnet-5": ModelPricing("claude-sonnet-5", 2.00, min_cacheable_tokens=1024),
     "claude-fable-5": ModelPricing("claude-fable-5", 10.00, min_cacheable_tokens=512),
     "claude-opus-4-8": ModelPricing("claude-opus-4-8", 5.00, min_cacheable_tokens=1024),
     "claude-opus-4-7": ModelPricing("claude-opus-4-7", 5.00, min_cacheable_tokens=2048),
