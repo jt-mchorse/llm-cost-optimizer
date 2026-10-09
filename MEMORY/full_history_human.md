@@ -2901,3 +2901,14 @@ into place) swapped it onto the symlink itself when the save location was a
 symlink. The link turned into an ordinary file, and the file it pointed at was
 never updated. A plain save writes through the link, and now this helper does
 too. Ordinary paths behave exactly as before.
+
+## 2026-10-09 — A finished Anthropic batch reports how it finished (#285)
+
+Polling a batch through the production backend always said "ended_succeeded"
+once the batch finished. The Anthropic API only reports "ended" and keeps the
+details elsewhere, and the code was waiting for "canceled"/"failed" values that
+the API never sends. A batch the caller canceled, or one where every request
+expired, therefore looked like a success. The backend now reads the cancel
+timestamp and the per-outcome counts: canceled is "ended_canceled", zero
+successes is "ended_failed", and anything else is "ended_succeeded". That
+matches what the in-memory test backend already reported.
