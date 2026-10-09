@@ -2923,3 +2923,12 @@ the request. The common case is a caller using automatic caching with a
 front of it, which the docs say the API rejects. Now, when the caller has a
 1-hour marker later in the request, the wrapper's earlier markers are 1-hour
 too. Otherwise it still uses the cheaper 5-minute default.
+
+## 2026-10-09 — A cache tag Redis cannot store is refused up front (#287)
+
+Cache entries can carry tags so that they can be cleared in bulk later. A tag
+containing a broken Unicode character passed the "is it text" check. The
+in-memory store handled it, but the Redis store saved the entry and then
+failed while recording the tag. The result was an entry that was served but
+could never be cleared by its tag. Such a tag is now refused with a clear
+error before anything is written, on both stores.

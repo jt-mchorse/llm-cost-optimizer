@@ -973,7 +973,26 @@ def _checked_tags(tags: Iterable[str]) -> frozenset[str]:
     for tag in materialised:
         if not isinstance(tag, str):
             raise ValueError(f"every tag must be a str; got {tag!r} ({type(tag).__name__})")
+        _check_tag_encodes(tag)
     return frozenset(materialised)
+
+
+def _check_tag_encodes(tag: str) -> None:
+    """A tag must be storable by every backend, so it must encode as UTF-8 (#287).
+
+    A `str` holding a lone surrogate passed the `str` check, and the backends
+    split: `InMemoryStorage` stored and invalidated it, while `RedisStorage`
+    wrote the record and THEN raised `UnicodeEncodeError` indexing the tag --
+    a record served as a hit, missing from the tag index, and an `invalidate`
+    that raised too, so the stale answer could not be evicted by tag.
+    """
+    try:
+        tag.encode("utf-8")
+    except UnicodeEncodeError as e:
+        raise ValueError(
+            f"tag {tag!r} cannot be encoded as UTF-8 (a lone surrogate at index {e.start}); "
+            f"no backend can index it"
+        ) from None
 
 
 class SemanticCache:
@@ -1214,6 +1233,7 @@ class SemanticCache:
                 f"invalidate takes one tag as a str; got {tag!r} ({type(tag).__name__}). "
                 f"To drop several tags, call invalidate once per tag."
             )
+        _check_tag_encodes(tag)
         n = self.storage.invalidate_by_tag(tag)
         self.stats.invalidations += n
         return n
