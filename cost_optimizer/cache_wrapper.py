@@ -33,7 +33,7 @@ from typing import Any, Protocol
 
 from cost_optimizer.io_utils import atomic_write_text
 from cost_optimizer.pricing import ModelPricing, _coerce_token_count, get_pricing
-from cost_optimizer.shapes import is_block_sequence
+from cost_optimizer.shapes import is_block_sequence, is_item_sequence
 
 
 @dataclass(frozen=True)
@@ -222,12 +222,23 @@ class PromptCacheWrapper:
 
     def _apply_cache_control(self, kwargs: dict[str, Any]) -> dict[str, Any]:
         out = dict(kwargs)
+        # Read the caller's 1h markers BEFORE adding any of ours (#283).
+        later_1h = _last_caller_1h_position(out)
+
+        def ttl_for(position: int) -> str | None:
+            # Anthropic requires a 1-hour cache entry to come before any
+            # 5-minute entry. Our marker on a segment that renders ahead of a
+            # caller's 1h marker therefore has to be 1h as well; anywhere else
+            # it stays the 5-minute default, so nobody pays the 2x write unless
+            # their own request needs it.
+            return "1h" if later_1h > position else None
+
         if "system" in self._cache_segments and "system" in out:
-            out["system"] = _mark_system(out["system"])
+            out["system"] = _mark_system(out["system"], ttl=ttl_for(_POS_SYSTEM))
         if "tools" in self._cache_segments and out.get("tools"):
-            out["tools"] = _mark_tools(out["tools"])
+            out["tools"] = _mark_tools(out["tools"], ttl=ttl_for(_POS_TOOLS))
         if "messages_prefix" in self._cache_segments and out.get("messages"):
-            out["messages"] = _mark_messages_prefix(out["messages"])
+            out["messages"] = _mark_messages_prefix(out["messages"], ttl=ttl_for(_POS_MESSAGES))
         return out
 
     def _read_telemetry(self, response: Any) -> CacheTelemetry:
@@ -325,11 +336,13 @@ class PromptCacheWrapper:
 # ----- segment-marking helpers (no client coupling) -----
 
 
-def _ephemeral_cache_control() -> dict[str, str]:
-    return {"type": "ephemeral"}
+def _ephemeral_cache_control(ttl: str | None = None) -> dict[str, str]:
+    if ttl is None:
+        return {"type": "ephemeral"}
+    return {"type": "ephemeral", "ttl": ttl}
 
 
-def _with_cache_control(block: Any) -> dict[str, Any]:
+def _with_cache_control(block: Any, ttl: str | None = None) -> dict[str, Any]:
     """``block`` marked cacheable, keeping a ``cache_control`` it already has (#271).
 
     The marking helpers used to assign ``{"type": "ephemeral"}`` over whatever
@@ -339,8 +352,53 @@ def _with_cache_control(block: Any) -> dict[str, Any]:
     """
     new = dict(block)
     if not new.get("cache_control"):
-        new["cache_control"] = _ephemeral_cache_control()
+        new["cache_control"] = _ephemeral_cache_control(ttl)
     return new
+
+
+# Render order of the request's cacheable positions: `tools`, then `system`,
+# then `messages`; top-level automatic caching lands on the last cacheable block,
+# so it sits after all three.
+_POS_NONE = -1
+_POS_TOOLS = 0
+_POS_SYSTEM = 1
+_POS_MESSAGES = 2
+_POS_TOP_LEVEL = 3
+
+
+def _is_1h_marker(marker: Any) -> bool:
+    return isinstance(marker, Mapping) and marker.get("ttl") == "1h"
+
+
+def _any_block_1h(blocks: Any) -> bool:
+    if not is_block_sequence(blocks):
+        return False
+    return any(isinstance(b, Mapping) and _is_1h_marker(b.get("cache_control")) for b in blocks)
+
+
+def _last_caller_1h_position(kwargs: Mapping[str, Any]) -> int:
+    """Render position of the last 1-hour marker the caller set, or ``_POS_NONE`` (#283).
+
+    Anthropic's rule for mixed TTLs is that a 1-hour entry must appear before
+    any 5-minute entry. Before this, the wrapper kept a caller's 1h marker
+    (#271) but put its own 5-minute default on every unmarked segment, including
+    the ones rendered ahead of that marker -- e.g. a caller using top-level
+    automatic caching at ``ttl: "1h"`` got a 5-minute system marker in front of
+    it. Only the caller's markers count here; this runs before the wrapper adds
+    any.
+    """
+    if _is_1h_marker(kwargs.get("cache_control")):
+        return _POS_TOP_LEVEL
+    messages = kwargs.get("messages")
+    if is_item_sequence(messages) and any(
+        isinstance(m, Mapping) and _any_block_1h(m.get("content")) for m in messages
+    ):
+        return _POS_MESSAGES
+    if _any_block_1h(kwargs.get("system")):
+        return _POS_SYSTEM
+    if _any_block_1h(kwargs.get("tools")):
+        return _POS_TOOLS
+    return _POS_NONE
 
 
 def _field(obj: Any, name: str) -> Any:
@@ -352,7 +410,7 @@ def _field(obj: Any, name: str) -> Any:
     return getattr(obj, name, None)
 
 
-def _mark_system(system: Any) -> Any:
+def _mark_system(system: Any, *, ttl: str | None = None) -> Any:
     """Mark the system prompt as cacheable.
 
     Anthropic accepts ``system`` either as a string or a list of content
@@ -365,7 +423,7 @@ def _mark_system(system: Any) -> Any:
     # branch sees it. `is_block_sequence` excludes it on the other side too, so
     # the two agree rather than depending on line order alone (#215).
     if isinstance(system, str):
-        return [{"type": "text", "text": system, "cache_control": _ephemeral_cache_control()}]
+        return [{"type": "text", "text": system, "cache_control": _ephemeral_cache_control(ttl)}]
     # Was `isinstance(system, list)`. A tuple of blocks — what a frozen or
     # decoded payload hands over — was returned UNMARKED and unreported: the API
     # then caches nothing and the resulting `$0.00` is arithmetically honest and
@@ -374,20 +432,20 @@ def _mark_system(system: Any) -> Any:
     # same job done properly in the same file.
     if is_block_sequence(system) and system:
         new = [dict(b) for b in system]
-        new[-1] = _with_cache_control(new[-1])
+        new[-1] = _with_cache_control(new[-1], ttl)
         return new
     return system
 
 
-def _mark_tools(tools: list[Any]) -> list[Any]:
+def _mark_tools(tools: list[Any], *, ttl: str | None = None) -> list[Any]:
     if not tools:
         return tools
     new = [dict(t) for t in tools]
-    new[-1] = _with_cache_control(new[-1])
+    new[-1] = _with_cache_control(new[-1], ttl)
     return new
 
 
-def _mark_messages_prefix(messages: list[Any]) -> list[Any]:
+def _mark_messages_prefix(messages: list[Any], *, ttl: str | None = None) -> list[Any]:
     """Cache up to and including the last user message in the prefix.
 
     The convention is that the most recent prefix turn carries the
@@ -400,13 +458,13 @@ def _mark_messages_prefix(messages: list[Any]) -> list[Any]:
     content = target.get("content")
     if isinstance(content, str):
         target["content"] = [
-            {"type": "text", "text": content, "cache_control": _ephemeral_cache_control()}
+            {"type": "text", "text": content, "cache_control": _ephemeral_cache_control(ttl)}
         ]
     # Was `isinstance(content, list)`; see `_mark_system` (#215). Same silent
     # no-op on a tuple of blocks, one level further in.
     elif is_block_sequence(content) and content:
         new_content = [dict(b) for b in content]
-        new_content[-1] = _with_cache_control(new_content[-1])
+        new_content[-1] = _with_cache_control(new_content[-1], ttl)
         target["content"] = new_content
     new[-1] = target
     return new
