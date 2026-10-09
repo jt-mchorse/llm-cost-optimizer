@@ -2882,3 +2882,15 @@ take is the previous take's dashboard. When the script has started the
 dashboard itself, the checklist now says it is already running (with its
 process id) and names the address that dashboard reported. Without
 `--launch-streamlit` the checklist reads exactly as before.
+
+## 2026-10-08 — the demo's dashboard reads the file the demo just wrote (#277)
+
+When the demo script starts the dashboard, it runs the dashboard from the
+repository's root folder and passes it the location of the results file. If
+the operator gave the output folder as a relative path (such as
+`docs/demo-artifacts`) while working in some other folder, the dashboard looked
+for that path under the repository instead. It then showed an older take's
+results, and its caption showed exactly the file name the checklist tells the
+operator to confirm, so nothing looked wrong. The script now always passes the
+full path to the file, both to the dashboard it starts and in the printed
+command.

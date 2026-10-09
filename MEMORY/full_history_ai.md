@@ -3025,3 +3025,24 @@ context_for_next_session:
   - DEFERRED_pinning_server_port_8501_in_the_operators_printed_command_step_3a_caption_check_already_catches_a_wrong_dashboard
 followups: []
 ---
+
+---
+session: 2026-10-08T07:25Z
+duration_min: 3   # computed: plan comment ~07:22Z -> commit 07:25Z (date -u)
+issue: 277
+branch: session/2026-10-08-issue-277
+focus: capture_demo_launch_streamlit_CHILD_RUNS_AT_cwd_REPO_ROOT_BUT_GOT_A_RELATIVE_json_A_RELATIVE_output_dir_FROM_ELSEWHERE_READ_ANOTHER_TAKES_FILE
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 2
+  tests_changed: 1
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "ac266f1: default take writes REPO_ROOT/docs/demo-artifacts/savings_demo.json; take 2 from /tmp/elsewhere with --output-dir docs/demo-artifacts -> fake child cwd=REPO_ROOT, json resolved to the repo's file (exists True). Revert probe: both new arms red plus the updated #241 argv lock; the launched arm fails on the resolved path, not an exception."
+context_for_next_session:
+  - A_PATH_HANDED_TO_ANOTHER_PROCESS_IS_RESOLVED_AGAINST_ITS_cwd_grep_Popen_cwd_for_relative_argv
+  - THE_CAPTION_CHECK_241_ADDED_CANNOT_SEE_THIS_the_caption_echoes_the_same_relative_string_the_operator_is_told_to_confirm
+  - TOUCHES_THE_SAME_FILE_AS_276_DIFFERENT_FUNCTIONS_MEMORY_APPEND_WILL_CONFLICT_REBASE_THE_SECOND
+followups: []
+---
