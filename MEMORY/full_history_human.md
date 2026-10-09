@@ -2871,6 +2871,29 @@ If a caller asked for a 1-hour cache, the wrapper replaced that with the
 at the 5-minute rate (1.25x), while 1-hour writes cost 2x, so it understated
 their cost fourfold. The caller's setting is now kept, and writes are priced
 using the per-TTL breakdown the API already returns.
+
+## 2026-10-08 — the demo's checklist names the dashboard the script started (#275)
+
+The #259 fix made the demo script open whichever port its own dashboard
+actually took, for example 8502 on a second take. The step-by-step checklist
+printed right after that line was not updated. It still told the operator to
+start a dashboard in another terminal and to open port 8501, which on a second
+take is the previous take's dashboard. When the script has started the
+dashboard itself, the checklist now says it is already running (with its
+process id) and names the address that dashboard reported. Without
+`--launch-streamlit` the checklist reads exactly as before.
+
+## 2026-10-08 — the demo's dashboard reads the file the demo just wrote (#277)
+
+When the demo script starts the dashboard, it runs the dashboard from the
+repository's root folder and passes it the location of the results file. If
+the operator gave the output folder as a relative path (such as
+`docs/demo-artifacts`) while working in some other folder, the dashboard looked
+for that path under the repository instead. It then showed an older take's
+results, and its caption showed exactly the file name the checklist tells the
+operator to confirm, so nothing looked wrong. The script now always passes the
+full path to the file, both to the dashboard it starts and in the printed
+command.
 ## 2026-10-08 — saving to a symlink updates the file it points at (#279)
 
 The helper that saves reports safely (write a temporary file, then swap it
