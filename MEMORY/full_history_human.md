@@ -2851,6 +2851,37 @@ records each model's minimum (decision D-025), the bench applies it, and the
 caching row reads 0% with the reason beside it. The other strategies' numbers
 are unchanged. Whether the demo should use a longer prompt so caching shows a
 real win is a workload choice, left to JT in #267.
+## 2026-10-07 — an expired batch can be read (#269)
+
+Batch API requests that time out after 24 hours are counted as "expired", and
+the batch backend didn't count that category. A batch where everything expired
+added up to zero requests, which the code treats as impossible, so the batch
+could never be polled or have its results read. Expired requests are now
+counted, and their rows come back marked "expired".
+## 2026-10-07 — the router's uncertainty signal works with extended thinking (#273)
+
+The router's entropy signal read the first block of a response, assuming it was
+text. With extended thinking the first block is a "thinking" block, so the
+signal silently gave up on every call and never escalated to the stronger
+model. It now reads the first text block.
+## 2026-10-07 — 1-hour prompt caching is kept and priced correctly (#271)
+
+If a caller asked for a 1-hour cache, the wrapper replaced that with the
+5-minute default, so the cache kept expiring. It also priced every cache write
+at the 5-minute rate (1.25x), while 1-hour writes cost 2x, so it understated
+their cost fourfold. The caller's setting is now kept, and writes are priced
+using the per-TTL breakdown the API already returns.
+
+## 2026-10-08 — the demo's checklist names the dashboard the script started (#275)
+
+The #259 fix made the demo script open whichever port its own dashboard
+actually took, for example 8502 on a second take. The step-by-step checklist
+printed right after that line was not updated. It still told the operator to
+start a dashboard in another terminal and to open port 8501, which on a second
+take is the previous take's dashboard. When the script has started the
+dashboard itself, the checklist now says it is already running (with its
+process id) and names the address that dashboard reported. Without
+`--launch-streamlit` the checklist reads exactly as before.
 
 ## 2026-10-08 — the demo's dashboard reads the file the demo just wrote (#277)
 

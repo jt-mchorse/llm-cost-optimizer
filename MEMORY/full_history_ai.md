@@ -2960,6 +2960,70 @@ context_for_next_session:
   - THE_LIVE_TEST_WAS_NEVER_RUN_ITS_1024_CLAIM_AND_3_6K_CHAR_DOCSTRING_WERE_BOTH_WRONG_a_skipped_test_is_documentation_and_rots_like_it
   - JT_GATED_267_whether_the_workload_should_carry_a_cacheable_prefix
 followups: ["#267"]
+session: 2026-10-07T08:28Z
+duration_min: 4
+issue: 269
+branch: session/2026-10-07-lco-batch-expired
+focus: EXPIRED_BATCH_REQUESTS_WERE_NOT_COUNTED_SO_A_WHOLLY_EXPIRED_BATCH_COULD_NEVER_BE_POLLED_OR_READ
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 8
+  suite: "1358 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: {succeeded 2, expired 3} -> 2; {expired 5} -> ValueError from poll and results. Revert 7/8 red."
+context_for_next_session:
+  - WHEN_SUMMING_AN_SDK_ENUM_ENUMERATE_THE_SDK_TYPE_NOT_THE_CASES_YOU_REMEMBER_the_wheel_is_the_spec
+session: 2026-10-07T10:42Z
+duration_min: 5
+issue: 273
+branch: session/2026-10-07-lco-entropy-text-block
+focus: ENTROPY_SIGNAL_READ_CONTENT_0_SO_A_LEADING_THINKING_BLOCK_DISABLED_ESCALATION
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 6
+  suite: "1356 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: [thinking, text] -> value None trip False. Revert 4/6 red."
+context_for_next_session:
+  - CONTENT_0_IS_NOT_THE_TEXT_BLOCK_once_thinking_and_tool_use_exist_grep_for_content_0_across_the_portfolio
+session: 2026-10-07T08:38Z
+duration_min: 6
+issue: 271
+branch: session/2026-10-07-lco-cache-1h
+focus: THE_WRAPPER_OVERWROTE_A_CALLERS_1H_TTL_AND_PRICED_1H_WRITES_AT_1_25X
+phase: shipped
+delta:
+  files_changed: 4
+  tests_added: 16
+  suite: "1366 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: 1h marker replaced on 3 segments; 100k 1h tokens premium 0.125 vs true 0.50. Revert: main wrapper 5/16, overwrite-only 1, no-1h-pricing 4."
+context_for_next_session:
+  - A_HELPER_THAT_ADDS_A_KEY_MUST_ASK_WHETHER_THE_CALLER_ALREADY_SET_IT_dict_spread_with_a_literal_on_the_right_overwrites_silently
+  - A_PRICING_TABLE_WITH_ONE_RATE_PER_EVENT_MISSES_A_TIERED_EVENT_read_the_usage_breakdown_the_SDK_already_returns
+followups: []
+---
+
+---
+session: 2026-10-08T07:22Z
+duration_min: 6   # computed: plan comment ~07:16Z -> commit 07:22Z (date -u)
+issue: 275
+branch: session/2026-10-08-issue-275
+focus: capture_demo_CHEAT_SHEET_AFTER_launch_streamlit_STILL_SAID_START_A_DASHBOARD_AND_OPEN_8501_WHILE_THE_CHILD_BOUND_8502
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "ac266f1 with a fake streamlit reporting :8502: stdout 'spawned streamlit ... on http://localhost:8502' then cheat-sheet '1. Start the dashboard' and '2. ... http://localhost:8501'. Revert probe (main's capture_demo.py): 2 of 3 new arms red, the no-launch control green."
+context_for_next_session:
+  - SIBLING_INCOMPLETE_FIX_OF_259_it_fixed_the_URL_main_OPENS_and_said_the_no_launch_path_keeps_DASHBOARD_URL_the_cheat_sheet_printed_two_lines_later_was_a_second_consumer_of_the_same_constant
+  - EVERY_259_ARM_PASSED_skip_dashboard_cheatsheet_SO_NO_TEST_EVER_READ_THE_TEXT_AFTER_A_LAUNCH
+  - DEFERRED_pinning_server_port_8501_in_the_operators_printed_command_step_3a_caption_check_already_catches_a_wrong_dashboard
+followups: []
 ---
 
 ---
