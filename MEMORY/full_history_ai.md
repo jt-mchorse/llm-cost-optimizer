@@ -3084,3 +3084,21 @@ context_for_next_session:
   - AN_ABS_1E_5_RECONCILIATION_TOLERANCE_HID_A_1E_6_DISAGREEMENT_compare_published_values_exactly
 followups: []
 ---
+
+---
+session: 2026-10-09T08:37Z
+duration_min: 5   # computed: issue filed 2026-10-09T08:35:35Z -> PR 2026-10-09T08:37:23Z (gh createdAt); hunt-agent lead re-measured first
+issue: 287
+branch: session/2026-10-09-0840-issue-287
+focus: A_LONE_SURROGATE_TAG_PASSED_THE_STR_CHECK_REDIS_WROTE_THE_RECORD_THEN_FAILED_TO_INDEX_IT_UNEVICTABLE_BY_TAG
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 18
+  suite: "1417 -> 1435 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "fakeredis main: redis put UnicodeEncodeError yet lookup hit; invalidate UnicodeEncodeError, still a hit; mem put/invalidate ok. Branch: ValueError on both before storage, nothing stored. Revert 12 red / 6 round-trip controls."
+context_for_next_session:
+  - A_BACKEND_THAT_WRITES_THEN_INDEXES_TURNS_A_LATE_ENCODE_ERROR_INTO_A_HALF_WRITE_validate_every_field_at_the_seam_before_any_write
+followups: []
+---
