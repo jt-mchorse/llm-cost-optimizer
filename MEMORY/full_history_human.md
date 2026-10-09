@@ -2894,3 +2894,10 @@ results, and its caption showed exactly the file name the checklist tells the
 operator to confirm, so nothing looked wrong. The script now always passes the
 full path to the file, both to the dashboard it starts and in the printed
 command.
+## 2026-10-08 — saving to a symlink updates the file it points at (#279)
+
+The helper that saves reports safely (write a temporary file, then swap it
+into place) swapped it onto the symlink itself when the save location was a
+symlink. The link turned into an ordinary file, and the file it pointed at was
+never updated. A plain save writes through the link, and now this helper does
+too. Ordinary paths behave exactly as before.
