@@ -234,6 +234,17 @@ class PromptCacheWrapper:
         usage = _get_usage(response)
         write = _coerce_token_count(getattr(usage, "cache_creation_input_tokens", 0))
         read = _coerce_token_count(getattr(usage, "cache_read_input_tokens", 0))
+        # How many of the written tokens were 1-hour writes, which bill at 2x
+        # rather than 1.25x (#271). The SDK reports the split under
+        # `usage.cache_creation`; an absent or malformed split prices every
+        # write at the 5-minute rate, as before. Clamped to `write`, so a
+        # breakdown that over-reports cannot price more tokens than were written.
+        written_1h = min(
+            write,
+            _coerce_token_count(
+                _field(_field(usage, "cache_creation"), "ephemeral_1h_input_tokens")
+            ),
+        )
         # Cache hit ⇔ at least one token was served from cache on this call.
         # Cache miss ⇔ at least one token was written into the cache this call.
         # A single call may be both (cold path: warming a new suffix segment).
@@ -243,7 +254,7 @@ class PromptCacheWrapper:
             tokens_cached=read,
             tokens_written=write,
             dollars_saved=self._dollars_saved(read=read),
-            dollars_write_premium=self._dollars_write_premium(written=write),
+            dollars_write_premium=self._dollars_write_premium(written=write, written_1h=written_1h),
         )
 
     def _dollars_saved(self, *, read: int) -> float:
@@ -270,7 +281,7 @@ class PromptCacheWrapper:
         discount = 1.0 - self._pricing.cache_read_multiplier
         return read * rate * discount
 
-    def _dollars_write_premium(self, *, written: int) -> float:
+    def _dollars_write_premium(self, *, written: int, written_1h: int = 0) -> float:
         """Extra dollars paid to write ``written`` tokens into the cache (#196).
 
         ``cache_creation_input_tokens`` bills at ``cache_write_multiplier`` times
@@ -293,11 +304,22 @@ class PromptCacheWrapper:
         caching, and a ``max(0.0, ...)`` would launder that real saving into a
         wrong zero -- the value would never reach the guard that would have
         questioned it.
+
+        **1-hour writes (#271).** ``written_1h`` of the ``written`` tokens were
+        1-hour writes, which bill at ``cache_write_1h_multiplier`` (2x), so
+        their premium is 1.0x, not 0.25x. Pricing them all at the 5-minute rate
+        understated a 1h write's cost 4x and could report a profit on a run
+        that lost money.
         """
         if written <= 0:
             return 0.0
         rate = self._pricing.input_per_mtok / 1_000_000
-        return written * rate * (self._pricing.cache_write_multiplier - 1.0)
+        written_1h = max(0, min(written_1h, written))
+        written_5m = written - written_1h
+        return rate * (
+            written_5m * (self._pricing.cache_write_multiplier - 1.0)
+            + written_1h * (self._pricing.cache_write_1h_multiplier - 1.0)
+        )
 
 
 # ----- segment-marking helpers (no client coupling) -----
@@ -305,6 +327,29 @@ class PromptCacheWrapper:
 
 def _ephemeral_cache_control() -> dict[str, str]:
     return {"type": "ephemeral"}
+
+
+def _with_cache_control(block: Any) -> dict[str, Any]:
+    """``block`` marked cacheable, keeping a ``cache_control`` it already has (#271).
+
+    The marking helpers used to assign ``{"type": "ephemeral"}`` over whatever
+    was there, so a caller who had chosen ``{"type": "ephemeral", "ttl": "1h"}``
+    silently got the 5-minute default. Calls more than five minutes apart then
+    missed and re-wrote the cache every time, with no error anywhere.
+    """
+    new = dict(block)
+    if not new.get("cache_control"):
+        new["cache_control"] = _ephemeral_cache_control()
+    return new
+
+
+def _field(obj: Any, name: str) -> Any:
+    """``obj.name`` or ``obj[name]``, else ``None``: the SDK object or a dict."""
+    if obj is None:
+        return None
+    if isinstance(obj, Mapping):
+        return obj.get(name)
+    return getattr(obj, name, None)
 
 
 def _mark_system(system: Any) -> Any:
@@ -329,7 +374,7 @@ def _mark_system(system: Any) -> Any:
     # same job done properly in the same file.
     if is_block_sequence(system) and system:
         new = [dict(b) for b in system]
-        new[-1] = {**new[-1], "cache_control": _ephemeral_cache_control()}
+        new[-1] = _with_cache_control(new[-1])
         return new
     return system
 
@@ -338,7 +383,7 @@ def _mark_tools(tools: list[Any]) -> list[Any]:
     if not tools:
         return tools
     new = [dict(t) for t in tools]
-    new[-1] = {**new[-1], "cache_control": _ephemeral_cache_control()}
+    new[-1] = _with_cache_control(new[-1])
     return new
 
 
@@ -361,7 +406,7 @@ def _mark_messages_prefix(messages: list[Any]) -> list[Any]:
     # no-op on a tuple of blocks, one level further in.
     elif is_block_sequence(content) and content:
         new_content = [dict(b) for b in content]
-        new_content[-1] = {**new_content[-1], "cache_control": _ephemeral_cache_control()}
+        new_content[-1] = _with_cache_control(new_content[-1])
         target["content"] = new_content
     new[-1] = target
     return new
