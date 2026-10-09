@@ -3067,6 +3067,44 @@ followups: []
 ---
 
 ---
+session: 2026-10-08T07:51Z
+duration_min: 3   # computed: plan comment 07:48:06Z -> 07:51Z (date -u)
+issue: 281
+branch: session/2026-10-08-w3-issue-281
+focus: BATCH_ROW_TOTALLED_WITH_SUM_WHICH_IS_COMPENSATED_ON_PY312_SO_IT_DISAGREED_WITH_ITS_OWN_SERIES_AND_WITH_PY311_ON_HALF_MICRO_DOLLAR_TIES
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
+  suite: "full suite green; ruff, format, mypy clean; docs/savings.* byte-identical at --n 500"
+decisions_made: []
+measured: "n=1..200 default seed: 3.12 had 42 batch totals off their series end by 1e-6 and 1 mean_quality off baseline (n=8 0.8763 vs 0.8762); 3.11 had 0. Fixed: 0 on 3.11 and 3.12. Revert probe: 2 of 3 red (third is the tie-population guard)."
+context_for_next_session:
+  - PY312_SUM_OF_FLOATS_IS_NEUMAIER_COMPENSATED_a_sum_beside_a_plus_equals_loop_is_two_algorithms_and_round_6_exposes_the_last_bit_on_ties_grep_the_portfolio_for_sum_next_to_a_loop_over_the_same_population
+  - AN_ABS_1E_5_RECONCILIATION_TOLERANCE_HID_A_1E_6_DISAGREEMENT_compare_published_values_exactly
+followups: []
+---
+
+---
+session: 2026-10-08T07:55Z
+duration_min: 2   # computed: plan comment 07:53:46Z -> 07:55Z (date -u)
+issue: 283
+branch: session/2026-10-08-w3-issue-283
+focus: WRAPPER_PUT_ITS_5M_DEFAULT_MARKER_AHEAD_OF_A_CALLERS_1H_MARKER_VIOLATING_THE_1H_BEFORE_5M_TTL_ORDERING_RULE
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 48
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "main: default+top-level 1h -> system 5m then 1h; tools+system(1h) -> tools 5m first; system+messages(1h) -> system 5m first. Revert probe: 21 of 48 red (27 green are controls and configs with no later 1h). 400 is per Anthropic docs, not run live."
+context_for_next_session:
+  - SIBLING_OF_271_keeping_the_callers_marker_fixed_one_segment_the_ordering_rule_spans_ALL_segments_a_per_block_fix_cannot_see_a_cross_block_invariant
+  - TOP_LEVEL_cache_control_IS_A_PASSTHROUGH_KWARG_the_wrapper_never_looked_at_it
+followups: []
+---
+
+---
 session: 2026-10-09T07:46Z
 duration_min: 7   # computed: issue filed 2026-10-09T07:43:43Z -> PR 2026-10-09T07:46:31Z (gh createdAt); hunt-agent lead re-measured first
 issue: 285
