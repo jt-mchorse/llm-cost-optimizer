@@ -3106,7 +3106,7 @@ followups: []
 
 ---
 session: 2026-10-09T09:25Z
-duration_min: 9   # computed: skill lookup ~09:23Z, issue filed ~09:26Z, PR 2026-10-09T09:25:55Z (gh createdAt)
+duration_min: 6   # computed: issue filed 2026-10-09T09:22:33Z -> PR 2026-10-09T09:25:55Z (gh createdAt); pricing source read just before
 issue: 289
 branch: session/2026-10-09-0940-issue-289
 focus: PRICING_TABLE_HAD_NO_CLAUDE_5_ROWS_PROMPTCACHEWRAPPER_REFUSED_THE_DEFAULT_MODEL_AND_TWO_READ_RATES_ARE_NOT_THE_DEFAULT
