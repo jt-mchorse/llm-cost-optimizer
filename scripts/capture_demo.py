@@ -174,6 +174,15 @@ def _streamlit_argv(json_path: Path, *streamlit_options: str) -> list[str]:
     committed file under a cheat-sheet saying it was the run just made.
     Everything after `--` is forwarded to the script by streamlit, so
     streamlit's own options go before it.
+
+    Absolute, against *this* process's cwd (#277). The path is resolved by
+    another process: `--launch-streamlit` runs the child with `cwd=REPO_ROOT`,
+    and the cheat-sheet command only works from the repo root
+    (`dashboard/app.py` is relative). A relative `--output-dir` given from
+    anywhere else therefore named a different file -- with
+    `--output-dir docs/demo-artifacts` it named the repo's own copy from an
+    earlier take, and the page caption then showed exactly the string step 3a
+    tells the operator to confirm.
     """
     return [
         "streamlit",
@@ -182,16 +191,36 @@ def _streamlit_argv(json_path: Path, *streamlit_options: str) -> list[str]:
         *streamlit_options,
         "--",
         "--json",
-        str(json_path),
+        str(json_path.absolute()),
     ]
 
 
-def _dashboard_cheatsheet(json_path: Path) -> str:
+def _dashboard_cheatsheet(
+    json_path: Path, *, url: str = DASHBOARD_URL, launched_pid: int | None = None
+) -> str:
     # Section names are the dashboard's own `st.subheader` titles, quoted
     # exactly; `tests/test_capture_demo_cheatsheet.py` derives those titles
     # from `dashboard/app.py` and fails on a quoted name that is not one (#241).
     # The previous checklist named a "comparison panel" and a `?source=` URL
     # parameter, neither of which the dashboard has.
+    #
+    # `url` and `launched_pid` describe the dashboard `--launch-streamlit`
+    # started, when it did (#275). #259 made `main` open the port that child
+    # reported, but this text kept saying "start the dashboard" and
+    # `DASHBOARD_URL`: on a second take the child is on 8502 and 8501 is the
+    # first take's dashboard, so the checklist sent the operator to the
+    # previous take's JSON -- and to start a third server.
+    if launched_pid is None:
+        step_1 = (
+            "# 1. Start the dashboard in a separate terminal:\n"
+            f"#      {shlex.join(_streamlit_argv(json_path))}\n"
+        )
+    else:
+        step_1 = (
+            f"# 1. Already running (pid {launched_pid}), started by --launch-streamlit\n"
+            "#    with the argument below; do not start another:\n"
+            f"#      {shlex.join(_streamlit_argv(json_path))}\n"
+        )
     return (
         "# Streamlit dashboard tour (STAGE 2) — operator steps.\n"
         "# Point the dashboard at the JSON STAGE 1 just wrote, not at the\n"
@@ -200,11 +229,10 @@ def _dashboard_cheatsheet(json_path: Path) -> str:
         "# can't run hermetically in CI; pass --launch-streamlit to spawn\n"
         "# it from this script with the same argument.\n"
         "#\n"
-        "# 1. Start the dashboard in a separate terminal:\n"
-        f"#      {shlex.join(_streamlit_argv(json_path))}\n"
+        f"{step_1}"
         "#\n"
         f"# 2. Open the URL the recording captures:\n"
-        f"#      {DASHBOARD_URL}\n"
+        f"#      {url}\n"
         "#\n"
         "# 3. Recording checklist (in order, so the GIF is reproducible):\n"
         "#      a. The caption under the title — it names the source file;\n"
@@ -382,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
     print(_banner(2, "Streamlit dashboard tour (operator-action)"))
 
     dashboard_url = DASHBOARD_URL
+    launched_pid: int | None = None
     if args.launch_streamlit:
         log_path = output_dir / STREAMLIT_LOG
         streamlit_child = _maybe_launch_streamlit(stable_json, log_path)
@@ -401,6 +430,7 @@ def main(argv: list[str] | None = None) -> int:
                     f"Local URL; its output ({log_path}):\n{tail}"
                 )
             dashboard_url = local_url
+            launched_pid = streamlit_child.pid
             print(
                 f"[capture] spawned streamlit (pid {streamlit_child.pid}) on {local_url}; "
                 f"output in {log_path}. Terminate it when the recording is done."
@@ -417,7 +447,7 @@ def main(argv: list[str] | None = None) -> int:
         webbrowser.open(dashboard_url)
 
     if not args.skip_dashboard_cheatsheet:
-        print(_dashboard_cheatsheet(stable_json))
+        print(_dashboard_cheatsheet(stable_json, url=dashboard_url, launched_pid=launched_pid))
 
     return 0
 

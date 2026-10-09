@@ -3007,6 +3007,85 @@ followups: []
 ---
 
 ---
+session: 2026-10-08T07:22Z
+duration_min: 6   # computed: plan comment ~07:16Z -> commit 07:22Z (date -u)
+issue: 275
+branch: session/2026-10-08-issue-275
+focus: capture_demo_CHEAT_SHEET_AFTER_launch_streamlit_STILL_SAID_START_A_DASHBOARD_AND_OPEN_8501_WHILE_THE_CHILD_BOUND_8502
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "ac266f1 with a fake streamlit reporting :8502: stdout 'spawned streamlit ... on http://localhost:8502' then cheat-sheet '1. Start the dashboard' and '2. ... http://localhost:8501'. Revert probe (main's capture_demo.py): 2 of 3 new arms red, the no-launch control green."
+context_for_next_session:
+  - SIBLING_INCOMPLETE_FIX_OF_259_it_fixed_the_URL_main_OPENS_and_said_the_no_launch_path_keeps_DASHBOARD_URL_the_cheat_sheet_printed_two_lines_later_was_a_second_consumer_of_the_same_constant
+  - EVERY_259_ARM_PASSED_skip_dashboard_cheatsheet_SO_NO_TEST_EVER_READ_THE_TEXT_AFTER_A_LAUNCH
+  - DEFERRED_pinning_server_port_8501_in_the_operators_printed_command_step_3a_caption_check_already_catches_a_wrong_dashboard
+followups: []
+---
+
+---
+session: 2026-10-08T07:25Z
+duration_min: 3   # computed: plan comment ~07:22Z -> commit 07:25Z (date -u)
+issue: 277
+branch: session/2026-10-08-issue-277
+focus: capture_demo_launch_streamlit_CHILD_RUNS_AT_cwd_REPO_ROOT_BUT_GOT_A_RELATIVE_json_A_RELATIVE_output_dir_FROM_ELSEWHERE_READ_ANOTHER_TAKES_FILE
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 2
+  tests_changed: 1
+  suite: "full suite green; ruff, format, mypy clean"
+decisions_made: []
+measured: "ac266f1: default take writes REPO_ROOT/docs/demo-artifacts/savings_demo.json; take 2 from /tmp/elsewhere with --output-dir docs/demo-artifacts -> fake child cwd=REPO_ROOT, json resolved to the repo's file (exists True). Revert probe: both new arms red plus the updated #241 argv lock; the launched arm fails on the resolved path, not an exception."
+context_for_next_session:
+  - A_PATH_HANDED_TO_ANOTHER_PROCESS_IS_RESOLVED_AGAINST_ITS_cwd_grep_Popen_cwd_for_relative_argv
+  - THE_CAPTION_CHECK_241_ADDED_CANNOT_SEE_THIS_the_caption_echoes_the_same_relative_string_the_operator_is_told_to_confirm
+  - TOUCHES_THE_SAME_FILE_AS_276_DIFFERENT_FUNCTIONS_MEMORY_APPEND_WILL_CONFLICT_REBASE_THE_SECOND
+followups: []
+---
+
+---
+session: 2026-10-08T07:38Z
+duration_min: 2   # computed from GitHub: plan comment 2026-10-08T07:36:10Z -> commit 07:38Z
+issue: 279
+branch: session/2026-10-08-issue-279
+focus: ATOMIC_WRITE_TEXT_RENAMED_ONTO_A_SYMLINKED_DESTINATION_link_became_a_regular_file_and_the_linked_file_kept_old_contents
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 11
+  suite: "1387 passed (junitxml); ruff, format, mypy clean"
+decisions_made: []
+measured: "main: atomic_write_text(link) -> islink False, real 'old'; tune_threshold --dry --out <stem> through a link rc 0 with the linked json unchanged. Revert probe (main io_utils.py, __pycache__ cleared): 5 of 11 red, 6 controls green (write_text parity x3, loop x2, plain)."
+context_for_next_session:
+  - SIBLING_OF_python_async_llm_pipelines_157_same_fix_in_vsas_and_prs_this_night
+  - A_LINK_LOOP_IS_LEFT_AS_IS_BY_NON_STRICT_REALPATH_the_ELOOP_comes_from_copy_existing_mode_os_stat_keep_that_call_ahead_of_os_replace
+followups: []
+---
+
+---
+session: 2026-10-08T07:51Z
+duration_min: 3   # computed: plan comment 07:48:06Z -> 07:51Z (date -u)
+issue: 281
+branch: session/2026-10-08-w3-issue-281
+focus: BATCH_ROW_TOTALLED_WITH_SUM_WHICH_IS_COMPENSATED_ON_PY312_SO_IT_DISAGREED_WITH_ITS_OWN_SERIES_AND_WITH_PY311_ON_HALF_MICRO_DOLLAR_TIES
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
+  suite: "full suite green; ruff, format, mypy clean; docs/savings.* byte-identical at --n 500"
+decisions_made: []
+measured: "n=1..200 default seed: 3.12 had 42 batch totals off their series end by 1e-6 and 1 mean_quality off baseline (n=8 0.8763 vs 0.8762); 3.11 had 0. Fixed: 0 on 3.11 and 3.12. Revert probe: 2 of 3 red (third is the tie-population guard)."
+context_for_next_session:
+  - PY312_SUM_OF_FLOATS_IS_NEUMAIER_COMPENSATED_a_sum_beside_a_plus_equals_loop_is_two_algorithms_and_round_6_exposes_the_last_bit_on_ties_grep_the_portfolio_for_sum_next_to_a_loop_over_the_same_population
+  - AN_ABS_1E_5_RECONCILIATION_TOLERANCE_HID_A_1E_6_DISAGREEMENT_compare_published_values_exactly
+followups: []
+---
+
+---
 session: 2026-10-08T07:55Z
 duration_min: 2   # computed: plan comment 07:53:46Z -> 07:55Z (date -u)
 issue: 283
