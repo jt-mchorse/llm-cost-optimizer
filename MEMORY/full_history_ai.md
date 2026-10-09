@@ -3103,3 +3103,21 @@ context_for_next_session:
   - TOP_LEVEL_cache_control_IS_A_PASSTHROUGH_KWARG_the_wrapper_never_looked_at_it
 followups: []
 ---
+
+---
+session: 2026-10-09T10:08Z
+duration_min: 5   # computed: issue filed 2026-10-09T10:06:23Z -> PR 2026-10-09T10:08:29Z (gh createdAt)
+issue: 291
+branch: session/2026-10-09-1035-issue-291
+focus: REDISSTORAGE_ACCEPTED_AN_UNENCODABLE_KEY_OR_TAG_PREFIX_EVERY_OPERATION_THEN_RAISED_A_BARE_UNICODEENCODEERROR
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 9
+  suite: "1465 -> 1474 passed; ruff, mypy clean"
+decisions_made: []
+measured: "fakeredis main: key_prefix 'tenant-'+chr(0xD800) constructed, put raised UnicodeEncodeError; branch ValueError at construction. Revert 6 red / 3 controls."
+context_for_next_session:
+  - MY_FIRST_ISSUE_TEXT_CLAIMED_THE_PREFIX_WAS_ALREADY_SHAPE_VALIDATED_IT_WAS_NOT_read_the_constructor_before_describing_it
+followups: []
+---
