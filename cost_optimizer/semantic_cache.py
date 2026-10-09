@@ -350,6 +350,19 @@ class RedisStorage:
         tag_prefix: str | None = None,
         now_fn: Any = time.time,
     ) -> None:
+        # Both prefixes are written into every Redis key (#291). One Redis
+        # cannot encode (a lone surrogate from a decoded config value) used to
+        # construct fine and then fail every operation with a bare
+        # UnicodeEncodeError from the client; refused here, where it is set.
+        for name, prefix in (("key_prefix", key_prefix), ("tag_prefix", tag_prefix)):
+            if isinstance(prefix, str):
+                try:
+                    prefix.encode("utf-8")
+                except UnicodeEncodeError as e:
+                    raise ValueError(
+                        f"{name} {prefix!r} cannot be encoded as UTF-8 (a lone surrogate at "
+                        f"index {e.start}); Redis keys built from it cannot be written"
+                    ) from None
         if client is None:
             try:
                 import redis
