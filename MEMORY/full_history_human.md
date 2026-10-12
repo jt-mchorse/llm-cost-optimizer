@@ -2923,3 +2923,14 @@ the request. The common case is a caller using automatic caching with a
 front of it, which the docs say the API rejects. Now, when the caller has a
 1-hour marker later in the request, the wrapper's earlier markers are 1-hour
 too. Otherwise it still uses the cheaper 5-minute default.
+
+## 2026-10-09 — A finished Anthropic batch reports how it finished (#285)
+
+Polling a batch through the production backend always said "ended_succeeded"
+once the batch finished. The Anthropic API only reports "ended" and keeps the
+details elsewhere, and the code was waiting for "canceled"/"failed" values that
+the API never sends. A batch the caller canceled, or one where every request
+expired, therefore looked like a success. The backend now reads the cancel
+timestamp and the per-outcome counts: canceled is "ended_canceled", zero
+successes is "ended_failed", and anything else is "ended_succeeded". That
+matches what the in-memory test backend already reported.

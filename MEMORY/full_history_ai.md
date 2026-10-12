@@ -3103,3 +3103,22 @@ context_for_next_session:
   - TOP_LEVEL_cache_control_IS_A_PASSTHROUGH_KWARG_the_wrapper_never_looked_at_it
 followups: []
 ---
+
+---
+session: 2026-10-09T07:46Z
+duration_min: 7   # computed: issue filed 2026-10-09T07:43:43Z -> PR 2026-10-09T07:46:31Z (gh createdAt); hunt-agent lead re-measured first
+issue: 285
+branch: session/2026-10-09-0805-issue-285
+focus: ANTHROPIC_BATCH_POLL_MAPPED_ended_TO_ended_succeeded_SDK_HAS_NO_canceled_OR_failed_STATUS_SO_A_CANCELED_OR_WHOLLY_EXPIRED_BATCH_READ_AS_SUCCEEDED
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 12
+  suite: "1414 -> 1426 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "main via poll(): expired 3/3, canceled 3/3 (cancel_initiated_at), errored 3/3 -> ended_succeeded; in-memory complete(failed=True) -> ended_failed. SDK Literal checked in the installed anthropic wheel. Revert 6 red / 6 controls green."
+context_for_next_session:
+  - A_STATUS_MAP_KEYED_ON_VALUES_THE_SDK_NEVER_SENDS_IS_DEAD_check_the_SDKs_Literal_not_the_docs_comment
+  - MAPPING_CHOICE_cancel_initiated_at_then_zero_succeeded_then_succeeded_is_reversible_and_stated_in_the_PR
+followups: []
+---

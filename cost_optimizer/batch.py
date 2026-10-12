@@ -114,9 +114,11 @@ class BatchResultRow:
                 raise ValueError(f"BatchResultRow.{name} must be an int >= 0; got {value}")
 
 
-# Status strings deliberately match the Anthropic Messages-Batch API's
-# canonical processing-status values so the in-memory backend behaves
-# the same way the production backend does.
+# Backend-neutral job statuses. The Anthropic API has only three processing
+# statuses (`in_progress`, `canceling`, `ended`) and says HOW a batch ended in
+# `cancel_initiated_at` and `request_counts`; `_from_sdk_batch` derives the
+# three terminal statuses below from those (#285), so the production backend
+# reports what the in-memory one does for the same outcome.
 PENDING = "pending"
 IN_PROGRESS = "in_progress"
 ENDED_SUCCEEDED = "ended_succeeded"
@@ -561,21 +563,49 @@ def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:
     status_raw = (
         getattr(resp, "processing_status", None) or getattr(resp, "status", None) or "pending"
     )
+    n_requests = _sdk_request_total(resp)
     status = {
         "pending": PENDING,
         "in_progress": IN_PROGRESS,
-        "ended": ENDED_SUCCEEDED,
         "canceling": IN_PROGRESS,
+        # Not SDK values (see `_ended_status`); kept for a duck-typed client
+        # (D-002) that reports them.
         "canceled": ENDED_CANCELED,
         "failed": ENDED_FAILED,
     }.get(str(status_raw), str(status_raw))
+    if status == "ended":
+        status = _ended_status(resp, n_requests)
     return BatchJobMeta(
         job_id=getattr(resp, "id", ""),
         idempotency_key=idempotency_key,
         status=status,
-        n_requests=_sdk_request_total(resp),
+        n_requests=n_requests,
         created_at_iso=str(getattr(resp, "created_at", "") or ""),
     )
+
+
+def _ended_status(resp: Any, n_requests: int) -> str:
+    """Which terminal status an `ended` SDK batch is (#285).
+
+    The SDK's `processing_status` is `in_progress | canceling | ended`, so the
+    `"canceled"`/`"failed"` arms above never fire for it and every finished batch
+    polled as `ended_succeeded` -- one the caller canceled, and one where every
+    request expired or errored, included. A cancel is recorded in
+    `cancel_initiated_at`; a batch with requests and not one success failed.
+    A partial success is still `ended_succeeded`: its rows are worth reading,
+    and each failed row carries its own `error`.
+    """
+    if getattr(resp, "cancel_initiated_at", None) is not None:
+        return ENDED_CANCELED
+    counts = getattr(resp, "request_counts", None)
+    # No counts (a duck-typed client) says nothing about failure, and a
+    # malformed total is `BatchJobMeta`'s to refuse by name (#166), not ours to
+    # compare first.
+    if counts is None or isinstance(n_requests, bool) or not isinstance(n_requests, int):
+        return ENDED_SUCCEEDED
+    if n_requests > 0 and getattr(counts, "succeeded", 0) == 0:
+        return ENDED_FAILED
+    return ENDED_SUCCEEDED
 
 
 def _from_sdk_result_row(entry: Any) -> BatchResultRow:
