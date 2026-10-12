@@ -2969,3 +2969,12 @@ multi-turn setup therefore went out with five markers, which the API rejects.
 The wrapper now counts what is already there and only adds markers while the
 total is four or fewer. If it has to leave one out, it drops the earliest,
 because a later marker already caches everything before it.
+
+## 2026-10-12 — The real batch backend reports times and errors like the in-memory one (#296)
+
+The Anthropic batch backend turned two SDK values into text with a plain
+`str()`. A batch's creation time came out as `2026-01-01 00:00:00.123000+00:00`
+instead of `2026-01-01T00:00:00Z`, and a failed request's error came out as a
+long internal object description. The tests never noticed, because their fake
+SDK used plain strings. Both now match the in-memory backend's format, and the
+tests use fakes shaped like the real SDK.
