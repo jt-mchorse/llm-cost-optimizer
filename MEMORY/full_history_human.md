@@ -2943,3 +2943,12 @@ in-memory store handled it, but the Redis store saved the entry and then
 failed while recording the tag. The result was an entry that was served but
 could never be cleared by its tag. Such a tag is now refused with a clear
 error before anything is written, on both stores.
+
+## 2026-10-09 — The current Claude models are in the pricing table (#289)
+
+The cost optimizer's pricing table stopped at the Claude 4 generation, so the
+prompt-cache wrapper refused to start for the current default model (Opus 5.5)
+and the other Claude 5 models. I added all five from Anthropic's published
+rates. Opus 5.5 and Fable 5.1 charge less for cache reads than the usual 10%
+of the input price, so their rows say so explicitly. The tests check the
+dollar rate, not just the multiplier.

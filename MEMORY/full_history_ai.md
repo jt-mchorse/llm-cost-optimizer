@@ -3140,3 +3140,22 @@ context_for_next_session:
   - A_BACKEND_THAT_WRITES_THEN_INDEXES_TURNS_A_LATE_ENCODE_ERROR_INTO_A_HALF_WRITE_validate_every_field_at_the_seam_before_any_write
 followups: []
 ---
+
+---
+session: 2026-10-09T09:25Z
+duration_min: 6   # computed: issue filed 2026-10-09T09:22:33Z -> PR 2026-10-09T09:25:55Z (gh createdAt); pricing source read just before
+issue: 289
+branch: session/2026-10-09-0940-issue-289
+focus: PRICING_TABLE_HAD_NO_CLAUDE_5_ROWS_PROMPTCACHEWRAPPER_REFUSED_THE_DEFAULT_MODEL_AND_TWO_READ_RATES_ARE_NOT_THE_DEFAULT
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 10
+  suite: "1465 -> 1475 passed; ruff, mypy clean"
+decisions_made: []
+measured: "main: get_pricing raised UnknownModelError for opus-5-5, opus-5, sonnet-5-5, sonnet-5, fable-5-1. Branch: priced from the claude-api reference (cached 2026-09-25). Revert 10 red."
+context_for_next_session:
+  - SOURCE_IS_THE_CLAUDE_API_SKILL_CURRENT_MODELS_TABLE_AND_PROMPT_CACHING_ECONOMICS_cache_reads_0_05x_opus_5_5_0_025x_fable_5_1
+  - A_DEFAULTED_MULTIPLIER_WOULD_HAVE_LOOKED_CORRECT_test_the_DOLLAR_rate_not_the_multiplier
+followups: []
+---
