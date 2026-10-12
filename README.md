@@ -89,6 +89,12 @@ wrapped = PromptCacheWrapper(
 )
 ```
 
+The API accepts at most four `cache_control` breakpoints per request, and your
+own markers (including top-level automatic caching) count toward them. The
+wrapper adds its markers only while the total fits. When there isn't room for
+all of them, it keeps the latest ones (messages, then system, then tools),
+because a later breakpoint already caches everything before it (#293).
+
 If you're testing locally without an API key, the wrapper works against any object exposing `client.messages.create(...)` — see `tests/test_cache_wrapper.py` for the fake client used by the test suite.
 
 ## Semantic cache (#2)

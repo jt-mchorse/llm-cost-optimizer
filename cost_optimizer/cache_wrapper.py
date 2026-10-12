@@ -154,7 +154,12 @@ class PromptCacheWrapper:
         Which prefix segments to mark as cacheable. Defaults to
         ``("system",)`` because the system prompt is the highest-leverage
         cacheable surface for most apps. Supported values: ``"system"``,
-        ``"tools"``, ``"messages_prefix"``.
+        ``"tools"``, ``"messages_prefix"``. The API allows at most four
+        breakpoints per request (``MAX_CACHE_BREAKPOINTS``), counting the
+        caller's own markers and top-level automatic caching. A segment that
+        would go over is left unmarked, the earliest in render order first
+        (``tools``, then ``system``), because a later breakpoint already caches
+        the prefix before it (#293).
     pricing:
         Optional override; if ``None``, looked up from the pricing table.
     """
@@ -233,12 +238,28 @@ class PromptCacheWrapper:
             # their own request needs it.
             return "1h" if later_1h > position else None
 
-        if "system" in self._cache_segments and "system" in out:
-            out["system"] = _mark_system(out["system"], ttl=ttl_for(_POS_SYSTEM))
-        if "tools" in self._cache_segments and out.get("tools"):
-            out["tools"] = _mark_tools(out["tools"], ttl=ttl_for(_POS_TOOLS))
-        if "messages_prefix" in self._cache_segments and out.get("messages"):
-            out["messages"] = _mark_messages_prefix(out["messages"], ttl=ttl_for(_POS_MESSAGES))
+        # The API takes at most `MAX_CACHE_BREAKPOINTS` markers per request, and
+        # top-level automatic caching uses one of them (#293). The wrapper added
+        # its three without counting the caller's, so automatic caching plus a
+        # marker on an earlier turn went out with five: a 400. Our markers are
+        # added only while the total fits, the latest render position first. A
+        # breakpoint caches the whole prefix before it, so a later one covers
+        # what an earlier one would. A segment whose target block the caller
+        # already marked costs nothing: `_with_cache_control` keeps that marker.
+        used = _count_breakpoints(out)
+        plan = (
+            ("messages_prefix", "messages", _mark_messages_prefix, _POS_MESSAGES),
+            ("system", "system", _mark_system, _POS_SYSTEM),
+            ("tools", "tools", _mark_tools, _POS_TOOLS),
+        )
+        for segment, key, mark, position in plan:
+            if segment not in self._cache_segments or not out.get(key):
+                continue
+            marked = mark(out[key], ttl=ttl_for(position))
+            added = _count_breakpoints({key: marked}) - _count_breakpoints({key: out[key]})
+            if used + added <= MAX_CACHE_BREAKPOINTS:
+                out[key] = marked
+                used += added
         return out
 
     def _read_telemetry(self, response: Any) -> CacheTelemetry:
@@ -364,6 +385,27 @@ _POS_TOOLS = 0
 _POS_SYSTEM = 1
 _POS_MESSAGES = 2
 _POS_TOP_LEVEL = 3
+
+
+#: Anthropic's per-request limit on ``cache_control`` breakpoints. Top-level
+#: automatic caching takes one of the slots (#293).
+MAX_CACHE_BREAKPOINTS = 4
+
+
+def _marked_blocks(blocks: Any) -> int:
+    if not is_block_sequence(blocks):
+        return 0
+    return sum(1 for b in blocks if isinstance(b, Mapping) and b.get("cache_control"))
+
+
+def _count_breakpoints(kwargs: Mapping[str, Any]) -> int:
+    """Number of ``cache_control`` breakpoints ``kwargs`` would send (#293)."""
+    n = 1 if kwargs.get("cache_control") else 0
+    n += _marked_blocks(kwargs.get("tools")) + _marked_blocks(kwargs.get("system"))
+    messages = kwargs.get("messages")
+    if is_item_sequence(messages):
+        n += sum(_marked_blocks(m.get("content")) for m in messages if isinstance(m, Mapping))
+    return n
 
 
 def _is_1h_marker(marker: Any) -> bool:
