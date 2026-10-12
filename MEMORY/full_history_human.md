@@ -2952,3 +2952,10 @@ and the other Claude 5 models. I added all five from Anthropic's published
 rates. Opus 5.5 and Fable 5.1 charge less for cache reads than the usual 10%
 of the input price, so their rows say so explicitly. The tests check the
 dollar rate, not just the multiplier.
+
+## 2026-10-09 — A Redis key prefix that cannot be stored is refused up front (#291)
+
+The Redis cache backend puts its configured key and tag prefixes into every
+key. A prefix containing a broken Unicode character was accepted, and then
+every cache operation failed with an unhelpful encoding error. Such a prefix is
+now refused with a clear message when the backend is created.
