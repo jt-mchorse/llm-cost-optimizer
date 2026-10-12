@@ -2959,3 +2959,13 @@ The Redis cache backend puts its configured key and tag prefixes into every
 key. A prefix containing a broken Unicode character was accepted, and then
 every cache operation failed with an unhelpful encoding error. Such a prefix is
 now refused with a clear message when the backend is created.
+
+## 2026-10-12 — The cache wrapper stays within the API's four-breakpoint limit (#293)
+
+The API allows at most four cache markers per request, and turning on
+automatic caching uses one of them. The wrapper added up to three markers of
+its own without counting the ones the caller had already set. A common
+multi-turn setup therefore went out with five markers, which the API rejects.
+The wrapper now counts what is already there and only adds markers while the
+total is four or fewer. If it has to leave one out, it drops the earliest,
+because a later marker already caches everything before it.
