@@ -2934,3 +2934,12 @@ expired, therefore looked like a success. The backend now reads the cancel
 timestamp and the per-outcome counts: canceled is "ended_canceled", zero
 successes is "ended_failed", and anything else is "ended_succeeded". That
 matches what the in-memory test backend already reported.
+
+## 2026-10-09 — A cache tag Redis cannot store is refused up front (#287)
+
+Cache entries can carry tags so that they can be cleared in bulk later. A tag
+containing a broken Unicode character passed the "is it text" check. The
+in-memory store handled it, but the Redis store saved the entry and then
+failed while recording the tag. The result was an entry that was served but
+could never be cleared by its tag. Such a tag is now refused with a clear
+error before anything is written, on both stores.
