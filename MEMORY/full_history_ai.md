@@ -3198,3 +3198,22 @@ context_for_next_session:
   - SAME_HUNT_ALSO_FOUND_bench_savings_OMITS_OUTPUT_COST_ON_A_FALSE_CLAIM_filed_as_decision_revisit_for_JT
 followups: []
 ---
+
+---
+session: 2026-10-12T08:12:06Z
+duration_min: 1   # computed: plan comment 2026-10-12T08:12:06Z -> PR 2026-10-12T08:13:55Z (gh createdAt)
+issue: 296
+branch: session/2026-10-12-0812-issue-296
+focus: BATCH_BACKEND_PUBLISHED_STR_OF_THE_SDKS_DATETIME_AND_ERRORRESPONSE_BECAUSE_EVERY_FAKE_PASSED_STRINGS
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 8
+  suite: "1514 -> 1522 passed; ruff + mypy clean"
+decisions_made: []
+measured: "real anthropic 1.13.0 over httpx2.MockTransport: created_at_iso '2026-01-01 00:00:00.123000+00:00' and error 'ErrorResponse(...)' on main; '2026-01-01T00:00:00Z' and 'invalid_request_error: bad' on branch. Revert 5 red / 3 green."
+context_for_next_session:
+  - DRIVE_THE_REAL_SDK_OVER_httpx2_MockTransport_TO_SEE_ITS_TYPES_the_repo_venv_has_no_anthropic_the_hunt_venv_at_tmp_hunt_r3_did
+  - FAKES_TYPED_LIKE_THE_SDK_datetime_and_nested_error_objects_since_integration_yml_is_manual_dispatch_only
+followups: []
+---

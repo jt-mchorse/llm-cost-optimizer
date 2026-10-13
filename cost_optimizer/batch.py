@@ -313,7 +313,7 @@ class InMemoryBatchBackend:
 
         self._counter += 1
         job_id = f"batch_{self._counter:08d}"
-        created_at = datetime.datetime.now(tz=datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        created_at = datetime.datetime.now(tz=datetime.UTC).strftime(_ISO_UTC)
         meta = BatchJobMeta(
             job_id=job_id,
             idempotency_key=idempotency_key,
@@ -580,8 +580,44 @@ def _from_sdk_batch(resp: Any, *, idempotency_key: str) -> BatchJobMeta:
         idempotency_key=idempotency_key,
         status=status,
         n_requests=n_requests,
-        created_at_iso=str(getattr(resp, "created_at", "") or ""),
+        created_at_iso=_iso_utc(getattr(resp, "created_at", "")),
     )
+
+
+#: The `created_at_iso` format both backends publish.
+_ISO_UTC = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def _iso_utc(value: Any) -> str:
+    """`created_at` in the form `InMemoryBatchBackend` publishes (#296).
+
+    The SDK's `MessageBatch.created_at` is a `datetime`, and `str()` of it is
+    `2026-01-01 00:00:00.123000+00:00`. Every test fake passed a string, so
+    that never showed. A naive value is taken as UTC, which is what the API
+    sends. Anything else keeps the old `str()` so a duck-typed client still
+    reports what it gave.
+    """
+    if isinstance(value, datetime.datetime):
+        if value.tzinfo is not None:
+            value = value.astimezone(datetime.UTC)
+        return value.strftime(_ISO_UTC)
+    return str(value or "")
+
+
+def _row_error_text(result: Any) -> str:
+    """A failed row's error as `"<type>: <message>"` when the SDK gives one (#296).
+
+    For an errored row the SDK's `result.error` is an `ErrorResponse` whose
+    `.error` carries `type` and `message`, and `str()` of it was the whole
+    pydantic repr. A string, or any other shape, keeps the previous text.
+    """
+    error = getattr(result, "error", None)
+    inner = getattr(error, "error", None)
+    kind = getattr(inner, "type", None)
+    message = getattr(inner, "message", None)
+    if isinstance(kind, str) and isinstance(message, str):
+        return f"{kind}: {message}"
+    return str(error or getattr(result, "type", "unknown"))
 
 
 def _ended_status(resp: Any, n_requests: int) -> str:
@@ -626,7 +662,7 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
             response_text=None,
             prompt_tokens=0,
             completion_tokens=0,
-            error=str(getattr(result, "error", None) or getattr(result, "type", "unknown")),
+            error=_row_error_text(result),
         )
     message = getattr(result, "message", None)
     # A succeeded row whose *nested* values are not the attribute shape this
