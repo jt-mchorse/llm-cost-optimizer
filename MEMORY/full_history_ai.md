@@ -3237,3 +3237,23 @@ context_for_next_session:
   - NOT_SENT_LIVE_no_api_key_same_documented_limit_as_293
 followups: []
 ---
+
+---
+session: 2026-10-13T08:00Z
+duration_min: 4   # computed: plan comment 2026-10-13T07:56:49Z -> code commit 08:00Z (date -u); hunt + repro before that
+issue: 302
+branch: session/2026-10-13-0756-issue-302
+focus: VALIDATE_PAYLOAD_CHECKED_TYPES_ONLY_SO_A_DEEP_PAYLOAD_RAISED_RECURSIONERROR_ON_INMEMORY_AND_A_4301_DIGIT_INT_RAISED_VALUEERROR_INSIDE_REDISSTORAGE_PUT_AFTER_PRUNING_THE_OLD_RECORDS_TAG_INDEX
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 18
+  suite: "1642 -> 1660 passed; ruff, format, mypy clean; semantic-cache tests also green on 3.11"
+decisions_made: []
+measured: "main: first failing depth through put+lookup in-memory 498 (3.11 and 3.12), Redis 991 (3.11) / 9997 (3.12); 10**4300 stored on mem, ValueError on Redis, and a failed Redis re-put left invalidate(tag) -> 0 with the old answer still served. Validator alone at depth 20000 peaked ~740 MB (path strings held by exit frames). Revert 11 red / 7 green controls."
+context_for_next_session:
+  - THE_DEEP_PAYLOAD_TEST_HAD_A_TUPLE_LEAF_so_it_pinned_the_REJECTION_arm_only_an_ACCEPTED_payload_reaches_a_backend_test_the_accept_arm_of_a_validator_at_the_extremes
+  - EXACT_JSON_TYPES_ARE_NECESSARY_NOT_SUFFICIENT_depth_and_int_max_str_digits_are_the_two_non_type_properties_json_dumps_and_deepcopy_need
+  - CAP_256_IS_A_SMALL_REVERSIBLE_CONSTANT_below_deepcopys_498_with_caller_stack_headroom_documented_in_architecture_md_D015_paragraph
+followups: []
+---

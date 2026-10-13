@@ -2988,3 +2988,15 @@ result, a search result, or a document's content was invisible to it. An agent
 loop that marked its last four tool results got a fifth marker added, which the
 API rejects. A 1-hour marker inside a tool result got a 5-minute system marker
 placed ahead of it. The wrapper now looks inside those blocks too.
+
+## 2026-10-13 — Cache payloads both stores cannot save are refused up front (#302)
+
+The semantic cache checks that a payload is made only of plain JSON types, so
+the in-memory store and the Redis store treat it the same way. Two kinds of
+payload passed that check and still split the stores. A payload nested several
+hundred levels deep crashed the in-memory store with a recursion error while
+Redis saved it. A whole number longer than 4,300 digits was saved in memory but
+made Redis fail. The Redis failure also removed the old entry from its tag
+index first, so clearing that tag no longer cleared the stale answer. The cache
+now refuses both shapes, nesting deeper than 256 levels and a number Python
+will not write out, with a clear error before either store is touched.
