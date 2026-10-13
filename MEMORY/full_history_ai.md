@@ -3217,3 +3217,23 @@ context_for_next_session:
   - FAKES_TYPED_LIKE_THE_SDK_datetime_and_nested_error_objects_since_integration_yml_is_manual_dispatch_only
 followups: []
 ---
+
+---
+session: 2026-10-13T07:18:24Z
+duration_min: 10   # computed: plan comment 2026-10-13T07:18:24Z -> PR (gh createdAt), approx
+issue: 299
+branch: session/2026-10-13-0718-issue-299
+focus: CACHE_WRAPPER_BREAKPOINT_COUNT_AND_1H_ORDERING_READ_ONE_LEVEL_OF_BLOCKS_SO_A_MARKER_NESTED_IN_TOOL_RESULT_SEARCH_RESULT_OR_DOCUMENT_SOURCE_WAS_INVISIBLE
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 66
+  suite: "1634 -> 1700 passed; ruff + format + mypy clean"
+decisions_made: []
+measured: "fake client on main: four tool_results with a marked text block + default ('system',) -> caller 4, sent 5; nested 1h marker -> wrapper system marker 5m ahead of it. Branch: sent 4; system 1h. Revert 42 red / 24 green of 66 (green = under-budget arms + the tool_use.input guard, which goes red against a walk-every-value wrapper)."
+context_for_next_session:
+  - THE_293_ISSUE_LISTED_ITS_POPULATION_every_block_in_tools_system_message_content_THE_SDK_PARAM_TYPES_PUT_cache_control_ONE_AND_TWO_LEVELS_DEEPER
+  - WALK_ONLY_content_AND_source_content_tool_use_input_IS_CALLER_JSON_NOT_A_BLOCK_CONTAINER
+  - NOT_SENT_LIVE_no_api_key_same_documented_limit_as_293
+followups: []
+---
