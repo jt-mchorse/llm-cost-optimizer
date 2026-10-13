@@ -174,7 +174,11 @@ response back into the cache.
   base classes: `json.dumps` writes a subclass as its base, so an
   int-valued enum member, a `defaultdict` or a `Counter` diverges the
   same way a `tuple` does, and the validator classifies on `type(...)`
-  rather than `isinstance` for that reason (#207). Enforced at the `put` seam by
+  rather than `isinstance` for that reason (#207). Exact types are not
+  sufficient: a payload nested deeper than 256 containers, or an `int`
+  past `sys.get_int_max_str_digits()`, split the backends too (in-memory
+  `RecursionError` vs Redis stored; in-memory stored vs Redis `ValueError`),
+  so both are refused as well (#302). Enforced at the `put` seam by
   `_validate_payload`, not at whichever backend happens to be
   configured — otherwise `InMemoryStorage` (which `deepcopy`s) and
   `RedisStorage` (which `json.dumps`) serve different objects for the
