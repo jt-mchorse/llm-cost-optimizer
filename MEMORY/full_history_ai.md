@@ -3177,3 +3177,24 @@ context_for_next_session:
   - MY_FIRST_ISSUE_TEXT_CLAIMED_THE_PREFIX_WAS_ALREADY_SHAPE_VALIDATED_IT_WAS_NOT_read_the_constructor_before_describing_it
 followups: []
 ---
+
+---
+session: 2026-10-12T07:32:21Z
+duration_min: 3   # computed: plan comment 2026-10-12T07:32:21Z -> PR 2026-10-12T07:36:03Z (gh createdAt)
+issue: 293
+branch: session/2026-10-12-0732-issue-293
+focus: CACHE_WRAPPER_ADDED_UP_TO_THREE_MARKERS_WITHOUT_COUNTING_THE_CALLERS_OR_TOP_LEVEL_AUTOMATIC_CACHING_SO_A_REQUEST_COULD_CARRY_5_BREAKPOINTS_API_MAX_4
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 120
+  suite: "1477 -> 1597 passed; ruff + format + mypy clean"
+decisions_made: []
+measured: "probe: automatic caching + 1 history marker, segments=all three -> caller 2, sent 5 on main; 4 on branch (tools dropped). Revert 30 red / 90 green over the 120-case sweep."
+context_for_next_session:
+  - THE_LIMIT_AND_THE_AUTOMATIC_SLOT_RULE_CAME_FROM_THE_claude_api_SKILL_shared_prompt_caching_md_max_4_breakpoints_automatic_consumes_one_not_sent_live
+  - WHEN_SHORT_KEEP_THE_LATEST_RENDER_POSITION_a_later_breakpoint_caches_the_prefix_an_earlier_one_would_SMALL_REVERSIBLE_CHOICE_documented_in_docstring_and_README
+  - ADDED_IS_MEASURED_AS_AFTER_MINUS_BEFORE_so_a_segment_the_caller_already_marked_costs_zero
+  - SAME_HUNT_ALSO_FOUND_bench_savings_OMITS_OUTPUT_COST_ON_A_FALSE_CLAIM_filed_as_decision_revisit_for_JT
+followups: []
+---
