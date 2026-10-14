@@ -15,7 +15,7 @@ The wrapper is intentionally dependency-free: the Anthropic SDK is never importe
 Today the five runtime layers and one offline sibling have all shipped:
 
 - **Prompt-cache wrapper** (#1) — the duck-typed Anthropic-SDK wrapper above; `CacheTelemetry` per call and aggregate. `CacheTelemetry.to_dict()` and `PromptCacheWrapper.dump_aggregate_json(path)` (#50) emit a JSON-stable observability shape — atomic-written so a log-tailer never reads a half-written file.
-- **Semantic response cache** (#2) — `cost_optimizer.semantic_cache` keys on an embedding of the user prompt, caches the full response, and exposes TTL plus exact-prompt invalidation. Pluggable `Embedder` Protocol (default in-repo hash embedder; swap in a real one). `CacheStats.to_dict()` and `SemanticCache.dump_stats_json(path)` (#52) emit the same JSON-stable observability shape as the prompt-cache wrapper (raw counters + `total_lookups` + `hit_rate`) — atomic-written so a log-tailer never reads a half-written file.
+- **Semantic response cache** (#2) — `cost_optimizer.semantic_cache` keys on an embedding of the user prompt, caches the full response, and exposes TTL plus tag-based invalidation. Pluggable `Embedder` Protocol (default in-repo hash embedder; swap in a real one). `CacheStats.to_dict()` and `SemanticCache.dump_stats_json(path)` (#52) emit the same JSON-stable observability shape as the prompt-cache wrapper (raw counters + `total_lookups` + `hit_rate`) — atomic-written so a log-tailer never reads a half-written file.
 - **Uncertainty-routed model fallback** (#3) — `cost_optimizer.router` first-passes the cheap model and escalates to the strong model only when a confidence signal (logprob entropy or judge score) clears a threshold. The threshold curve is swept by `scripts/tune_threshold.py`, which runs today against committed sample fixtures (`--dry`); the real-API mode that would take an operator-supplied dataset is an explicit not-implemented stub.
 - **Anthropic Batch API integration** (#4) — `cost_optimizer.batch` wraps the non-realtime batch endpoint with an idempotency key derived from request content, exposes a polling-friendly `BatchJobMeta`, and reports both the realtime-equivalent cost and the actual batch cost so the savings number is directly comparable.
 - **Savings dashboard** (#5) — `streamlit run dashboard/app.py` renders the five-strategy savings bench against a realistic mixed workload. Strategy summaries and cumulative series live in `docs/savings.json`; the dashboard reads them directly so the same data backs the README table, the markdown report, and the live UI.
@@ -134,8 +134,10 @@ if result.hit:
     print("cache hit, sim =", result.similarity)
 else:
     response = client.messages.create(...)  # call the model
-    cache.put("how do I refund a charge", response, model="claude-haiku-4-5",
-              tags=("policy",))
+    # A payload must survive a JSON round-trip (D-015), so store the SDK
+    # Message as its JSON dict, not the object itself.
+    cache.put("how do I refund a charge", response.model_dump(mode="json"),
+              model="claude-haiku-4-5", tags=("policy",))
 ```
 
 Tag-based invalidation: `cache.invalidate(tag="policy")` drops every
