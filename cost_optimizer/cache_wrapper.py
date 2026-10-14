@@ -26,7 +26,7 @@ wrapper testable with a fake client and importable without an API key.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -392,10 +392,30 @@ _POS_TOP_LEVEL = 3
 MAX_CACHE_BREAKPOINTS = 4
 
 
-def _marked_blocks(blocks: Any) -> int:
+def _walk_blocks(blocks: Any) -> Iterator[Mapping[str, Any]]:
+    """Every content block in ``blocks``, including the ones nested inside a block (#299).
+
+    A marker is not only on a top-level block. ``tool_result.content``,
+    ``search_result.content`` and a ``document``'s ``source.content`` hold blocks
+    of their own that take ``cache_control``. The API counts those markers
+    toward the four and orders them by TTL like any other. Only those two
+    containers are walked. ``tool_use.input`` is the caller's arbitrary JSON,
+    and a ``cache_control`` key in it is data, not a breakpoint.
+    """
     if not is_block_sequence(blocks):
-        return 0
-    return sum(1 for b in blocks if isinstance(b, Mapping) and b.get("cache_control"))
+        return
+    for block in blocks:
+        if not isinstance(block, Mapping):
+            continue
+        yield block
+        yield from _walk_blocks(block.get("content"))
+        source = block.get("source")
+        if isinstance(source, Mapping):
+            yield from _walk_blocks(source.get("content"))
+
+
+def _marked_blocks(blocks: Any) -> int:
+    return sum(1 for b in _walk_blocks(blocks) if b.get("cache_control"))
 
 
 def _count_breakpoints(kwargs: Mapping[str, Any]) -> int:
@@ -413,9 +433,7 @@ def _is_1h_marker(marker: Any) -> bool:
 
 
 def _any_block_1h(blocks: Any) -> bool:
-    if not is_block_sequence(blocks):
-        return False
-    return any(isinstance(b, Mapping) and _is_1h_marker(b.get("cache_control")) for b in blocks)
+    return any(_is_1h_marker(b.get("cache_control")) for b in _walk_blocks(blocks))
 
 
 def _last_caller_1h_position(kwargs: Mapping[str, Any]) -> int:

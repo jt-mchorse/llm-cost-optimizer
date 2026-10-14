@@ -2978,3 +2978,13 @@ instead of `2026-01-01T00:00:00Z`, and a failed request's error came out as a
 long internal object description. The tests never noticed, because their fake
 SDK used plain strings. Both now match the in-memory backend's format, and the
 tests use fakes shaped like the real SDK.
+
+## 2026-10-13 — Cache markers inside tool results count too (#299)
+
+The wrapper counts the caller's cache markers so it never sends more than four,
+and checks their lifetimes so a 5-minute marker never comes before a 1-hour one.
+It only looked at the top level of each message, though. A marker inside a tool
+result, a search result, or a document's content was invisible to it. An agent
+loop that marked its last four tool results got a fifth marker added, which the
+API rejects. A 1-hour marker inside a tool result got a 5-minute system marker
+placed ahead of it. The wrapper now looks inside those blocks too.
