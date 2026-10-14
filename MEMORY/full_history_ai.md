@@ -3283,6 +3283,12 @@ duration_min: 10   # computed: plan comment 2026-10-14T07:26:04Z -> PR, approx
 issue: 306
 branch: session/2026-10-14-0726-issue-306
 focus: README_SEMANTIC_CACHE_EXAMPLE_PUT_THE_SDK_MESSAGE_OBJECT_WHICH_D015_REJECTS_SO_THE_DOCUMENTED_MISS_PATH_RAISED_VALUEERROR
+---
+
+---
+session: 2026-10-14T08:35Z
+issue: 308
+focus: REDIS_STORAGE_HINT_SAID_PIP_INSTALL_COST_OPTIMIZER_REDIS_WHICH_404S_ON_PYPI_AND_IS_UNCLAIMED
 phase: shipped
 delta:
   files_changed: 2
@@ -3294,5 +3300,15 @@ context_for_next_session:
   - D015_NARROWED_A_PUBLIC_INPUT_DOMAIN_AND_THE_README_EXAMPLE_WAS_THE_UNLISTED_CALLER
   - THE_TEST_EXECS_THE_README_BLOCK_WITH_A_FAKE_CLIENT_WHOSE_RESPONSE_IS_NOT_JSON_AND_HAS_model_dump_no_anthropic_in_ci
   - SAME_FEATURE_LINE_CLAIMED_EXACT_PROMPT_INVALIDATION_the_api_has_only_invalidate_tag
+followups: []
+---
+
+---
+  suite: "full suite green (rc 0); ruff check + format clean"
+decisions_made: []
+measured: "pypi.org/pypi/cost-optimizer/json -> 404. Revert probe: 1 of 3 new arms red, 2 controls green."
+context_for_next_session:
+  - LAST_OF_THE_PORTFOLIO_SWEEP_csl_266_leh_369_vsas_234_rag_338_ems_216_lco_308_the_other_6_repos_have_no_python_dist_hint
+  - PR_303_ALSO_EDITS_semantic_cache_py_DIFFERENT_HUNK
 followups: []
 ---
