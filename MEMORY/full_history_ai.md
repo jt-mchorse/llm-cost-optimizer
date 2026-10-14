@@ -3276,3 +3276,23 @@ context_for_next_session:
   - STEP_3A_NOW_READS_streamlit_argv_LAST_ELEMENT_so_the_two_cannot_drift_again
 followups: []
 ---
+
+---
+session: 2026-10-14T07:26:04Z
+duration_min: 10   # computed: plan comment 2026-10-14T07:26:04Z -> PR, approx
+issue: 306
+branch: session/2026-10-14-0726-issue-306
+focus: README_SEMANTIC_CACHE_EXAMPLE_PUT_THE_SDK_MESSAGE_OBJECT_WHICH_D015_REJECTS_SO_THE_DOCUMENTED_MISS_PATH_RAISED_VALUEERROR
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
+  suite: "1708 -> 1711 passed (rebased on #300); ruff + format + mypy clean"
+decisions_made: []
+measured: "scratch venv anthropic 1.13.0 over httpx2.MockTransport, README block verbatim: ValueError payload is a Message on main; with response.model_dump(mode='json') stored and the next lookup hit with a dict. Revert 3 red / 0 green."
+context_for_next_session:
+  - D015_NARROWED_A_PUBLIC_INPUT_DOMAIN_AND_THE_README_EXAMPLE_WAS_THE_UNLISTED_CALLER
+  - THE_TEST_EXECS_THE_README_BLOCK_WITH_A_FAKE_CLIENT_WHOSE_RESPONSE_IS_NOT_JSON_AND_HAS_model_dump_no_anthropic_in_ci
+  - SAME_FEATURE_LINE_CLAIMED_EXACT_PROMPT_INVALIDATION_the_api_has_only_invalidate_tag
+followups: []
+---
