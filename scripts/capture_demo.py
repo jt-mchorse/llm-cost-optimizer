@@ -210,6 +210,12 @@ def _dashboard_cheatsheet(
     # `DASHBOARD_URL`: on a second take the child is on 8502 and 8501 is the
     # first take's dashboard, so the checklist sent the operator to the
     # previous take's JSON -- and to start a third server.
+    #
+    # Step 3a quotes the dashboard's caption, which shows the `--json` it was
+    # given verbatim. That argument is absolute since #277, so 3a takes it from
+    # the same argv rather than from `json_path`: with a relative
+    # `--output-dir` it named a string no correct take's caption shows (#304).
+    shown_json = _streamlit_argv(json_path)[-1]
     if launched_pid is None:
         step_1 = (
             "# 1. Start the dashboard in a separate terminal:\n"
@@ -236,7 +242,7 @@ def _dashboard_cheatsheet(
         "#\n"
         "# 3. Recording checklist (in order, so the GIF is reproducible):\n"
         "#      a. The caption under the title — it names the source file;\n"
-        f"#         confirm it reads {json_path}.\n"
+        f"#         confirm it reads {shown_json}.\n"
         '#      b. "Dollars saved vs. baseline" — the per-strategy dollars\n'
         "#         and percent saved, matching STAGE 1's terminal output.\n"
         '#      c. "Cumulative $ saved per row" — the per-strategy\n'
