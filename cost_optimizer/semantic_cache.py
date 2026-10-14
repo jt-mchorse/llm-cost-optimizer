@@ -689,6 +689,23 @@ def _validate_embedding(vector: list[float], *, where: str) -> None:
 #: member -- see ``_validate_payload`` (#207).
 _JSON_SCALAR_TYPES: frozenset[type] = frozenset({type(None), bool, int, float, str})
 
+#: The deepest container nesting a payload may have (#302). A payload of exact
+#: JSON types can still be one neither backend round-trips the same way, for a
+#: reason that is not its type: `InMemoryStorage` `deepcopy`s it (about two
+#: Python frames per level) and raised `RecursionError` from 498 levels down,
+#: while `RedisStorage` `json.dumps` it and stored the same payload -- up to 990
+#: levels on 3.11, 9,996 on 3.12. Both limits move with the caller's own stack
+#: depth, so the cap sits well under the lower one rather than at it, and far
+#: above any response payload anyone caches. Bounding the depth also bounds the
+#: walk's `path` strings, which otherwise grow quadratically with it.
+_MAX_PAYLOAD_DEPTH = 256
+
+#: Above this many bits an `int` may be past `sys.get_int_max_str_digits()`
+#: (its floor, 640 digits, is ~2,126 bits), so `_validate_payload` asks
+#: `int.__repr__` -- the call `json.dumps` makes -- whether it can be written.
+#: Below it no setting can refuse, so ordinary ints cost one `bit_length`.
+_INT_REPR_PROBE_BITS = 2_000
+
 #: ``(base json.JSONEncoder dispatches on, type the value comes back as)``.
 #:
 #: Anything matching none of these bases is handed to ``default()``, which
@@ -841,16 +858,46 @@ def _validate_payload(payload: Any) -> None:
     `KeyError` on Redis for a `defaultdict` payload, and `served["status"].name`
     returns `'OK'` on one and raises `AttributeError` on the other for an
     `IntEnum`. Nothing raises at write time on either road.
+
+    **Exact JSON types are necessary, not sufficient (#302).** Two payloads made
+    only of accepted types still split the backends, and only an *accepted*
+    payload ever reaches one -- the deep-payload test above used a `tuple` leaf,
+    so it pinned the rejection path and never this one:
+
+        payload                     in-memory                 redis
+        list nested 600 deep        RecursionError from put   stored
+        {"n": 10**4300}             stored                    ValueError from put
+
+    The first is `copy.deepcopy` recursing, the second is `json.dumps` refusing
+    an int past `sys.get_int_max_str_digits()`. Both are refused here instead:
+    nesting deeper than `_MAX_PAYLOAD_DEPTH`, and an `int` whose decimal text
+    `int.__repr__` will not produce under the process's current limit. The
+    Redis failure was also a half-write -- `RedisStorage.put` prunes the old
+    record's stale tag memberships before it serializes, so a failed re-put
+    left the old record live but missing from its tag index, and
+    `invalidate(tag=...)` no longer reached it.
     """
-    # `(path, node, is_exit)`. An exit frame is pushed under a container's
-    # children so `on_path` is popped back down when the subtree is done.
-    stack: list[tuple[str, Any, bool]] = [("payload", payload, False)]
+    # `(path, node, is_exit, depth)`. An exit frame is pushed under a
+    # container's children so `on_path` is popped back down when the subtree is
+    # done. `depth` counts the containers enclosing `node`.
+    stack: list[tuple[str, Any, bool, int]] = [("payload", payload, False, 0)]
     on_path: set[int] = set()
     while stack:
-        path, node, is_exit = stack.pop()
+        path, node, is_exit, depth = stack.pop()
         if is_exit:
             on_path.discard(id(node))
             continue
+        if type(node) is int and node.bit_length() > _INT_REPR_PROBE_BITS:
+            try:
+                int.__repr__(node)
+            except ValueError:
+                raise ValueError(
+                    f"{path} is an int of about {int(node.bit_length() * 0.30103)} digits, "
+                    "past this process's sys.get_int_max_str_digits() limit; cache payloads "
+                    "must survive a JSON round-trip unchanged, and `json.dumps` cannot write "
+                    "it -- RedisStorage raises from inside `put` while InMemoryStorage stores "
+                    "it. Store it as a str, or raise the limit, before caching."
+                ) from None
         # `type(...) in`, not `isinstance(...)` (#207). `bool` is listed as
         # itself rather than inherited from the `int` arm -- which is also why
         # the exact-type form is the simpler one to state here: the old code
@@ -859,6 +906,14 @@ def _validate_payload(payload: Any) -> None:
         if type(node) in _JSON_SCALAR_TYPES:
             continue
         if type(node) is dict or type(node) is list:
+            if depth >= _MAX_PAYLOAD_DEPTH:
+                raise ValueError(
+                    f"{path} is nested {depth + 1} containers deep, past the limit of "
+                    f"{_MAX_PAYLOAD_DEPTH}; cache payloads must survive a JSON round-trip "
+                    "unchanged on every backend, and this deep InMemoryStorage's deepcopy "
+                    "raises RecursionError where RedisStorage's json.dumps still stores it "
+                    "(or the reverse). Flatten it before caching."
+                )
             if id(node) in on_path:
                 raise ValueError(
                     f"{path} is a {type(node).__name__} that contains itself; cache "
@@ -871,7 +926,7 @@ def _validate_payload(payload: Any) -> None:
                     "fine and is not this error.)"
                 )
             on_path.add(id(node))
-            stack.append((path, node, True))
+            stack.append((path, node, True, depth))
         if type(node) is dict:
             for k, v in node.items():
                 # Exact type here too: `json.dumps` writes a `str` subclass key
@@ -897,11 +952,11 @@ def _validate_payload(payload: Any) -> None:
                         "and serve back a dict the in-memory backend never "
                         "would. Convert the key before caching."
                     )
-                stack.append((f"{path}[{k!r}]", v, False))
+                stack.append((f"{path}[{k!r}]", v, False, depth + 1))
             continue
         if type(node) is list:
             for i, v in enumerate(node):
-                stack.append((f"{path}[{i}]", v, False))
+                stack.append((f"{path}[{i}]", v, False, depth + 1))
             continue
         raise ValueError(_unrepresentable_message(path, node))
 
