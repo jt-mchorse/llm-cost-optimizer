@@ -3009,3 +3009,13 @@ earlier fix (#277) started passing that file to the dashboard as a full path,
 so the caption shows the full path. Step 3a still printed the short path the
 operator typed, so on a correct take the check didn't match. Step 3a now prints
 the same full path the dashboard receives.
+
+## 2026-10-14 — The README's semantic-cache example works again (#306)
+
+The README showed how to cache a model response by passing the response object
+straight to `cache.put`. Since August the cache only accepts plain JSON data,
+so that example failed with an error every time it tried to store something.
+The example now stores the response as JSON (`response.model_dump(mode="json")`).
+A test now runs the README example. The feature list also claimed you could
+remove a single prompt's cached entry. You can't: entries are removed by tag,
+and the line now says so.
