@@ -3019,3 +3019,13 @@ The example now stores the response as JSON (`response.model_dump(mode="json")`)
 A test now runs the README example. The feature list also claimed you could
 remove a single prompt's cached entry. You can't: entries are removed by tag,
 and the line now says so.
+
+## 2026-10-14 — the Redis-extra hint installs from the checkout (#308)
+
+`RedisStorage` told an operator without the `redis` extra to run
+`pip install 'cost-optimizer[redis]'`. The project isn't on PyPI (404), so that
+fails, and anyone could register the name later. It now says
+`pip install -e '.[redis]'` from the checkout, like every install line in the
+README. A new test fails if any tracked file tells the reader to install this
+project's name from an index. This was the last repo in a portfolio-wide sweep
+for this mistake.

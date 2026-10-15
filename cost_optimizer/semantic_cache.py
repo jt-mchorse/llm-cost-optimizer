@@ -369,7 +369,7 @@ class RedisStorage:
             except ImportError as e:
                 raise ImportError(
                     "RedisStorage requires the optional 'redis' extra. "
-                    "Install with: pip install 'cost-optimizer[redis]'"
+                    "Install with: pip install -e '.[redis]' from the checkout"
                 ) from e
             client = redis.Redis.from_url(url or "redis://localhost:6379/0")
         self.client = client
