@@ -3070,3 +3070,14 @@ benchmark run checks that those pieces give the same numbers the benchmark
 publishes. A new check confirms the sizes still include the cases the original
 bug showed up on, and that check also runs on 3.11. The check still fails
 against the original bug on 3.12.
+
+## 2026-10-15 — Sonnet 5.5 cache reads are priced at the published rate (#316)
+
+The pricing table charged Claude Sonnet 5.5 cache reads at the usual 10% of
+the input price ($0.20 per million tokens). Anthropic's pricing page now lists
+them at 5% ($0.10), the same discount Opus 5.5 gets. The row was written from
+an older copy of the page that listed only Opus 5.5 and Fable 5.1 as the
+exceptions. Because of this, the cache wrapper under-reported Sonnet 5.5
+savings: 1M cached tokens showed $1.80 saved instead of $1.90. Sonnet 5.5 now
+uses the 5% rate, and a test checks that $1.90 figure. The published benchmark
+doesn't use Sonnet 5.5, so none of its numbers change.
