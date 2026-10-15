@@ -147,6 +147,10 @@ class ModelPricing:
 # $2.00 per input MTok. Cache reads are NOT the 0.10x default on two of them:
 # Opus 5.5 reads at $0.20/MTok (0.05x) and Fable 5.1 at $0.25/MTok (0.025x),
 # so those two override `cache_read_multiplier`; writes are 1.25x / 2x on all.
+# Sonnet 5.5 joined them 2026-10-15 (#316): the published pricing page
+# (platform.claude.com/docs/en/about-claude/pricing, fetched 2026-10-15) prices
+# its cache hits at 0.05x, $0.10/MTok, under the same footnote as Opus 5.5. The
+# 2026-09-25 reference this row was first written from named only those two.
 #
 # `min_cacheable_tokens` is the minimum cacheable prefix from Anthropic's
 # prompt-caching reference (per-model table; checked 2026-10-07, #266):
@@ -161,7 +165,9 @@ _PRICING: dict[str, ModelPricing] = {
         "claude-opus-5-5", 4.00, cache_read_multiplier=0.05, min_cacheable_tokens=512
     ),
     "claude-opus-5": ModelPricing("claude-opus-5", 5.00, min_cacheable_tokens=512),
-    "claude-sonnet-5-5": ModelPricing("claude-sonnet-5-5", 2.00, min_cacheable_tokens=512),
+    "claude-sonnet-5-5": ModelPricing(
+        "claude-sonnet-5-5", 2.00, cache_read_multiplier=0.05, min_cacheable_tokens=512
+    ),
     "claude-sonnet-5": ModelPricing("claude-sonnet-5", 2.00, min_cacheable_tokens=1024),
     "claude-fable-5": ModelPricing("claude-fable-5", 10.00, min_cacheable_tokens=512),
     "claude-opus-4-8": ModelPricing("claude-opus-4-8", 5.00, min_cacheable_tokens=1024),
