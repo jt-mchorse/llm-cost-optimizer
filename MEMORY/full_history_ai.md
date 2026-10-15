@@ -3333,3 +3333,20 @@ context_for_next_session:
   - TEST_3_11_AT_0_82_OF_ITS_30_MIN_CAP_one_fixture_768s_filed_312_timeouts_unchanged
 followups: [312]
 ---
+session: 2026-10-15T07:22:26Z
+duration_min: 12   # computed: plan comment 2026-10-15T07:22:26Z -> code commit (date -u), approx
+issue: 310
+branch: session/2026-10-15-0722-issue-310
+focus: TUNE_THRESHOLD_DOLLAR_DEFAULTS_WERE_HAIKU_3_5_AND_OPUS_4_1_LITERALS_WHILE_THE_ROUTER_NAMES_HAIKU_4_5_AND_OPUS_4_7_THE_90_TABLE_REFRESH_COULD_NOT_REACH_THEM
+phase: shipped
+delta:
+  files_changed: 5
+  tests_added: 6
+  suite: "1726 -> 1732 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "premise re-verified on 7910a73: defaults 0.0008/0.015 (18.75x), table haiku-4-5 1.00 / opus-4-7 5.00 (5x). Regenerated docs/threshold_demo.json with the README command: only the 10 dollar cells moved (escalate-all 0.0158 -> 0.006, cheap-only 0.0008 -> 0.001). Probe with the constants grafted and the literal defaults + old artifact restored: 4 of 6 new tests red (+1 re-captured column lock); fixed defaults over the stale artifact: 3 red; router naming a different strong model: 1 red."
+context_for_next_session:
+  - TWO_TEST_MODULES_RETYPED_THE_DEFAULTS_0_0008_0_015_the_parser_docstring_already_warned_a_retyped_default_stops_testing_the_default_they_now_read_build_parser_parse_args
+  - A_NEW_TEST_IMPORTING_NEW_SYMBOLS_ERRORS_AT_COLLECTION_AGAINST_A_PLAIN_REVERT_graft_the_constants_and_revert_only_the_behaviour
+followups: []
+---
