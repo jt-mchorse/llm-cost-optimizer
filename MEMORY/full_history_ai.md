@@ -3257,3 +3257,22 @@ context_for_next_session:
   - CAP_256_IS_A_SMALL_REVERSIBLE_CONSTANT_below_deepcopys_498_with_caller_stack_headroom_documented_in_architecture_md_D015_paragraph
 followups: []
 ---
+
+---
+session: 2026-10-14T07:19:38Z
+duration_min: 12   # computed: plan comment 2026-10-14T07:19:38Z -> PR, approx
+issue: 304
+branch: session/2026-10-14-0719-issue-304
+focus: CAPTURE_DEMO_CHECKLIST_STEP_3A_QUOTED_THE_TYPED_JSON_PATH_WHILE_277_MADE_THE_COMMAND_AND_THEREFORE_THE_DASHBOARD_CAPTION_ABSOLUTE
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 9
+  suite: "1708 -> 1717 passed (rebased on #300); ruff + format + mypy clean"
+decisions_made: []
+measured: "main, from another cwd with --output-dir demo: step 1 --json /private/tmp/.../demo/savings_demo.json, step 3a 'confirm it reads demo/savings_demo.json'. Branch: both absolute and equal to dashboard _parse_args(...).json. Revert 8 red / 1 green (the absolute-path control)."
+context_for_next_session:
+  - 277_LISTED_THE_ARGV_AND_THE_PRINTED_COMMAND_THE_CHECKLIST_LINE_QUOTING_THE_SAME_PATH_WAS_THE_UNLISTED_SURFACE
+  - STEP_3A_NOW_READS_streamlit_argv_LAST_ELEMENT_so_the_two_cannot_drift_again
+followups: []
+---

@@ -3000,3 +3000,12 @@ made Redis fail. The Redis failure also removed the old entry from its tag
 index first, so clearing that tag no longer cleared the stale answer. The cache
 now refuses both shapes, nesting deeper than 256 levels and a number Python
 will not write out, with a clear error before either store is touched.
+
+## 2026-10-14 — The demo checklist names the file the dashboard actually shows (#304)
+
+The demo script prints a checklist for recording the dashboard. Step 3a tells
+the operator to check that the page caption names the file this run wrote. An
+earlier fix (#277) started passing that file to the dashboard as a full path,
+so the caption shows the full path. Step 3a still printed the short path the
+operator typed, so on a correct take the check didn't match. Step 3a now prints
+the same full path the dashboard receives.
