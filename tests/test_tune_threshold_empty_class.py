@@ -28,6 +28,7 @@ import pytest
 
 from scripts.tune_threshold import (
     ThresholdSweepRow,
+    _build_parser,
     _build_sample_items,
     main,
     sweep,
@@ -39,8 +40,11 @@ COMMITTED = _REPO_ROOT / "docs" / "threshold_demo.json"
 # The default sweep `main()` runs with no flags — the README's documented
 # command (README:191) and the stem that writes the committed artifact.
 DEFAULT_THRESHOLDS = [0.0, 0.5, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
-DEFAULT_CHEAP_DOLLARS = 0.0008
-DEFAULT_STRONG_DOLLARS = 0.015
+# Read from the shipped parser, not retyped: the retyped `0.0008` / `0.015` here
+# kept pinning Haiku 3.5 / Opus 4.1 rates after the defaults were wrong (#310).
+_SHIPPED_DEFAULTS = _build_parser().parse_args([])
+DEFAULT_CHEAP_DOLLARS = _SHIPPED_DEFAULTS.cheap_dollars
+DEFAULT_STRONG_DOLLARS = _SHIPPED_DEFAULTS.strong_dollars
 
 
 def _default_sweep() -> list[ThresholdSweepRow]:
@@ -179,16 +183,18 @@ def test_a_measured_zero_on_the_escalated_side_is_still_published_as_zero() -> N
 
 # Captured from the committed artifact *before* this change. Every field here
 # was already a real measurement, so all of them must survive byte-identical;
-# only the three fabricated quality cells may move.
+# only the three fabricated quality cells may move. The dollar column was
+# re-captured when the defaults moved to the pricing table's Haiku 4.5 / Opus
+# 4.7 rates (#310) -- that change moved no other column.
 PRE_FIX_UNCHANGED_COLUMNS = [
-    (0.0, 1.0, 0.015799999999999998, 0.924),
-    (0.5, 0.6, 0.009799999999999998, 0.9199999999999999),
-    (1.0, 0.4, 0.006799999999999999, 0.876),
-    (1.2, 0.4, 0.006799999999999999, 0.876),
-    (1.4, 0.4, 0.006799999999999999, 0.876),
-    (1.6, 0.4, 0.006799999999999999, 0.876),
-    (1.8, 0.0, 0.0008, 0.7),
-    (2.0, 0.0, 0.0008, 0.7),
+    (0.0, 1.0, 0.006, 0.924),
+    (0.5, 0.6, 0.004, 0.9199999999999999),
+    (1.0, 0.4, 0.003, 0.876),
+    (1.2, 0.4, 0.003, 0.876),
+    (1.4, 0.4, 0.003, 0.876),
+    (1.6, 0.4, 0.003, 0.876),
+    (1.8, 0.0, 0.001, 0.7),
+    (2.0, 0.0, 0.001, 0.7),
 ]
 
 

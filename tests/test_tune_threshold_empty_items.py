@@ -41,6 +41,7 @@ import pytest
 
 from scripts.bench_savings import run_bench
 from scripts.tune_threshold import (
+    _build_parser,
     _build_sample_items,
     main,
     sweep,
@@ -50,8 +51,11 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMITTED = _REPO_ROOT / "docs" / "threshold_demo.json"
 
 DEFAULT_THRESHOLDS = [0.0, 0.5, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
-DEFAULT_CHEAP_DOLLARS = 0.0008
-DEFAULT_STRONG_DOLLARS = 0.015
+# Read from the shipped parser, not retyped: the retyped `0.0008` / `0.015` here
+# kept pinning Haiku 3.5 / Opus 4.1 rates after the defaults were wrong (#310).
+_SHIPPED_DEFAULTS = _build_parser().parse_args([])
+DEFAULT_CHEAP_DOLLARS = _SHIPPED_DEFAULTS.cheap_dollars
+DEFAULT_STRONG_DOLLARS = _SHIPPED_DEFAULTS.strong_dollars
 
 
 def _one_item(*, cheap_quality: float, strong_quality: float) -> dict[str, Any]:
