@@ -3029,3 +3029,18 @@ fails, and anyone could register the name later. It now says
 README. A new test fails if any tracked file tells the reader to install this
 project's name from an index. This was the last repo in a portfolio-wide sweep
 for this mistake.
+
+## 2026-10-15 — A cache test no longer depends on how fast the CI runner is (#311)
+
+`main` went red on Python 3.11 because one cache test only passed when the
+machine was fast. The test stores an entry that has already expired by the
+test's own clock and checks that both cache stores treat it the same. The Redis
+store gives such an entry one millisecond to live, and the fake Redis server
+counts that millisecond on the real clock, which the test's clock cannot
+control. On a slow runner the entry was gone before the next step, so Redis
+reported 0 where the in-memory store reported 1. The test now stores the entry
+without a server expiry, which is the state it meant to check. Three other tests
+read a Redis expiry back from the same real clock; they now check the expiry
+value the code sent instead. Nothing in the library changed. The same run also
+showed the 3.11 job using 82% of its 30-minute limit, mostly from one slow
+setup step; that is filed as #312.

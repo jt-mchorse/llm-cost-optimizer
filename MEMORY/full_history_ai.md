@@ -3312,3 +3312,24 @@ context_for_next_session:
   - PR_303_ALSO_EDITS_semantic_cache_py_DIFFERENT_HUNK
 followups: []
 ---
+
+---
+session: 2026-10-15T07:19:53Z
+duration_min: 12   # computed: plan comment 2026-10-15T07:19:53Z -> code commit (date -u), approx; diagnosis + repro before that
+issue: 311
+branch: session/2026-10-15-0719-issue-311
+focus: MAIN_RED_ON_3_11_THE_EXPIRED_BUT_UNPURGED_GRID_ROW_RACED_FAKEREDIS_WALL_CLOCK_THROUGH_REDISSTORAGE_PUTS_1_MS_TTL_FLOOR
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 0
+  suite: "1726 -> 1726 passed (4 tests made deterministic, none added); ruff, format, mypy clean"
+decisions_made: []
+measured: "run 38530365774 test (3.11): mem (1, 0) vs redis (0, 0). Repro: 2 ms pause between put and invalidate_by_tag -> redis (0, 0); 0 ms -> (1, 0); 38/3000 natural failures on an idle laptop, worst put->invalidate 103 ms. Probe plugin sleeping on every fakeredis command: OLD 2 red at 5 ms, 3 red at 20 ms; NEW 0 red at both. Source mutations still caught by the new tests: floor 1->0 1 red, invalidate_by_tag skipping expired records 1 red, put on time.time() 2 red."
+context_for_next_session:
+  - THE_INJECTED_CLOCK_DOES_NOT_REACH_THE_SERVER_fakeredis_expires_keys_on_time_time_so_any_assertion_on_a_key_with_a_short_server_TTL_or_a_tight_PTTL_band_is_a_bet_on_runner_speed
+  - CLEARING_THE_TTL_AFTER_PUT_ONLY_NARROWS_THE_RACE_withhold_the_PEXPIRE_for_the_write_instead
+  - RECORD_THE_PEXPIRE_ARGUMENT_the_value_put_computed_and_keep_any_read_back_one_sided_0_lt_pttl_le_sent
+  - TEST_3_11_AT_0_82_OF_ITS_30_MIN_CAP_one_fixture_768s_filed_312_timeouts_unchanged
+followups: [312]
+---
