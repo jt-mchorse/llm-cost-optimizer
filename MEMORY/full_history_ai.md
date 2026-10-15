@@ -3350,3 +3350,24 @@ context_for_next_session:
   - A_NEW_TEST_IMPORTING_NEW_SYMBOLS_ERRORS_AT_COLLECTION_AGAINST_A_PLAIN_REVERT_graft_the_constants_and_revert_only_the_behaviour
 followups: []
 ---
+
+---
+session: 2026-10-15T07:48:00Z
+duration_min: 25   # computed: plan comment 2026-10-15T07:48Z -> PR, approx
+issue: 312
+branch: session/2026-10-15-0748-issue-312
+focus: THE_281_LOCK_RAN_200_FULL_RUN_BENCH_CALLS_TO_READ_ONE_ROW_THE_BATCH_ROW_IS_FOUR_FUNCTIONS_AND_1MS
+phase: shipped
+delta:
+  files_changed: 1
+  tests_added: 2
+  suite: "1735 -> 1737 passed on 3.11 (pytest --cov, 211.79s); ruff + format + mypy clean"
+decisions_made: []
+measured: "Module setup 24.92s (3.11) / 23.64s (3.12) locally on main -> 0.21s / 0.19s. CI on main: 768.20s (3.11) / 448.12s (3.12) setup. run_bench(200) 0.308s vs build+baseline+batch+batch-series ~0.001s: the time is semantic-cache + router, which the batch row never reads. Revert of the #282 hunk: 2 red on 3.12 (series + quality, mismatches 42 sizes and [8], same as before), 0 red on 3.11 as the docstring says. math.fsum vs += loop picks out exactly the same 42 sizes and [8] on 3.11."
+context_for_next_session:
+  - THE_SWEEP_KEEPS_ALL_200_SIZES_the_cost_was_per_call_not_per_size_so_no_size_had_to_be_dropped_and_no_discriminating_set_had_to_be_hardcoded
+  - ONE_REAL_run_bench_n8_PINS_THE_SHORTCUT_to_the_published_payload_baseline_row_batch_row_and_batch_series_all_compared_by_equality
+  - MATH_FSUM_IS_A_3_11_VISIBLE_STAND_IN_FOR_3_12_SUM_the_sweep_content_arm_now_proves_the_sweep_has_deciding_sizes_on_either_interpreter
+  - CI_YML_TEST_JOB_COMMENT_STILL_SAYS_0_51_OF_CAP_AND_FLAT_TAIL_restate_from_the_first_post_merge_run_not_from_a_guess
+followups: []
+---
