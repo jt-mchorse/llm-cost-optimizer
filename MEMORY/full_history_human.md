@@ -3119,3 +3119,10 @@ prices filed under the wrong names were silently applied to the wrong model,
 and a price under a short alias failed with a confusing error. The table is
 now checked first, and any entry whose name doesn't match its price's model is
 refused with an error naming both.
+
+## 2026-10-16 — An exact repeat always hits the semantic cache at threshold 1.0 (#327)
+
+A similarity threshold of 1.0 means "only exact repeats". For embedders that
+don't normalize their vectors, rounding put a text's similarity to itself at
+0.9999999999999999 about a quarter of the time, so exact repeats missed the
+cache and the model was called again. Identical vectors now score exactly 1.0.

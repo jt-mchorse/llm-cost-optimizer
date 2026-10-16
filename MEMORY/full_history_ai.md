@@ -3446,6 +3446,13 @@ session: 2026-10-16T12:40Z
 issue: 325
 branch: session/2026-10-16-0854-issue-325
 focus: COMPARE_REALTIME_VS_BATCH_READ_THE_MODEL_FROM_THE_QUOTE_ON_ONE_PATH_AND_THE_KEY_ON_ANOTHER_SWAPPED_KEYS_MISPRICED_SILENTLY
+---
+
+---
+session: 2026-10-16T13:00Z
+issue: 327
+branch: session/2026-10-16-0859-issue-327
+focus: COSINE_V_V_ROUNDED_TO_0_9999999999999999_FOR_NON_NORMALISED_VECTORS_SO_EXACT_REPEATS_MISSED_AT_SIMILARITY_THRESHOLD_1_0
 phase: shipped
 delta:
   files_changed: 2
@@ -3456,5 +3463,15 @@ measured: "main: swapped keys two haiku rows -> realtime 10.0 (Opus) no error; a
 context_for_next_session:
   - A_MAPPING_WHOSE_VALUES_CARRY_THEIR_OWN_KEY_check_key_eq_value_id_at_the_boundary
   - NOT_FIXED_similarity_threshold_1_0_misses_exact_repeats_self_cosine_0_9999999999999999_with_float32_normalised_vectors
+followups: []
+---
+
+---
+  suite: "1782 passed; ruff, format, mypy clean; new file green on 3.11"
+decisions_made: []
+measured: "non-normalised 384-d embedder, threshold 1.0: 60/200 exact repeats missed on main, 0 after. Revert 3 of 6 red."
+context_for_next_session:
+  - A_VALIDATOR_DOMAIN_ENDPOINT_IS_A_TEST_CASE_threshold_1_0_was_accepted_and_unreachable_for_a_quarter_of_inputs
+  - HASH_EMBEDDER_NORMALISES_SO_EVERY_IN_REPO_TEST_HID_IT_use_a_raw_BYO_embedder_in_tests
 followups: []
 ---
