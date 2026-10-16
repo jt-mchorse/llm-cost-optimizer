@@ -3440,3 +3440,21 @@ context_for_next_session:
   - KEPT_SET_THEN_PEXPIRE_RATHER_THAN_SET_PX_BECAUSE_EXISTING_TESTS_AND_311S_RACE_FIX_HOOK_client_pexpire_the_bug_was_the_value_not_the_ordering
 followups: []
 ---
+
+---
+session: 2026-10-16T12:40Z
+issue: 325
+branch: session/2026-10-16-0854-issue-325
+focus: COMPARE_REALTIME_VS_BATCH_READ_THE_MODEL_FROM_THE_QUOTE_ON_ONE_PATH_AND_THE_KEY_ON_ANOTHER_SWAPPED_KEYS_MISPRICED_SILENTLY
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 6
+  suite: "1782 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "main: swapped keys two haiku rows -> realtime 10.0 (Opus) no error; alias key single quote -> KeyError. After: ValueError naming key and quote model. Revert 5 of 6 red."
+context_for_next_session:
+  - A_MAPPING_WHOSE_VALUES_CARRY_THEIR_OWN_KEY_check_key_eq_value_id_at_the_boundary
+  - NOT_FIXED_similarity_threshold_1_0_misses_exact_repeats_self_cosine_0_9999999999999999_with_float32_normalised_vectors
+followups: []
+---

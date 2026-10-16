@@ -3110,3 +3110,12 @@ but without an expiry and without its tags. Every later lookup served it, and
 invalidating by tag couldn't remove it. The expiry is now worked out, and
 capped at about 146 million years, before anything is written, so these
 lifetimes behave exactly as they do with the in-memory cache.
+
+## 2026-10-16 — Batch cost comparison refuses a mislabelled price table (#325)
+
+The batch-vs-realtime comparison takes a table of prices keyed by model name,
+where each price also records its own model. The two were never compared, so
+prices filed under the wrong names were silently applied to the wrong model,
+and a price under a short alias failed with a confusing error. The table is
+now checked first, and any entry whose name doesn't match its price's model is
+refused with an error naming both.
