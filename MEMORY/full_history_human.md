@@ -3044,3 +3044,15 @@ read a Redis expiry back from the same real clock; they now check the expiry
 value the code sent instead. Nothing in the library changed. The same run also
 showed the 3.11 job using 82% of its 30-minute limit, mostly from one slow
 setup step; that is filed as #312.
+
+## 2026-10-15 — The threshold sweep prices its two models from the pricing table (#310)
+
+`scripts/tune_threshold.py` charts answer quality against cost per request for a
+range of escalation thresholds. It routes between Haiku 4.5 and Opus 4.7, but
+its default per-request prices were fixed numbers matching Haiku 3.5 and Opus
+4.1, about $0.80 and $15 per million input tokens. The repo's pricing table has
+Haiku 4.5 at $1 and Opus 4.7 at $5. So the chart showed escalation costing 18.75
+times a cheap call instead of 5 times. The defaults now come from the pricing
+table for the two models the router actually uses, at the same 1,000-token
+request as before. The committed `docs/threshold_demo.json` has been
+regenerated, and only its dollar values changed.

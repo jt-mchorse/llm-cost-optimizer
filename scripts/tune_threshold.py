@@ -44,12 +44,37 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from cost_optimizer.pricing import get_pricing  # noqa: E402
 from cost_optimizer.router import (  # noqa: E402
     EntropySignal,
     EscalationSignal,
     UncertaintyRouter,
 )
 from scripts._io import artifact_path, atomic_write_text, resolve_out_stem  # noqa: E402
+
+#: The two models `sweep` routes between. Named once so the router and the
+#: dollar defaults below cannot price a different pair than the one they route.
+CHEAP_MODEL = "claude-haiku-4-5"
+STRONG_MODEL = "claude-opus-4-7"
+
+#: Input tokens in one dry-mode request -- the size the old literal defaults
+#: implied (`0.0008` and `0.015` are exactly 1000 tokens at $0.80 and $15/MTok).
+REQUEST_INPUT_TOKENS = 1_000
+
+
+def _default_request_dollars(model: str) -> float:
+    """Input-only $ for one `REQUEST_INPUT_TOKENS` request, from the pricing table.
+
+    The defaults were literals, `0.0008` / `0.015`: Haiku 3.5's and Opus 4.1's
+    $0.80 / $15.00 per MTok, not the Haiku 4.5 / Opus 4.7 the router names
+    ($1.00 / $5.00). #90 refreshed Opus 4.7 in `cost_optimizer/pricing.py` and
+    regenerated the savings bench, but the refresh could not reach a number
+    typed into this parser, so the sweep priced an escalation at 18.75x a cheap
+    call instead of 5x and overstated the cost side of its own curve 3.75x
+    (#310). Input-only, like `bench_savings` and the table itself; output cost
+    is #295's question.
+    """
+    return REQUEST_INPUT_TOKENS * get_pricing(model).input_per_mtok / 1_000_000
 
 
 @dataclass(frozen=True)
@@ -254,8 +279,8 @@ def sweep(
         # which is why only this one surfaced once `scripts/` entered the gate.
         signals: list[EscalationSignal] = [EntropySignal(threshold=t)]
         router = UncertaintyRouter(
-            cheap_model="claude-haiku-4-5",
-            strong_model="claude-opus-4-7",
+            cheap_model=CHEAP_MODEL,
+            strong_model=STRONG_MODEL,
             cheap_adapter=adapter,
             signals=signals,
         )
@@ -408,7 +433,8 @@ def _build_parser() -> argparse.ArgumentParser:
     against the *shipped* sweep rather than a literal retyped into a test,
     because a retyped default silently stops testing the default the day
     someone changes it. Pure extraction: no flag, default or help string is
-    altered.
+    altered. (The two dollar defaults were later derived from the pricing
+    table, #310 -- the same reasoning, applied to the script's own literals.)
     """
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
@@ -432,8 +458,20 @@ def _build_parser() -> argparse.ArgumentParser:
         default="0.0,0.5,1.0,1.2,1.4,1.6,1.8,2.0",
         help="Comma-separated entropy thresholds to sweep.",
     )
-    p.add_argument("--cheap-dollars", type=float, default=0.0008, help="$ per cheap request.")
-    p.add_argument("--strong-dollars", type=float, default=0.015, help="$ per strong request.")
+    p.add_argument(
+        "--cheap-dollars",
+        type=float,
+        default=_default_request_dollars(CHEAP_MODEL),
+        help=f"$ per cheap request (default: {REQUEST_INPUT_TOKENS} input tokens on {CHEAP_MODEL}).",
+    )
+    p.add_argument(
+        "--strong-dollars",
+        type=float,
+        default=_default_request_dollars(STRONG_MODEL),
+        help=(
+            f"$ per strong request (default: {REQUEST_INPUT_TOKENS} input tokens on {STRONG_MODEL})."
+        ),
+    )
     return p
 
 

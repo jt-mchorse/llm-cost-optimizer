@@ -1,9 +1,9 @@
 {
-  "cheap_dollars_per_request": 0.0008,
+  "cheap_dollars_per_request": 0.001,
   "mode": "dry",
   "rows": [
     {
-      "dollars_per_request": 0.015799999999999998,
+      "dollars_per_request": 0.006,
       "escalation_rate": 1.0,
       "mean_quality_cheap": null,
       "mean_quality_escalated": 0.924,
@@ -12,7 +12,7 @@
       "threshold": 0.0
     },
     {
-      "dollars_per_request": 0.009799999999999998,
+      "dollars_per_request": 0.004,
       "escalation_rate": 0.6,
       "mean_quality_cheap": 0.975,
       "mean_quality_escalated": 0.8833333333333333,
@@ -21,7 +21,7 @@
       "threshold": 0.5
     },
     {
-      "dollars_per_request": 0.006799999999999999,
+      "dollars_per_request": 0.003,
       "escalation_rate": 0.4,
       "mean_quality_cheap": 0.8833333333333333,
       "mean_quality_escalated": 0.865,
@@ -30,7 +30,7 @@
       "threshold": 1.0
     },
     {
-      "dollars_per_request": 0.006799999999999999,
+      "dollars_per_request": 0.003,
       "escalation_rate": 0.4,
       "mean_quality_cheap": 0.8833333333333333,
       "mean_quality_escalated": 0.865,
@@ -39,7 +39,7 @@
       "threshold": 1.2
     },
     {
-      "dollars_per_request": 0.006799999999999999,
+      "dollars_per_request": 0.003,
       "escalation_rate": 0.4,
       "mean_quality_cheap": 0.8833333333333333,
       "mean_quality_escalated": 0.865,
@@ -48,7 +48,7 @@
       "threshold": 1.4
     },
     {
-      "dollars_per_request": 0.006799999999999999,
+      "dollars_per_request": 0.003,
       "escalation_rate": 0.4,
       "mean_quality_cheap": 0.8833333333333333,
       "mean_quality_escalated": 0.865,
@@ -57,7 +57,7 @@
       "threshold": 1.6
     },
     {
-      "dollars_per_request": 0.0008,
+      "dollars_per_request": 0.001,
       "escalation_rate": 0.0,
       "mean_quality_cheap": 0.7,
       "mean_quality_escalated": null,
@@ -66,7 +66,7 @@
       "threshold": 1.8
     },
     {
-      "dollars_per_request": 0.0008,
+      "dollars_per_request": 0.001,
       "escalation_rate": 0.0,
       "mean_quality_cheap": 0.7,
       "mean_quality_escalated": null,
@@ -75,5 +75,5 @@
       "threshold": 2.0
     }
   ],
-  "strong_dollars_per_request": 0.015
+  "strong_dollars_per_request": 0.005
 }
