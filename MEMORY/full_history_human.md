@@ -3081,3 +3081,13 @@ exceptions. Because of this, the cache wrapper under-reported Sonnet 5.5
 savings: 1M cached tokens showed $1.80 saved instead of $1.90. Sonnet 5.5 now
 uses the 5% rate, and a test checks that $1.90 figure. The published benchmark
 doesn't use Sonnet 5.5, so none of its numbers change.
+
+## 2026-10-16 — The semantic cache accepts one test clock passed to both sides (#319)
+
+A Redis-backed semantic cache has to use the same clock as its storage. A
+check added in #172 enforces that, but it compared the two clocks by object
+identity. Passing a clock as a method, as in `clock.now`, creates a new
+object each time it is written, so passing the same clock to both sides was
+refused, and the error told the user to do exactly what they had done. The
+check now compares the clocks for equality. That still refuses two different
+clocks, and accepts one clock however it is passed.
