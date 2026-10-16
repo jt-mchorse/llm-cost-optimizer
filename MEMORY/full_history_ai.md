@@ -3411,6 +3411,13 @@ session: 2026-10-16T08:10Z
 issue: 321
 branch: session/2026-10-16-0740-issue-321
 focus: 184_COVERED_A_SIGNAL_THAT_RAISES_A_SIGNAL_THAT_RETURNS_A_NON_READING_CRASHED_ROUTE_AFTER_THE_PAID_CHEAP_CALL_AND_LEFT_MEASURED_GT_TOTAL_ROUTES
+---
+
+---
+session: 2026-10-16T09:30Z
+issue: 323
+branch: session/2026-10-16-0816-issue-323
+focus: REDISSTORAGE_PUT_SET_THEN_COMPUTED_AN_UNBOUNDED_TTL_A_HUGE_TTL_RAISED_AFTER_THE_SET_LEAVING_A_NEVER_EXPIRING_UNINDEXED_RECORD
 phase: shipped
 delta:
   files_changed: 2
@@ -3421,5 +3428,15 @@ measured: "measure()->0.9 on main: AttributeError out of route(), stats total_ro
 context_for_next_session:
   - REBUILD_THE_VALUE_OBJECT_INSIDE_THE_TRY_reads_every_attribute_where_the_handler_is_AND_applies_the_types_post_init_to_duck_types
   - DEFERRED_trip_TYPE_CHECK_a_truthy_non_bool_trip_escalates_numpy_bool_is_not_bool_contract_call
+followups: []
+---
+
+---
+  suite: "1766 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "fakeredis ttl 1e16/sys.maxsize/1e306: put raised after SET, pttl -1, hit, invalidate(tag) 0, still hit. After: pttl 2**62, hit, invalidate 1, miss; memory backend agrees. Revert 9 of 10 red."
+context_for_next_session:
+  - COMPUTE_EVERYTHING_THAT_CAN_FAIL_BEFORE_THE_FIRST_WRITE_a_raise_between_two_writes_is_a_split_record
+  - KEPT_SET_THEN_PEXPIRE_RATHER_THAN_SET_PX_BECAUSE_EXISTING_TESTS_AND_311S_RACE_FIX_HOOK_client_pexpire_the_bug_was_the_value_not_the_ordering
 followups: []
 ---
