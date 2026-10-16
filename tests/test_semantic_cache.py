@@ -1068,9 +1068,29 @@ def _fake_clock(start: float = 1000.0):
     return now_fn, holder
 
 
-def test_redis_ttl_uses_the_caches_clock_not_the_wall_clock(fake_redis_client):
+def _record_pexpire(client, monkeypatch) -> list[int]:
+    """Record every `PEXPIRE` argument while still applying it.
+
+    Read the TTL `put` computed, not the one the server reports later: fakeredis
+    decays PTTL on the wall clock while the test runs, so a read-back of a 1 ms
+    TTL is `-2` (gone) the moment 1 ms has passed, and a tight band on a longer
+    one is a bet on the runner's speed. `main` went red on that bet (#311).
+    """
+    sent: list[int] = []
+    real_pexpire = client.pexpire
+
+    def recording_pexpire(name, ms, *args, **kwargs):
+        sent.append(ms)
+        return real_pexpire(name, ms, *args, **kwargs)
+
+    monkeypatch.setattr(client, "pexpire", recording_pexpire)
+    return sent
+
+
+def test_redis_ttl_uses_the_caches_clock_not_the_wall_clock(fake_redis_client, monkeypatch):
     from cost_optimizer.semantic_cache import RedisStorage
 
+    sent = _record_pexpire(fake_redis_client, monkeypatch)
     now_fn, _ = _fake_clock()
     storage = RedisStorage(client=fake_redis_client, now_fn=now_fn)
     cache = SemanticCache(
@@ -1078,7 +1098,9 @@ def test_redis_ttl_uses_the_caches_clock_not_the_wall_clock(fake_redis_client):
     )
     key = cache.put("how do I refund a charge", "answer-A", model="m")
 
-    assert fake_redis_client.ttl(storage._record_key(key)) == 3600
+    assert sent == [3_600_000]
+    # One-sided: wall time passing can only lower it, never raise it past `sent`.
+    assert 0 < fake_redis_client.pttl(storage._record_key(key)) <= 3_600_000
 
 
 def test_the_prefix_arithmetic_really_did_collapse_to_one_second():
@@ -1146,12 +1168,13 @@ def test_both_backends_agree_on_liveness_at_a_given_fake_time(fake_redis_client)
     assert caches["redis"].lookup("how do I refund a charge", model="m").hit is False
 
 
-def test_an_already_expired_record_still_floors_at_one_millisecond(fake_redis_client):
+def test_an_already_expired_record_still_floors_at_one_millisecond(fake_redis_client, monkeypatch):
     # The `max(1, ...)` floor stays — it keeps `PEXPIRE key 0` (an immediate
     # delete) from replacing a short TTL. Only the clock was wrong (#172), and
     # the unit is milliseconds since #264.
     from cost_optimizer.semantic_cache import CacheRecord, RedisStorage
 
+    sent = _record_pexpire(fake_redis_client, monkeypatch)
     now_fn, _ = _fake_clock()
     storage = RedisStorage(client=fake_redis_client, now_fn=now_fn)
     storage.put(
@@ -1164,7 +1187,8 @@ def test_an_already_expired_record_still_floors_at_one_millisecond(fake_redis_cl
             model="m",
         )
     )
-    assert 0 < fake_redis_client.pttl(storage._record_key("stale")) <= 1
+    # The argument, not a PTTL read-back: a 1 ms key is gone after 1 ms (#311).
+    assert sent == [1]
 
 
 def test_cache_rejects_a_storage_carrying_a_different_clock(fake_redis_client):
@@ -1251,14 +1275,7 @@ def test_the_redis_ttl_carries_milliseconds_and_rounds_up(fake_redis_client, mon
 
     # Record the argument rather than read PTTL back: PTTL is measured against
     # the wall clock, so it cannot tell 1901 (rounded up) from 1900 (truncated).
-    sent: list[int] = []
-    real_pexpire = fake_redis_client.pexpire
-
-    def recording_pexpire(name, ms, *args, **kwargs):
-        sent.append(ms)
-        return real_pexpire(name, ms, *args, **kwargs)
-
-    monkeypatch.setattr(fake_redis_client, "pexpire", recording_pexpire)
+    sent = _record_pexpire(fake_redis_client, monkeypatch)
     now_fn, _ = _fake_clock()
     storage = RedisStorage(client=fake_redis_client, now_fn=now_fn)
     storage.put(
@@ -1272,7 +1289,8 @@ def test_the_redis_ttl_carries_milliseconds_and_rounds_up(fake_redis_client, mon
         )
     )
     assert sent == [1901]
-    assert 1890 < fake_redis_client.pttl(storage._record_key("k")) <= 1901
+    # One-sided (#311): the old `1890 <` lower bound went red on an 11 ms stall.
+    assert 0 < fake_redis_client.pttl(storage._record_key("k")) <= 1901
 
 
 def test_redis_misses_at_the_exact_expiry_instant_like_inmemory(fake_redis_client):

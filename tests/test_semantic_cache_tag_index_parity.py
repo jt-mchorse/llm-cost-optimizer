@@ -213,6 +213,33 @@ def test_control_a_record_keeping_the_tag_across_generations_is_still_evicted(
 # The Protocol grid: the three methods nobody had enumerated
 # ----------------------------------------------------------------------
 
+
+def _put_unpurged(storage: Any, record: CacheRecord) -> None:
+    """`put` an expired record and hold it the way an unpurged backend does (#311).
+
+    `RedisStorage.put` gives an already-expired record a 1 ms server TTL, and
+    fakeredis runs that TTL on the wall clock the injected `Clock` cannot reach.
+    The row's Redis verdict therefore depended on whether 1 ms passed between
+    `put` and `invalidate_by_tag`: `(1, 0)` when it did not, `(0, 0)` when it
+    did, which a two-core CI runner under coverage hit on `main`. Clearing the
+    TTL *after* `put` would only narrow that race, so the `PEXPIRE` is withheld
+    for this one write: the "server TTL has not fired yet" state, stated rather
+    than raced for -- the mirror of road 2, which simulates it firing with a
+    `DELETE`. In-memory needs nothing: only `purge_expired` removes its expired
+    records.
+    """
+    if not isinstance(storage, RedisStorage):
+        storage.put(record)
+        return
+    client = storage.client
+    client.pexpire = lambda *args, **kwargs: True
+    try:
+        storage.put(record)
+    finally:
+        del client.pexpire  # back to the class's real method
+    assert client.pttl(storage._record_key(record.key)) == -1, "no server TTL was set"
+
+
 # (label, body) -- each body is driven through BOTH backends and the two
 # verdicts compared. A rule living in only one implementation shows up here as
 # a disagreement, and so would a future third backend.
@@ -244,7 +271,7 @@ GRID: list[tuple[str, Any]] = [
     (
         "expired-but-unpurged record carrying the tag",
         lambda s, c: (
-            s.put(_record("k1", ["a"], expires_at=c.t - 1)),
+            _put_unpurged(s, _record("k1", ["a"], expires_at=c.t - 1)),
             (s.invalidate_by_tag("a"), len(s)),
         )[1],
     ),
