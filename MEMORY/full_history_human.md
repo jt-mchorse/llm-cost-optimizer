@@ -3091,3 +3091,13 @@ object each time it is written, so passing the same clock to both sides was
 refused, and the error told the user to do exactly what they had done. The
 check now compares the clocks for equality. That still refuses two different
 clocks, and accepts one clock however it is passed.
+
+## 2026-10-16 — A router signal that returns the wrong thing no longer loses the paid response (#321)
+
+The router asks each escalation signal to measure the cheap model's answer,
+and the answer has already been paid for by then. Since #184 a signal that
+crashes is treated as "couldn't measure" and counted. A signal that returned
+the wrong kind of value, such as a bare number, or nothing at all because its
+`return` was missing, still crashed the router, threw away the answer, and
+left the counters inconsistent. That case now gets the same "couldn't measure"
+treatment. A signal that returns its own reading-shaped object keeps working.
