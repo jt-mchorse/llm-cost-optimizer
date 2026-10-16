@@ -454,32 +454,55 @@ class RedisStorage:
                 "model": record.model,
             }
         ).encode("utf-8")
+        # The expiry is computed, and bounded, BEFORE anything is written (#323).
+        # A ttl the `PEXPIRE` refused (Redis takes int64 milliseconds, so
+        # `ttl_s=sys.maxsize` -- a natural "forever" -- and anything above
+        # ~9.2e15 s) or a `ceil` that overflowed (~1e305 s) used to raise after
+        # the `SET`, leaving the record served forever, with no expiry and
+        # missing from its tags' index, so `invalidate(tag=...)` could not
+        # remove it.
+        ttl_ms = None if record.expires_at is None else self._ttl_ms(record.expires_at)
         # b2a_base64 to keep bytes safe for any Redis-client encoding mode.
         self.client.set(self._record_key(record.key), b2a_base64(blob).decode("ascii"))
-        if record.expires_at is not None:
-            # `record.expires_at` is an absolute timestamp on the *cache's*
-            # clock (`SemanticCache.now_fn() + ttl_s`), so the subtraction has
-            # to use that same clock. This read `time.time()` directly, which
-            # is only correct when `now_fn` happens to be the wall clock —
-            # under the injected clock the parameter exists for, a 3600s ttl
-            # produced `int(3600ish - 1.78e9)`, and `max(1, ...)` turned that
-            # into a **1-second** TTL. The record vanished after one real
-            # second while the in-memory backend still served it, so the
-            # Redis-backed cache silently stopped caching (#172).
-            #
-            # Milliseconds, rounded UP (#264). `EXPIRE` takes whole seconds, and
-            # `int()` truncated: a 1.9s ttl lived 1s (a live entry dropped, a
-            # paid call), while `max(1, ...)` stretched a 0.2s ttl to 1s (a
-            # stale answer served 5x past its ttl). Rounding up means the key
-            # never disappears before `expires_at`; the read-side check in
-            # `find_nearest` is what stops it being served after.
-            #
-            # The floor stays, now 1 ms: it keeps an already-expired record
-            # from becoming `PEXPIRE key 0`, an immediate delete.
-            ttl_ms = max(1, math.ceil((record.expires_at - self.now_fn()) * 1000))
+        if ttl_ms is not None:
             self.client.pexpire(self._record_key(record.key), ttl_ms)
         for tag in record.tags:
             self.client.sadd(self._tag_key(tag), record.key)
+
+    #: The longest expiry `_ttl_ms` asks Redis for: ~146 million years. Redis
+    #: refuses a PX near int64 (`invalid expire time`), and nothing observable
+    #: separates this from a longer ttl -- `find_nearest` checks `expires_at`
+    #: on the cache's clock regardless, so the backends stay in parity (#323).
+    _MAX_TTL_MS = 2**62
+
+    def _ttl_ms(self, expires_at: float) -> int:
+        """Milliseconds until *expires_at* on the cache's clock, for `PEXPIRE`."""
+        # `record.expires_at` is an absolute timestamp on the *cache's*
+        # clock (`SemanticCache.now_fn() + ttl_s`), so the subtraction has
+        # to use that same clock. This read `time.time()` directly, which
+        # is only correct when `now_fn` happens to be the wall clock —
+        # under the injected clock the parameter exists for, a 3600s ttl
+        # produced `int(3600ish - 1.78e9)`, and `max(1, ...)` turned that
+        # into a **1-second** TTL. The record vanished after one real
+        # second while the in-memory backend still served it, so the
+        # Redis-backed cache silently stopped caching (#172).
+        #
+        # Milliseconds, rounded UP (#264). `EXPIRE` takes whole seconds, and
+        # `int()` truncated: a 1.9s ttl lived 1s (a live entry dropped, a
+        # paid call), while `max(1, ...)` stretched a 0.2s ttl to 1s (a
+        # stale answer served 5x past its ttl). Rounding up means the key
+        # never disappears before `expires_at`; the read-side check in
+        # `find_nearest` is what stops it being served after.
+        #
+        # The floor stays, now 1 ms: it keeps an already-expired record
+        # from becoming `PEXPIRE key 0`, an immediate delete.
+        #
+        # Bounded in the float domain first, so `ceil` never sees an
+        # infinity (#323).
+        remaining_ms = (expires_at - self.now_fn()) * 1000
+        if remaining_ms >= self._MAX_TTL_MS:
+            return self._MAX_TTL_MS
+        return max(1, math.ceil(remaining_ms))
 
     def _load(self, redis_key: str) -> CacheRecord | None:
         import json
