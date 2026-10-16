@@ -3371,3 +3371,22 @@ context_for_next_session:
   - CI_YML_TEST_JOB_COMMENT_STILL_SAYS_0_51_OF_CAP_AND_FLAT_TAIL_restate_from_the_first_post_merge_run_not_from_a_guess
 followups: []
 ---
+
+---
+session: 2026-10-15T08:11Z
+issue: 316
+branch: session/2026-10-15-0811-issue-316
+focus: SONNET_5_5_CACHE_READ_PRICED_AT_THE_0_10X_DEFAULT_PUBLISHED_RATE_IS_0_05X
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 1
+  suite: "1742 passed (3.11); ruff check + format + mypy clean"
+decisions_made: []
+measured: "platform.claude.com pricing page fetched 2026-10-15: Sonnet 5.5 cache hits $0.10/MTok, footnote 2 '0.05x on Opus 5.5 and Sonnet 5.5'; prompt-caching page agrees. main: multiplier 0.1, 1M cached tokens -> dollars_saved 1.80 (expected 1.90). Revert 2 red / 0 green (the edited PUBLISHED row + the new wrapper test)."
+context_for_next_session:
+  - 289_WROTE_THE_CLAUDE_5_ROWS_FROM_A_2026_09_25_CACHED_REFERENCE_THE_LIVE_PAGE_HAS_SINCE_MOVED_SONNET_5_5_UNDER_THE_0_05X_FOOTNOTE
+  - EVERY_OTHER_ROW_INPUT_WRITES_READS_AND_MIN_CACHEABLE_MATCHES_THE_LIVE_PAGE_AS_OF_2026_10_15
+  - HAIKU_5_5_IS_PUBLISHED_AND_ABSENT_ITS_PRICE_IS_TIERED_BY_PROMPT_LENGTH_WHICH_MODELPRICING_CANNOT_EXPRESS_SEE_THE_DECISION_REVISIT
+followups: []
+---

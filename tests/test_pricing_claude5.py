@@ -4,8 +4,9 @@
 sonnet-5-5, sonnet-5 or fable-5-1: `get_pricing` raised `UnknownModelError`
 for each, so `PromptCacheWrapper` could not be built for them. Rates are from
 Anthropic's current-models table and prompt-caching economics (cached
-2026-09-25). Two cache-read rates differ from the 0.10x default: Opus 5.5 reads
-at $0.20/MTok (0.05x) and Fable 5.1 at $0.25/MTok (0.025x).
+2026-09-25). Three cache-read rates differ from the 0.10x default: Opus 5.5 reads
+at $0.20/MTok (0.05x), Sonnet 5.5 at $0.10/MTok (0.05x; #316, from the pricing
+page fetched 2026-10-15) and Fable 5.1 at $0.25/MTok (0.025x).
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ PUBLISHED = [
     ("claude-fable-5-1", 10.00, 0.25, 512),
     ("claude-opus-5-5", 4.00, 0.20, 512),
     ("claude-opus-5", 5.00, 0.50, 512),
-    ("claude-sonnet-5-5", 2.00, 0.20, 512),
+    ("claude-sonnet-5-5", 2.00, 0.10, 512),
     ("claude-sonnet-5", 2.00, 0.20, 1024),
 ]
 
@@ -42,3 +43,20 @@ def test_published_rates(model: str, input_rate: float, read_rate: float, minimu
 def test_the_cache_wrapper_can_be_built_for_it(model: str) -> None:
     client = SimpleNamespace(messages=SimpleNamespace(create=lambda **_: None))
     PromptCacheWrapper(client, model)
+
+
+def test_sonnet_5_5_read_savings_use_its_published_read_rate() -> None:
+    # #316: the row took the 0.10x default, so a read priced at $0.20/MTok and
+    # 1M cached tokens reported $1.80 saved. At the published $0.10/MTok the
+    # saving is (2.00 - 0.10) per MTok.
+    usage = SimpleNamespace(
+        input_tokens=10,
+        output_tokens=5,
+        cache_creation_input_tokens=0,
+        cache_read_input_tokens=1_000_000,
+    )
+    response = SimpleNamespace(usage=usage)
+    client = SimpleNamespace(messages=SimpleNamespace(create=lambda **_: response))
+    wrapped = PromptCacheWrapper(client, "claude-sonnet-5-5")
+    result = wrapped.create(system="s", messages=[{"role": "user", "content": "q"}], max_tokens=5)
+    assert result.telemetry.dollars_saved == pytest.approx(1.90)
