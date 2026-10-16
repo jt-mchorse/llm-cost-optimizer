@@ -1128,13 +1128,18 @@ class SemanticCache:
         # made every entry a 1-second TTL, so a Redis-backed cache stopped
         # caching and every lookup went to the model (#172).
         #
-        # Identity, not equality: the default is the same `time.time` object on
-        # both sides, so an untouched construction passes. The only shape this
-        # rejects is a clock configured on one side and not the other, which is
-        # exactly the mistake. Backends without a clock (`InMemoryStorage`,
-        # which reads `now` from `purge_expired`'s argument) are unaffected.
+        # Equality, not identity (#319). The default is the same `time.time`
+        # object on both sides, so an untouched construction passes either way,
+        # but a bound method is a new object on every attribute access:
+        # `clock.now is clock.now` is False, so an identity check refused the
+        # same test clock passed to both sides -- the remedy its own message
+        # names. Bound methods compare equal when they share `__func__` and
+        # their `__self__` is the same object, so `!=` still refuses a clock
+        # configured on one side only, and two different clock instances.
+        # Backends without a clock (`InMemoryStorage`, which reads `now` from
+        # `purge_expired`'s argument) are unaffected.
         storage_now_fn = getattr(storage, "now_fn", None)
-        if storage_now_fn is not None and storage_now_fn is not now_fn:
+        if storage_now_fn is not None and storage_now_fn != now_fn:
             raise ValueError(
                 f"{type(storage).__name__} carries its own now_fn "
                 f"({storage_now_fn!r}) that differs from this cache's "
