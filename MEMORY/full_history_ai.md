@@ -3332,6 +3332,21 @@ context_for_next_session:
   - RECORD_THE_PEXPIRE_ARGUMENT_the_value_put_computed_and_keep_any_read_back_one_sided_0_lt_pttl_le_sent
   - TEST_3_11_AT_0_82_OF_ITS_30_MIN_CAP_one_fixture_768s_filed_312_timeouts_unchanged
 followups: [312]
+session: 2026-10-16T07:40Z
+issue: 319
+branch: session/2026-10-16-0728-issue-319
+focus: THE_172_CLOCK_GUARD_COMPARED_BY_IDENTITY_AND_A_BOUND_METHOD_IS_A_NEW_OBJECT_PER_ACCESS_SO_ONE_CLOCK_ON_BOTH_SIDES_WAS_REFUSED_WITH_A_MESSAGE_NAMING_THAT_REMEDY
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 6
+  suite: "1747 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "RedisStorage(now_fn=clock.now) + SemanticCache(now_fn=clock.now) -> ValueError printing two identical reprs on main; constructs and caches on the fake clock after. Revert 2 of 6 red; the 4 green are the premise and three refusal controls."
+context_for_next_session:
+  - A_GUARD_COMMENT_SAYING_THE_ONLY_SHAPE_THIS_REJECTS_IS_X_IS_A_COVERAGE_CLAIM_bound_methods_partials_and_lambdas_rebuilt_per_call_all_fail_is
+  - functools_partial_HAS_NO_EQ_so_two_separately_built_partials_of_one_clock_are_STILL_refused_not_fixed_pass_the_same_object
+followups: []
 ---
 session: 2026-10-15T07:22:26Z
 duration_min: 12   # computed: plan comment 2026-10-15T07:22:26Z -> code commit (date -u), approx
