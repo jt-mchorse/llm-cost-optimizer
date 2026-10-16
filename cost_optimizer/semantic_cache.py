@@ -654,6 +654,14 @@ def cosine(a: list[float], b: list[float]) -> float:
     nb = math.sqrt(sum(x * x for x in b))
     if na == 0 or nb == 0:
         return 0.0
+    # A vector's similarity to itself is exactly 1 (#327). The float quotient
+    # rounded to 0.9999999999999999 for about a quarter of non-normalized
+    # vectors, so at `similarity_threshold=1.0` -- inside the validator's
+    # `(0, 1]` -- an exact repeat of a cached prompt missed. Stops at the first
+    # differing component, so distinct vectors pay almost nothing.
+    # Finite norms only: an overflowing `sum(x*x)` keeps the 0.0 fallback below.
+    if math.isfinite(na) and math.isfinite(nb) and all(x == y for x, y in zip(a, b, strict=True)):
+        return 1.0
     sim = dot / (na * nb)
     if not math.isfinite(sim):
         return 0.0
