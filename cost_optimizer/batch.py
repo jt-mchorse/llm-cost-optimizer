@@ -894,6 +894,21 @@ def compare_realtime_vs_batch(
         or not 0.0 <= discount <= 1.0
     ):
         raise ValueError(f"discount must be a number in [0.0, 1.0]; got {discount!r}")
+    # Each key is the model id its quote prices (#325). The single-model path
+    # below reads the model from the quote and the row loop looks it up by key,
+    # and nothing compared the two: quotes filed under each other's keys priced
+    # every row at the other model's rate, silently, and one quote under an
+    # alias key raised a KeyError naming a model that *was* in the table.
+    for key, entry in prices.items():
+        if not isinstance(entry, BatchCostQuote):
+            raise ValueError(
+                f"prices[{key!r}] must be a BatchCostQuote; got {type(entry).__name__}"
+            )
+        if entry.model != key:
+            raise ValueError(
+                f"prices[{key!r}] holds the quote for {entry.model!r}; "
+                "each key must be its quote's model id"
+            )
     if not rows:
         return CostComparison(0.0, 0.0, 0.0, 0.0, 0)
     if model_of is None:
