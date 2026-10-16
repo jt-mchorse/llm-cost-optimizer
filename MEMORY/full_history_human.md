@@ -3110,3 +3110,10 @@ but without an expiry and without its tags. Every later lookup served it, and
 invalidating by tag couldn't remove it. The expiry is now worked out, and
 capped at about 146 million years, before anything is written, so these
 lifetimes behave exactly as they do with the in-memory cache.
+
+## 2026-10-16 — An exact repeat always hits the semantic cache at threshold 1.0 (#327)
+
+A similarity threshold of 1.0 means "only exact repeats". For embedders that
+don't normalize their vectors, rounding put a text's similarity to itself at
+0.9999999999999999 about a quarter of the time, so exact repeats missed the
+cache and the model was called again. Identical vectors now score exactly 1.0.
