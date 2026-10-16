@@ -3101,3 +3101,12 @@ the wrong kind of value, such as a bare number, or nothing at all because its
 `return` was missing, still crashed the router, threw away the answer, and
 left the counters inconsistent. That case now gets the same "couldn't measure"
 treatment. A signal that returns its own reading-shaped object keeps working.
+
+## 2026-10-16 — A "forever" cache TTL no longer leaves an unremovable Redis entry (#323)
+
+Asking the Redis-backed semantic cache for an enormous lifetime, for example
+`sys.maxsize` seconds, failed partway through saving: the answer was stored,
+but without an expiry and without its tags. Every later lookup served it, and
+invalidating by tag couldn't remove it. The expiry is now worked out, and
+capped at about 146 million years, before anything is written, so these
+lifetimes behave exactly as they do with the in-memory cache.
