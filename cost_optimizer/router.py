@@ -588,8 +588,18 @@ class UncertaintyRouter:
             # `Exception`, not `BaseException`: a Ctrl-C or a `SystemExit`
             # raised inside a signal must still bring the process down rather
             # than be laundered into "couldn't measure".
+            #
+            # A signal that *returns* something that is not a reading is the
+            # same failure from the other side (#321): a bare float, or `None`
+            # from a `measure()` that built its `SignalReading` and forgot to
+            # return it. `.value`/`.trip` used to be read after this `try`, so
+            # the AttributeError escaped with the paid response, and the stats
+            # kept a `measured` count for a route never counted. Rebuilding
+            # the reading here reads both inside the `try`, keeps a duck-typed
+            # reading working, and holds it to `SignalReading`'s invariant.
             try:
-                reading = sig.measure(cheap_response)
+                raw = sig.measure(cheap_response)
+                reading = SignalReading(value=raw.value, trip=raw.trip)
             except Exception:
                 # Recorded, not swallowed. Without this counter the fix would
                 # trade a loud failure for a silent one — `signal_values` shows
