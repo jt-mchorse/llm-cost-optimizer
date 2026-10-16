@@ -3405,3 +3405,21 @@ context_for_next_session:
   - HAIKU_5_5_IS_PUBLISHED_AND_ABSENT_ITS_PRICE_IS_TIERED_BY_PROMPT_LENGTH_WHICH_MODELPRICING_CANNOT_EXPRESS_SEE_THE_DECISION_REVISIT
 followups: []
 ---
+
+---
+session: 2026-10-16T08:10Z
+issue: 321
+branch: session/2026-10-16-0740-issue-321
+focus: 184_COVERED_A_SIGNAL_THAT_RAISES_A_SIGNAL_THAT_RETURNS_A_NON_READING_CRASHED_ROUTE_AFTER_THE_PAID_CHEAP_CALL_AND_LEFT_MEASURED_GT_TOTAL_ROUTES
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 10
+  suite: "1751 passed; ruff, format, mypy clean"
+decisions_made: []
+measured: "measure()->0.9 on main: AttributeError out of route(), stats total_routes 0 with per_signal_measured good 1. After: abstains, per_signal_errors bad 1, cheap response kept. Revert 8 of 10 red; duck-type + real-reading controls green."
+context_for_next_session:
+  - REBUILD_THE_VALUE_OBJECT_INSIDE_THE_TRY_reads_every_attribute_where_the_handler_is_AND_applies_the_types_post_init_to_duck_types
+  - DEFERRED_trip_TYPE_CHECK_a_truthy_non_bool_trip_escalates_numpy_bool_is_not_bool_contract_call
+followups: []
+---
