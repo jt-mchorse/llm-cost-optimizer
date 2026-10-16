@@ -3056,3 +3056,17 @@ times a cheap call instead of 5 times. The defaults now come from the pricing
 table for the two models the router actually uses, at the same 1,000-token
 request as before. The committed `docs/threshold_demo.json` has been
 regenerated, and only its dollar values changed.
+
+## 2026-10-15 — The batch-row check no longer runs the whole benchmark 200 times (#312)
+
+A test added for #281 checks that the benchmark's batch-API row agrees exactly
+with its own running total, for every workload size from 1 to 200. It got there
+by running the whole savings benchmark 200 times, which took about 13 minutes
+of the Python 3.11 CI job and pushed it to 82% of its time limit. Almost all of
+that time went to the semantic-cache and router strategies, and the batch row
+never reads either one. The test now calls only the four pieces the batch row is
+built from, which takes a fraction of a second for all 200 sizes. One real
+benchmark run checks that those pieces give the same numbers the benchmark
+publishes. A new check confirms the sizes still include the cases the original
+bug showed up on, and that check also runs on 3.11. The check still fails
+against the original bug on 3.12.
