@@ -138,6 +138,48 @@ def test_duplicate_custom_ids_rejected_before_any_network_call() -> None:
     assert client.messages.batches.created_payloads == []
 
 
+# The Message Batches API's `custom_id` pattern is `^[a-zA-Z0-9_-]{1,64}$`; an
+# id outside it fails the whole batch with a 400. Before #329 both backends
+# accepted these: in-memory ran the batch, production sent it.
+_API_REFUSED_CUSTOM_IDS = [
+    "",
+    "row 1",
+    "doc/42",
+    "a.b",
+    "user@example.com",
+    "\u00e9",
+    "x" * 65,
+    "row-1\n",  # `re.match` on the documented `...$` regex would accept this
+    7,
+]
+
+
+@pytest.mark.parametrize(
+    "cid",
+    _API_REFUSED_CUSTOM_IDS,
+    ids=["empty", "space", "slash", "dot", "at", "non-ascii", "65-chars", "trailing-nl", "int"],
+)
+def test_submit_rejects_a_custom_id_the_batches_api_refuses(backend, cid) -> None:
+    with pytest.raises(ValueError, match=r"requests\[1\]\.custom_id must be 1-64 characters"):
+        backend.submit([_req("ok-0"), _req(cid)], idempotency_key="k")
+
+
+@pytest.mark.parametrize("cid", _API_REFUSED_CUSTOM_IDS[:1] + _API_REFUSED_CUSTOM_IDS[-3:])
+def test_refused_custom_id_rejected_before_any_network_call(cid) -> None:
+    client = _FakeClient()
+    with pytest.raises(ValueError, match="custom_id must be 1-64 characters"):
+        AnthropicBatchBackend(client).submit([_req(cid)], idempotency_key="k")
+    assert client.messages.batches.created_payloads == []
+
+
+@pytest.mark.parametrize(
+    "cid", ["x" * 64, "a", "row_1-B", "0042"], ids=["64-chars", "1-char", "under-dash", "digits"]
+)
+def test_submit_accepts_custom_ids_at_the_api_pattern_edges(backend, cid: str) -> None:
+    """Control: the guard must not narrow the pattern the API allows."""
+    assert backend.submit([_req(cid)], idempotency_key="k").n_requests == 1
+
+
 def test_poll_unknown_job_raises_job_not_found(backend) -> None:
     """`JobNotFound` is in `__all__`; both backends must be able to raise it."""
     with pytest.raises(JobNotFound, match="unknown job_id"):
