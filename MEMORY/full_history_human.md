@@ -3126,3 +3126,13 @@ A similarity threshold of 1.0 means "only exact repeats". For embedders that
 don't normalize their vectors, rounding put a text's similarity to itself at
 0.9999999999999999 about a quarter of the time, so exact repeats missed the
 cache and the model was called again. Identical vectors now score exactly 1.0.
+
+## 2026-10-19 — Batch submit refuses a request id the Batch API would reject (#329)
+
+The Message Batches API only accepts request ids of 1 to 64 letters, digits,
+underscores or hyphens. When an id broke that rule (a space, a slash, a dot,
+an email address, an accented letter, a 65-character id, or a number), the
+in-memory test backend ran the batch anyway, while the production backend
+sent it and the API rejected the whole batch. Both backends now refuse that
+id up front, with an error naming the bad id, before anything goes over the
+network. That is the same treatment duplicate ids already got.

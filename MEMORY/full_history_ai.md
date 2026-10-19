@@ -3475,3 +3475,21 @@ context_for_next_session:
   - HASH_EMBEDDER_NORMALISES_SO_EVERY_IN_REPO_TEST_HID_IT_use_a_raw_BYO_embedder_in_tests
 followups: []
 ---
+
+---
+session: 2026-10-19T07:24Z
+issue: 329
+branch: session/2026-10-19-0724-issue-329
+focus: SUBMIT_ACCEPTED_A_CUSTOM_ID_OUTSIDE_THE_BATCHES_API_PATTERN_IN_MEMORY_RAN_IT_PRODUCTION_SENT_IT_AND_THE_WHOLE_BATCH_400S
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 30
+  suite: "1812 passed (3.12); ruff check + format + mypy clean"
+decisions_made: []
+measured: "Live API reference fetched 2026-10-19: custom_id minLength 1, maxLength 64, pattern ^[a-zA-Z0-9_-]{1,64}$. main: '', 'row 1', 'doc/42', 'a.b', 'user@example.com', non-ASCII, 65 chars, 7 all accepted by both backends; Anthropic sent them. Revert 22 of 30 red; the 8 green are the pattern-edge controls (4 ids x 2 backends)."
+context_for_next_session:
+  - "FULLMATCH_NOT_MATCH_PYTHON_DOLLAR_MATCHES_BEFORE_A_TRAILING_NEWLINE_the_documented_regex_verbatim_with_re_match_would_admit_row_1_newline"
+  - "NOT_ADDED_TO_BATCHREQUEST_POST_INIT_the_contract_lives_in_the_shared_submit_validator_198_so_both_backends_get_it_together"
+followups: []
+---
