@@ -35,6 +35,7 @@ import datetime
 import hashlib
 import json
 import math
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol
@@ -59,11 +60,12 @@ BATCH_DISCOUNT_FACTOR = 0.5
 class BatchRequest:
     """One row in a batch submission.
 
-    ``custom_id`` is an arbitrary stable identifier the caller chooses
-    so they can correlate the response row back to their own work
-    item; it does not need to be globally unique across batches, but
-    *within* one batch it must be unique (the backend rejects
-    duplicates on submit).
+    ``custom_id`` is a stable identifier the caller chooses so they can
+    correlate the response row back to their own work item; it does not
+    need to be globally unique across batches, but *within* one batch it
+    must be unique, and it must be 1-64 characters of ``[a-zA-Z0-9_-]``,
+    the Message Batches API's pattern. ``submit`` rejects either violation
+    on both backends (#198, #329).
     """
 
     custom_id: str
@@ -189,10 +191,19 @@ class BatchBackend(Protocol):
 # ----------------------------------------------------------------------
 
 
+#: The Message Batches API's ``custom_id`` pattern, ``^[a-zA-Z0-9_-]{1,64}$``
+#: (platform.claude.com/docs/en/api/creating-message-batches). An id outside it
+#: fails the *whole* batch with a 400, so it is a submit input error like a
+#: duplicate one (#329). Applied with ``fullmatch``: Python's ``$`` also matches
+#: before a trailing newline, so ``"row-1\n"`` would pass a ``match`` on the
+#: documented regex verbatim.
+_CUSTOM_ID_RE = re.compile(r"[a-zA-Z0-9_-]{1,64}")
+
+
 def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str) -> None:
     """The argument contract `BatchBackend.submit` owns, for *every* backend.
 
-    These three rules used to be hand-copied into each backend's ``submit``.
+    The first three rules used to be hand-copied into each backend's ``submit``.
     Both copies carried the first two verbatim; the third — duplicate
     ``custom_id`` rejection — was only ever added to ``InMemoryBatchBackend``,
     so the guard was enforced in CI and absent in production (#198). Results
@@ -200,13 +211,20 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     a repeated one yields rows the caller cannot attribute, and #97's proposed
     fix explicitly rests on ``custom_id``s being "already enforced at
     ``submit``". One definition, called by both, so the next rule cannot land
-    in one place only.
+    in one place only — and the fourth, the API's ``custom_id`` pattern, landed
+    here for that reason (#329).
     """
     if not requests:
         raise ValueError("submit requires at least one request")
     if not idempotency_key or not idempotency_key.strip():
         raise ValueError("idempotency_key must be a non-empty string")
     custom_ids = [r.custom_id for r in requests]
+    for i, cid in enumerate(custom_ids):
+        if not isinstance(cid, str) or _CUSTOM_ID_RE.fullmatch(cid) is None:
+            raise ValueError(
+                f"requests[{i}].custom_id must be 1-64 characters of [a-zA-Z0-9_-] "
+                f"(the Message Batches API rejects the whole batch otherwise); got {cid!r}"
+            )
     if len(set(custom_ids)) != len(custom_ids):
         dups = sorted(c for c in set(custom_ids) if custom_ids.count(c) > 1)
         raise ValueError(f"duplicate custom_ids within one batch: {dups}")
