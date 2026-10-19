@@ -3493,3 +3493,21 @@ context_for_next_session:
   - "NOT_ADDED_TO_BATCHREQUEST_POST_INIT_the_contract_lives_in_the_shared_submit_validator_198_so_both_backends_get_it_together"
 followups: []
 ---
+
+---
+session: 2026-10-19T07:29Z
+issue: 331
+branch: session/2026-10-19-0729-issue-331
+focus: CAPTURE_DEMO_LOCAL_URL_REGEX_KNEW_ONLY_THE_DEFAULT_BANNER_BASE_URL_PATH_HTTPS_AND_URL_COLON_TIMED_OUT_AND_THE_FAILURE_TAIL_PRINTED_THE_EXTERNAL_IP
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 8
+  suite: "1790 passed (3.12); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main, STREAMLIT_SERVER_BASE_URL_PATH=demo: rc 2 after 30 s, healthy dashboard terminated, stderr tail carried Local/Network/External URL lines with real IPs. After: rc 0, opened http://localhost:8597/demo, 0 Network/External lines in output. Revert 5 of 8 red; the 3 green are the address-line controls (network-only, external-only, unix-socket)."
+context_for_next_session:
+  - "STREAMLIT_PRINT_URL_HAS_FOUR_SHAPES_local_url_plus_base_path_https_under_sslcertfile_single_URL_for_browser_serveraddress_or_specific_server_address_unix_socket"
+  - "DEFERRED_logger_hideWelcomeMessage_true_prints_no_banner_still_times_out_but_the_tail_has_no_url_so_no_leak"
+followups: []
+---

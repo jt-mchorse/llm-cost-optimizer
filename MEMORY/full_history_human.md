@@ -3136,3 +3136,14 @@ in-memory test backend ran the batch anyway, while the production backend
 sent it and the API rejected the whole batch. Both backends now refuse that
 id up front, with an error naming the bad id, before anything goes over the
 network. That is the same treatment duplicate ids already got.
+
+## 2026-10-19 — The demo capture finds the dashboard under any Streamlit URL setting (#331)
+
+`capture_demo.py --launch-streamlit` starts the dashboard and opens the
+address Streamlit reports. It only recognised the default address line,
+`http://localhost:PORT`. With a URL prefix, HTTPS, or a fixed server address
+configured, it waited 30 seconds, shut down a dashboard that was working fine,
+and printed the dashboard's log as the error message. That log includes the
+machine's network and public IP addresses, in a terminal that is being
+recorded. Every address form Streamlit prints is now recognised, and the
+network and public IP lines are removed from the log before it is shown.
