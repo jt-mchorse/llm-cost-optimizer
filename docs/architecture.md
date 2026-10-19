@@ -474,6 +474,16 @@ as separate workload modes — they don't mix in a single request.
   Neither correct row moves: `[]` is not `None`, and a `tool_use`
   block is still an object.
 
+  **And to the entry's own identity (#333).** `custom_id` was read as
+  `getattr(entry, "custom_id", "")`, so an entry with no id, or a
+  non-`str` one, came back as a successful answer that matched no
+  request. Two such rows collided on `''`, and a dict id made
+  `compare_realtime_vs_batch` raise. `submit` refuses an empty or
+  non-pattern id (#329), so an unreadable one belongs to nothing this
+  library sent. It now gets the same error row as the other unreadable
+  shapes, on every result type, not a raise that would lose the rest of
+  the batch.
+
 ---
 
 ## 5. Savings dashboard + bench harness

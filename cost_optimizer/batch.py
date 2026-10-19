@@ -664,7 +664,24 @@ def _ended_status(resp: Any, n_requests: int) -> str:
 
 def _from_sdk_result_row(entry: Any) -> BatchResultRow:
     """Project an SDK batch result entry to ``BatchResultRow``."""
-    custom_id = getattr(entry, "custom_id", "")
+    # `custom_id` is the only thing that matches a row back to its request, and
+    # `submit` refuses an empty or non-pattern one on both backends (#329). An
+    # entry with no readable id therefore belongs to nothing we submitted, and
+    # the old `getattr(entry, "custom_id", "")` returned it as a successful,
+    # unmatchable answer: two of them collided on `''`, and a non-`str` id broke
+    # `custom_id: str` (a dict one made `compare_realtime_vs_batch` raise
+    # "unhashable"). It is D-017's unreadable-row case on the entry's own
+    # identity, so it gets D-017's answer, an error row, not a raise that would
+    # destroy retrieval of the rest of the batch (#333).
+    if (id_error := _custom_id_shape_error(entry)) is not None:
+        return BatchResultRow(
+            custom_id="",
+            response_text=None,
+            prompt_tokens=0,
+            completion_tokens=0,
+            error=id_error,
+        )
+    custom_id = entry.custom_id
     result = getattr(entry, "result", None)
     if result is None:
         return BatchResultRow(
@@ -724,6 +741,18 @@ def _from_sdk_result_row(entry: Any) -> BatchResultRow:
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
     )
+
+
+def _custom_id_shape_error(entry: Any) -> str | None:
+    """Reason a result entry's ``custom_id`` cannot identify a row, or ``None`` (#333)."""
+    if not hasattr(entry, "custom_id"):
+        return "result entry carried no custom_id"
+    custom_id = entry.custom_id
+    if not isinstance(custom_id, str):
+        return f"custom_id is {type(custom_id).__name__}-shaped, expected a non-empty str"
+    if not custom_id:
+        return "result entry carried an empty custom_id"
+    return None
 
 
 #: Token attributes every succeeded row's ``usage`` must expose. Absence is a

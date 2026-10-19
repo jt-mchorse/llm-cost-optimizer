@@ -3511,3 +3511,21 @@ context_for_next_session:
   - "DEFERRED_logger_hideWelcomeMessage_true_prints_no_banner_still_times_out_but_the_tail_has_no_url_so_no_leak"
 followups: []
 ---
+
+---
+session: 2026-10-19T07:58Z
+issue: 333
+branch: session/2026-10-19-0758-issue-333
+focus: RESULT_ENTRY_WITH_NO_OR_NON_STR_CUSTOM_ID_CAME_BACK_AS_A_SUCCESSFUL_ROW_THAT_MATCHES_NO_REQUEST
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 26
+  suite: "1852 passed (3.11); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main: succeeded entry with absent/None/int/dict/empty custom_id -> error=None, response_text='hello', 10/5 tokens, custom_id ''/None/7/{'a': 1}; two absent-id rows collided on ''; compare_realtime_vs_batch on a dict-id row raised TypeError unhashable. After: error row (custom_id '', None, 0/0, error names custom_id) on every result type. Revert 24 of 26 red; the 2 green are the valid-id controls."
+context_for_next_session:
+  - "LANDED_UNDER_D_017_NO_NEW_DECISION_the_entry_identity_is_one_more_member_of_the_unreadable_row_population"
+  - "SEEDS_CHECKED_SAME_RUN_D_019_RUNTIME_RATIOS_IS_249_JT_GATED_measure_fp_rate_expired_purged_is_247_FIXED_reproduced_purges_counted_RouterStats_abstained_counter_is_an_observability_feature_not_filed"
+followups: []
+---

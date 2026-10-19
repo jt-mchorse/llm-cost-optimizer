@@ -3147,3 +3147,13 @@ and printed the dashboard's log as the error message. That log includes the
 machine's network and public IP addresses, in a terminal that is being
 recorded. Every address form Streamlit prints is now recognised, and the
 network and public IP lines are removed from the log before it is shown.
+
+## 2026-10-19 — A batch result with no request id is reported as an error (#333)
+
+Every batch result row carries the id of the request it answers, and that id
+is how a caller matches answers to questions. If the API client returned a
+result with no id, or with something other than a text id, the row came back
+as a successful answer that matched none of the requests. Two such rows
+overwrote each other, and a cost comparison over them could crash. That row
+is now reported as an error, like other results that can't be read. The rest
+of the batch is still returned normally.
