@@ -276,7 +276,19 @@ def _maybe_launch_streamlit(json_path: Path, log_path: Path) -> subprocess.Popen
         )
 
 
-_LOCAL_URL = re.compile(r"^\s*Local URL: (http://localhost:\d+)\s*$", re.MULTILINE)
+#: The URL line of Streamlit's banner, in every shape it prints (#331): ``Local
+#: URL:`` by default, with any ``server.baseUrlPath`` appended and ``https`` under
+#: ``server.sslCertFile``; a single ``URL:`` when ``browser.serverAddress`` or a
+#: non-wildcard ``server.address`` is set. Matching only the default
+#: ``http://localhost:PORT`` timed out on the others, killed a healthy dashboard,
+#: and printed the log tail. ``Network URL:``/``External URL:`` never match: the
+#: optional prefix is ``Local `` or nothing.
+_LOCAL_URL = re.compile(r"^\s*(?:Local )?URL: (https?://\S+)\s*$", re.MULTILINE)
+
+#: Banner lines that carry the host's own addresses -- External is the
+#: operator's public IP. Kept out of the failure tail for the reason the banner
+#: goes to a file at all (#259, #331).
+_ADDRESS_LINE = re.compile(r"^[ \t]*(?:Network|External) URL:.*$\n?", re.MULTILINE)
 
 
 def _wait_for_local_url(
@@ -428,7 +440,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             local_url = _wait_for_local_url(streamlit_child, log_path, timeout=30.0)
             if local_url is None:
-                tail = log_path.read_text(encoding="utf-8", errors="replace")[-1500:]
+                log_text = log_path.read_text(encoding="utf-8", errors="replace")
+                tail = _ADDRESS_LINE.sub("", log_text)[-1500:]
                 if streamlit_child.poll() is None:
                     streamlit_child.terminate()
                 return _fail(
