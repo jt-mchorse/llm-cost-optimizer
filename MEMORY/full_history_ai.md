@@ -3529,3 +3529,22 @@ context_for_next_session:
   - "SEEDS_CHECKED_SAME_RUN_D_019_RUNTIME_RATIOS_IS_249_JT_GATED_measure_fp_rate_expired_purged_is_247_FIXED_reproduced_purges_counted_RouterStats_abstained_counter_is_an_observability_feature_not_filed"
 followups: []
 ---
+
+---
+session: 2026-10-20T07:16Z
+issue: 335
+branch: session/2026-10-20-0720-issue-335
+focus: A_FOREIGN_KEY_UNDER_THE_REDIS_KEY_PREFIX_MADE_EVERY_LOOKUP_RAISE_AND_INFLATED_LEN
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 18
+  suite: "1870 passed (3.14 venv); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 001f3da, fakeredis: a colon-free string under cache: raised binascii.Error/UnicodeDecodeError from lookup; hash/set/list raised WRONGTYPE ResponseError; len counted each. After: lookup serves the real record, len 1, put + invalidate leave the foreign key in place. Revert 16 of 18 new red; the 2 green are the controls (k1 + pre-#125 blob load, NOAUTH still raises)."
+context_for_next_session:
+  - "OWNERSHIP_IS_CHECKED_ON_THE_VALUE_not_the_key_name_the_blob_key_field_must_equal_the_redis_key_remainder"
+  - "WRONGTYPE_IS_MATCHED_ON_THE_REPLY_TEXT_because_the_client_is_injected_and_redis_is_a_lazy_import"
+  - "__len__NOW_GETS_EVERY_KEY_same_cost_as_find_nearest"
+followups: []
+---

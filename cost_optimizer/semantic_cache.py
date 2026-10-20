@@ -505,20 +505,42 @@ class RedisStorage:
         return max(1, math.ceil(remaining_ms))
 
     def _load(self, redis_key: str) -> CacheRecord | None:
+        """The record at *redis_key*, or None if there is none this cache wrote.
+
+        None covers a missing key (deleted, or expired by TTL) and, since #335,
+        a key holding something `put` did not write: another app's value under
+        the same prefix, a hash, or another cache's tag SET under a colon-free
+        name. `_own_record_keys` cannot rule those out by name -- Storage-level
+        callers use arbitrary keys like `"k1"` -- so the value is checked
+        instead. One such key used to make every `lookup` raise and `__len__`
+        count it. Only a `WRONGTYPE` reply is read as "not ours"; every other
+        client error (connection, auth) still propagates.
+        """
         import json
         from binascii import a2b_base64
 
         # `self.client` is a *sync* redis.Redis; redis-py's type stubs give
         # every command a `ResponseT = Awaitable[Any] | Any` return, so the
         # never-taken async arm is cast away at each storage-boundary call.
-        raw = cast("bytes | str | None", self.client.get(redis_key))
+        try:
+            raw = cast("bytes | str | None", self.client.get(redis_key))
+        except Exception as e:
+            # Matched on the reply, not the class: the client is injected, and
+            # `WRONGTYPE` is the error code the Redis server itself sends.
+            if str(e).startswith("WRONGTYPE"):
+                return None
+            raise
         if raw is None:
             return None
-        # Decode; Redis client may return bytes or str depending on `decode_responses`.
-        if isinstance(raw, bytes):
-            raw = raw.decode("ascii")
-        blob = a2b_base64(raw)
-        data = json.loads(blob.decode("utf-8"))
+        try:
+            # Decode; Redis client may return bytes or str depending on `decode_responses`.
+            if isinstance(raw, bytes):
+                raw = raw.decode("ascii")
+            data = json.loads(a2b_base64(raw).decode("utf-8"))
+        except ValueError:  # binascii.Error, UnicodeDecodeError and JSONDecodeError all are
+            return None
+        if not _is_record_blob(data, redis_key[len(self.key_prefix) + 1 :]):
+            return None
         return CacheRecord(
             key=data["key"],
             vector=tuple(data["vector"]),
@@ -627,7 +649,35 @@ class RedisStorage:
         return 0
 
     def __len__(self) -> int:
-        return sum(1 for _ in self._own_record_keys())
+        # Only keys that load as a record: a foreign key under the prefix is not
+        # an entry (#335). One GET per key, the same walk `find_nearest` does.
+        return sum(1 for key in self._own_record_keys() if self._load(key) is not None)
+
+
+def _is_record_blob(data: object, key: str) -> bool:
+    """Whether *data* is a blob `RedisStorage.put` wrote for *key* (#335).
+
+    `put` writes six fields (`model` since #125, so it may be absent), and the
+    `key` it writes is the Redis key's own remainder. JSON that decodes but was
+    written by something else, or for another key, is not a record.
+    """
+    if not isinstance(data, dict) or data.get("key") != key:
+        return False
+
+    def number(v: object) -> bool:
+        return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+    vector, tags, expires_at = data.get("vector"), data.get("tags"), data.get("expires_at")
+    return (
+        "payload" in data
+        and isinstance(vector, list)
+        and all(number(x) for x in vector)
+        and isinstance(tags, list)
+        and all(isinstance(t, str) for t in tags)
+        and "expires_at" in data
+        and (expires_at is None or number(expires_at))
+        and isinstance(data.get("model", ""), str)
+    )
 
 
 # ----------------------------------------------------------------------

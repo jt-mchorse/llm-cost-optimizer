@@ -3157,3 +3157,13 @@ as a successful answer that matched none of the requests. Two such rows
 overwrote each other, and a cost comparison over them could crash. That row
 is now reported as an error, like other results that can't be read. The rest
 of the batch is still returned normally.
+
+## 2026-10-20 — A Redis key the cache did not write no longer breaks it (#335)
+
+The Redis backend treated every key under its prefix as one of its own cache
+entries. Another app's `cache:session` key, a hash, or another cache's tag
+set could be stored under that prefix, and then every lookup crashed and the
+entry count was too high. `cache:` is a common prefix, so a Redis shared with
+other apps could hit this. A key now counts as an entry only if its value is
+a record the cache wrote for that exact key. Anything else is skipped and
+left alone. Connection and authentication errors still raise.
