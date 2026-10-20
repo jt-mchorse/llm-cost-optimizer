@@ -3548,3 +3548,21 @@ context_for_next_session:
   - "__len__NOW_GETS_EVERY_KEY_same_cost_as_find_nearest"
 followups: []
 ---
+
+---
+session: 2026-10-20T07:45Z
+issue: 337
+branch: session/2026-10-20-0745-issue-337
+focus: REGRESSION_FROM_335_THE_REDIS_READER_REFUSED_A_BOOL_VECTOR_COMPONENT_THAT_PUT_WRITES
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 1
+  suite: "1870 passed (3.14); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main d231dce, sha256-bit bool embedder: memory hit True len 1, redis hit False len 0 (001f3da: redis hit True). After: both hit, len 1. Revert: the new test red."
+context_for_next_session:
+  - "MY_OWN_335_SHAPE_CHECK_WAS_STRICTER_THAN_THE_WRITER_a_reader_validator_must_be_derived_from_what_the_writer_admits_not_from_what_looks_sane"
+  - "FILED_SAME_RUN_tag_namespace_foreign_keys_put_writes_the_record_before_a_WRONGTYPE_tag_sadd"
+followups: []
+---
