@@ -14,6 +14,9 @@ pattern `"cache:*"` also matched `"cache:eu:..."`.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 import pytest
 
 from cost_optimizer.semantic_cache import HashEmbedder, SemanticCache
@@ -90,3 +93,140 @@ def test_a_custom_prefix_keeps_its_tags_under_itself() -> None:
     cache.put(PROMPT, "x", model="m", tags=("t",))
     assert r.exists("tenantA:tag:t")
     assert len(cache.storage) == 1  # its own tag SET is not counted as a record
+
+
+# --- #335: a key under the prefix that this cache did not write ---------------
+#
+# Measured on `main` 9201786 (fakeredis): `SET cache:session <anything>` made
+# every `lookup` raise `binascii.Error: Incorrect padding`, a hash at
+# `cache:user42` raised `WRONGTYPE`, and `len()` counted both. `_own_record_keys`
+# only skips a remainder with a `:` in it, so a colon-free foreign key got
+# through to `_load`, which decoded with no error handling.
+
+
+def _b64_json(value: object) -> bytes:
+    import json
+    from binascii import b2a_base64
+
+    return b2a_base64(json.dumps(value).encode()).strip()
+
+
+_FOREIGN = [
+    pytest.param("cache:session", lambda r, k: r.set(k, b"abc"), id="string-bad-padding"),
+    pytest.param("cache:counter", lambda r, k: r.set(k, b"1234"), id="string-b64-not-utf8"),
+    pytest.param("cache:flag", lambda r, k: r.set(k, b"\xff\xfe"), id="string-not-ascii"),
+    pytest.param("cache:j", lambda r, k: r.set(k, _b64_json([1, 2])), id="b64-json-not-a-dict"),
+    pytest.param("cache:j", lambda r, k: r.set(k, _b64_json({"a": 1})), id="b64-json-not-a-record"),
+    pytest.param("cache:user42", lambda r, k: r.hset(k, "name", "x"), id="hash-wrongtype"),
+    pytest.param("cache:members", lambda r, k: r.sadd(k, "x"), id="set-wrongtype"),
+    pytest.param("cache:queue", lambda r, k: r.rpush(k, "x"), id="list-wrongtype"),
+]
+
+
+@pytest.mark.parametrize(("foreign", "plant"), _FOREIGN)
+def test_a_foreign_key_under_the_prefix_does_not_break_lookup_or_count(
+    foreign: str, plant: Callable[[Any, str], object]
+) -> None:
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    cache.put(PROMPT, "Madrid", model="m", tags=("geo",))
+    plant(r, foreign)
+    assert len(cache.storage) == 1
+    assert cache.lookup(PROMPT, model="m").payload == "Madrid"
+    assert not cache.lookup("something else entirely", model="m").hit
+    # `put` over an existing key and `invalidate` both still work around it,
+    # and neither touches the foreign key.
+    cache.put(PROMPT, "Madrid 2", model="m", tags=("geo",))
+    assert cache.invalidate(tag="geo") == 1
+    assert len(cache.storage) == 0
+    assert r.exists(foreign)
+
+
+def test_another_caches_tag_set_under_a_colon_free_prefix_is_not_a_record() -> None:
+    # The issue's third case needs no foreign app: the default cache's
+    # `tag:geography` SET sits under `key_prefix="tag"` with no `:` after it.
+    r = fakeredis.FakeRedis()
+    default, tagged = _cache(r), _cache(r, key_prefix="tag")
+    default.put(PROMPT, "default", model="m", tags=("geography",))
+    tagged.put(PROMPT, "tagged", model="m")
+    assert len(tagged.storage) == 1
+    assert tagged.lookup(PROMPT, model="m").payload == "tagged"
+    assert default.lookup(PROMPT, model="m").payload == "default"
+
+
+def test_a_record_blob_written_for_another_key_is_not_this_keys_record() -> None:
+    # A well-formed record copied (or renamed) to a different key would
+    # otherwise be served under a key its own `key` field contradicts.
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    cache.put(PROMPT, "x", model="m")
+    (own,) = [k for k in r.scan_iter("cache:*")]
+    r.set("cache:elsewhere", r.get(own))
+    assert len(cache.storage) == 1
+
+
+@pytest.mark.parametrize(
+    "field_value",
+    [
+        pytest.param(("vector", ["1.0"]), id="vector-str"),
+        pytest.param(("vector", [True]), id="vector-bool"),
+        pytest.param(("tags", "geo"), id="tags-str"),
+        pytest.param(("tags", [1]), id="tags-int"),
+        pytest.param(("expires_at", "soon"), id="expires-str"),
+        pytest.param(("model", 3), id="model-int"),
+    ],
+)
+def test_a_blob_with_a_field_of_the_wrong_shape_is_not_a_record(
+    field_value: tuple[str, object],
+) -> None:
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    blob = {
+        "key": "j",
+        "vector": [1.0],
+        "payload": "p",
+        "tags": [],
+        "expires_at": None,
+        "model": "m",
+    }
+    field, value = field_value
+    blob[field] = value
+    r.set("cache:j", _b64_json(blob))
+    assert len(cache.storage) == 0
+    assert not cache.lookup(PROMPT, model="m").hit
+
+
+def test_storage_level_keys_and_pre_125_blobs_still_load() -> None:
+    # Controls: no key-name filter (Storage callers use keys like "k1"), and a
+    # blob without `model` -- written before #125 -- is still a record.
+    from cost_optimizer.semantic_cache import CacheRecord
+
+    r = fakeredis.FakeRedis()
+    storage = RedisStorage(client=r)
+    storage.put(
+        CacheRecord(key="k1", vector=(1.0, 0.0), payload="p", tags=frozenset(), expires_at=None)
+    )
+    r.set(
+        "cache:old",
+        _b64_json(
+            {"key": "old", "vector": [0.0, 1.0], "payload": "q", "tags": [], "expires_at": None}
+        ),
+    )
+    assert len(storage) == 2
+    hit = storage.find_nearest([0.0, 1.0])
+    assert hit is not None
+    assert hit[0].key == "old"
+    assert hit[0].model == ""
+
+
+def test_a_client_error_other_than_wrongtype_still_propagates() -> None:
+    # Only `WRONGTYPE` means "not ours"; a refused read must not look like a miss.
+    class Refusing(fakeredis.FakeRedis):  # type: ignore[misc,valid-type]
+        def get(self, name: object) -> object:
+            raise RuntimeError("NOAUTH Authentication required.")
+
+    r = Refusing()
+    cache = _cache(r)
+    r.set("cache:k", b"x")
+    with pytest.raises(RuntimeError, match="NOAUTH"):
+        cache.lookup(PROMPT, model="m")
