@@ -3167,3 +3167,12 @@ entry count was too high. `cache:` is a common prefix, so a Redis shared with
 other apps could hit this. A key now counts as an entry only if its value is
 a record the cache wrote for that exact key. Anything else is skipped and
 left alone. Connection and authentication errors still raise.
+
+## 2026-10-20 — Redis cache entries from yes/no embeddings are found again (#337)
+
+This morning's fix for foreign Redis keys (#335) added a check that each
+stored entry looks like one the cache wrote. That check was stricter than the
+cache's own writer. It refused embedding values of true/false, which the
+writer accepts and stores. A cache using that kind of embedding then missed
+every time on Redis while working normally in memory. The check now accepts
+everything the writer can store.

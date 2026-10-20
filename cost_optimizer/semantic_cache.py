@@ -668,10 +668,13 @@ def _is_record_blob(data: object, key: str) -> bool:
         return isinstance(v, (int, float)) and not isinstance(v, bool)
 
     vector, tags, expires_at = data.get("vector"), data.get("tags"), data.get("expires_at")
+    # A vector component may be a `bool`: `_validate_embedding` admits one (it
+    # is an `int`), so `put` writes it, and refusing it here hid every record a
+    # bool-valued embedder stored -- Redis missed where memory hit (#337).
     return (
         "payload" in data
         and isinstance(vector, list)
-        and all(number(x) for x in vector)
+        and all(isinstance(x, (int, float)) for x in vector)
         and isinstance(tags, list)
         and all(isinstance(t, str) for t in tags)
         and "expires_at" in data
