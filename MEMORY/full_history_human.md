@@ -3187,3 +3187,11 @@ anything, and refuses with a clear message if one of them belongs to someone
 else. Clearing by tag leaves such a key alone. Two related cases are still
 open in #339 and need JT's decision, because they involve how tags are named
 on a Redis shared with other apps.
+
+## 2026-10-20 — Unreadable foreign Redis keys are skipped in every client mode (#341)
+
+This morning's fix (#335) skipped keys that another app had stored under the
+cache's prefix, but only in the default client mode. When the Redis client is
+set to decode responses as text, another app's binary value crashed every
+lookup. A key whose *name* wasn't valid text crashed it in any mode. Both are
+now skipped too, so the cache keeps working however the client is configured.

@@ -307,3 +307,42 @@ def test_own_and_fresh_tag_sets_are_unaffected() -> None:
     cache.put("another prompt", "b", model="m", tags=("t",))
     assert cache.invalidate(tag="t") == 2
     assert not r.exists("tag:t")
+
+
+# --- #341: decodes that ran before #335's checks -----------------------------
+#
+# Measured on `main` 3bdff0c: with a `decode_responses=True` client, a foreign
+# binary value raised `UnicodeDecodeError` from `get` itself, outside #335's
+# decode guard; and a non-UTF-8 key NAME under the prefix raised from the scan
+# in both client modes. Either one broke every `lookup` and `len`.
+
+
+@pytest.mark.parametrize("decode", [False, True], ids=["bytes-client", "decoding-client"])
+@pytest.mark.parametrize(
+    "plant",
+    [
+        pytest.param(lambda r: r.set("cache:session", b"\x80\x04\x95binary"), id="binary-value"),
+        pytest.param(lambda r: r.set(b"cache:\xff\xfe", b"x"), id="non-utf8-key-name"),
+    ],
+)
+def test_undecodable_foreign_keys_are_skipped_in_both_client_modes(
+    decode: bool, plant: Callable[[Any], object]
+) -> None:
+    r = fakeredis.FakeRedis(decode_responses=decode)
+    cache = _cache(r)
+    cache.put(PROMPT, "Madrid", model="m", tags=("geo",))
+    plant(r)
+    assert cache.lookup(PROMPT, model="m").payload == "Madrid"
+    assert len(cache.storage) == 1
+    assert cache.invalidate(tag="geo") == 1
+    assert len(cache.storage) == 0
+
+
+def test_a_decoding_client_still_loads_this_caches_own_records() -> None:
+    # Control: `decode_responses=True` is a supported client mode.
+    r = fakeredis.FakeRedis(decode_responses=True)
+    cache = _cache(r)
+    cache.put(PROMPT, "Madrid", model="m")
+    cache.put("another prompt", "Paris", model="m")
+    assert len(cache.storage) == 2
+    assert cache.lookup(PROMPT, model="m").payload == "Madrid"
