@@ -3584,3 +3584,21 @@ context_for_next_session:
   - "WILL_CONFLICT_WITH_338_in_tests_test_redis_namespace_isolation_py_both_append_at_the_end_rebase_by_hand"
 followups: []
 ---
+
+---
+session: 2026-10-20T08:05Z
+issue: 341
+branch: session/2026-10-20-0805-issue-341
+focus: TWO_DECODES_RAN_BEFORE_335S_OWNERSHIP_CHECK_A_DECODING_CLIENTS_GET_AND_SCAN_AND_THE_KEY_NAME_DECODE
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 6
+  suite: "1875 passed (3.14); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 3bdff0c fakeredis: decode_responses=True + pickled value at cache:session -> lookup and len UnicodeDecodeError; b'cache:\\xff\\xfe' -> UnicodeDecodeError in both modes. After: Madrid, len 1, invalidate 1 in all four cells. Revert 3 of 6 red; green are the bytes-client value (335 already) and the 2 decoding-client controls."
+context_for_next_session:
+  - "SCAN_USES_NEVER_DECODE_keys_are_bytes_in_both_client_modes_a_decode_responses_client_otherwise_decodes_the_whole_reply_before_our_code_runs"
+  - "THIRD_HUNT_HIT_ON_MY_OWN_335_ROUND_2_HUNTS_AIMED_AT_TODAYS_MERGES_PAY"
+followups: []
+---
