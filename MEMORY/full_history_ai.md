@@ -3566,3 +3566,21 @@ context_for_next_session:
   - "FILED_SAME_RUN_tag_namespace_foreign_keys_put_writes_the_record_before_a_WRONGTYPE_tag_sadd"
 followups: []
 ---
+
+---
+session: 2026-10-20T07:48Z
+issue: 339
+branch: session/2026-10-20-0748-issue-339
+focus: A_FOREIGN_STRING_UNDER_THE_TAG_KEY_MADE_PUT_RAISE_WRONGTYPE_AFTER_THE_RECORD_SET_LEAVING_AN_UNINVALIDATABLE_RECORD
+phase: partial
+delta:
+  files_changed: 2
+  tests_added: 8
+  suite: "1878 passed (3.14); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main d231dce, fakeredis, string at tag:session: put raised WRONGTYPE after SET, lookup hit, invalidate raised, record still served. After: put ValueError naming tag:session, nothing written; invalidate 0 and the key survives. Revert 7 of 8 red; the green one is the own/fresh-SET control."
+context_for_next_session:
+  - "PARTS_A_B_JT_GATED_a_foreign_SET_under_the_shared_default_tag_namespace_is_still_indexed_and_DELeted_members_cannot_prove_ownership_options_in_339"
+  - "WILL_CONFLICT_WITH_338_in_tests_test_redis_namespace_isolation_py_both_append_at_the_end_rebase_by_hand"
+followups: []
+---
