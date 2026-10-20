@@ -416,11 +416,20 @@ class RedisStorage:
         match = re.sub(r"([*?\[\]\\])", r"\\\1", head) + "*"
         cursor = 0
         while True:
+            # `NEVER_DECODE`: a `decode_responses=True` client would otherwise
+            # decode the whole reply inside `scan`, so one non-UTF-8 key name
+            # under the prefix raised before the skip below could see it (#341).
             cursor, keys = cast(
-                "tuple[int, list[bytes]]", self.client.scan(cursor=cursor, match=match)
+                "tuple[int, list[bytes]]",
+                self.client.scan(cursor=cursor, match=match, NEVER_DECODE=True),
             )
             for k in keys:
-                key = k.decode("utf-8") if isinstance(k, bytes) else k
+                try:
+                    key = k.decode("utf-8") if isinstance(k, bytes) else k
+                except UnicodeDecodeError:
+                    # Not a name this cache wrote: `put` writes `str` keys, so
+                    # a non-UTF-8 name under the prefix is another app's (#341).
+                    continue
                 if key.startswith(head) and ":" not in key[len(head) :]:
                     yield key
             if cursor == 0:
@@ -546,6 +555,10 @@ class RedisStorage:
         # never-taken async arm is cast away at each storage-boundary call.
         try:
             raw = cast("bytes | str | None", self.client.get(redis_key))
+        except UnicodeDecodeError:
+            # A `decode_responses=True` client decodes inside `get`, so another
+            # app's binary value fails here, before the decode below (#341).
+            return None
         except Exception as e:
             # Matched on the reply, not the class: the client is injected, and
             # `WRONGTYPE` is the error code the Redis server itself sends.
