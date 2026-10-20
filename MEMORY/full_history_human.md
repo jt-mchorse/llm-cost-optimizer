@@ -3176,3 +3176,14 @@ cache's own writer. It refused embedding values of true/false, which the
 writer accepts and stores. A cache using that kind of embedding then missed
 every time on Redis while working normally in memory. The check now accepts
 everything the writer can store.
+
+## 2026-10-20 — Another app's value at a tag key no longer half-writes a cache entry (#339, part)
+
+If another app had stored a plain value under the cache's tag key in Redis
+(`tag:session`, for example), saving an entry with that tag failed halfway.
+The entry was saved, but it was left out of the tag index, so it could never
+be cleared by tag. The cache now checks the tag keys before it writes
+anything, and refuses with a clear message if one of them belongs to someone
+else. Clearing by tag leaves such a key alone. Two related cases are still
+open in #339 and need JT's decision, because they involve how tags are named
+on a Redis shared with other apps.

@@ -430,6 +430,20 @@ class RedisStorage:
         import json
         from binascii import b2a_base64
 
+        # Every tag key this put will `SADD` to must be a SET or absent, checked
+        # BEFORE anything is written (#339). Another app's string under
+        # `tag:<name>` used to raise `WRONGTYPE` from the `sadd` below, after the
+        # record `SET`: the record was then served, missing from its tag's index,
+        # with no way for `invalidate(tag=...)` to remove it. Same
+        # compute-before-write rule as #287/#302/#323.
+        for tag in sorted(record.tags):
+            if self._tag_key_type(tag) not in ("none", "set"):
+                raise ValueError(
+                    f"tag {tag!r}: Redis key {self._tag_key(tag)!r} holds a "
+                    f"{self._tag_key_type(tag)}, not this cache's tag SET; another "
+                    "app shares the tag namespace (set tag_prefix to separate them)"
+                )
+
         # A re-put under an existing key may carry a different tag set. Redis
         # tag membership is additive (the `sadd` loop below), so without
         # pruning, a tag the record no longer has would still point at this
@@ -440,7 +454,10 @@ class RedisStorage:
         existing = self._load(self._record_key(record.key))
         if existing is not None:
             for stale_tag in existing.tags - record.tags:
-                self.client.srem(self._tag_key(stale_tag), record.key)
+                # A stale tag's key may have been replaced by a foreign value
+                # since; there is no membership of ours left to drop (#339).
+                if self._tag_key_type(stale_tag) == "set":
+                    self.client.srem(self._tag_key(stale_tag), record.key)
 
         # Store the vector + payload as a JSON-encoded blob; Redis hashes
         # don't natively carry numeric arrays.
@@ -474,6 +491,11 @@ class RedisStorage:
     #: separates this from a longer ttl -- `find_nearest` checks `expires_at`
     #: on the cache's clock regardless, so the backends stay in parity (#323).
     _MAX_TTL_MS = 2**62
+
+    def _tag_key_type(self, tag: str) -> str:
+        """Redis's `TYPE` of *tag*'s key: "set", "none", or another app's type."""
+        kind = cast("bytes | str", self.client.type(self._tag_key(tag)))
+        return kind.decode("ascii") if isinstance(kind, bytes) else kind
 
     def _ttl_ms(self, expires_at: float) -> int:
         """Milliseconds until *expires_at* on the cache's clock, for `PEXPIRE`."""
@@ -625,6 +647,10 @@ class RedisStorage:
         the first time it is encountered, so the index converges instead of
         growing forever.
         """
+        # A tag key that is not a SET is not this cache's index (#339): leave
+        # it alone rather than raise `WRONGTYPE` from `smembers`.
+        if self._tag_key_type(tag) != "set":
+            return 0
         members = cast("set[bytes]", self.client.smembers(self._tag_key(tag))) or set()
         count = 0
         for member in members:
