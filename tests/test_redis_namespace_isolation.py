@@ -248,3 +248,62 @@ def test_a_bool_vector_put_wrote_is_still_a_record() -> None:
         cache.put(PROMPT, "cached", model="m")
         assert cache.lookup(PROMPT, model="m").payload == "cached", type(storage).__name__
         assert len(storage) == 1
+
+
+# --- #339 (part C): a foreign value under this cache's tag key ---------------
+#
+# Measured on `main` d231dce: with another app's string at `tag:session`,
+# `put(..., tags=("session",))` raised `WRONGTYPE` from the `SADD` AFTER the
+# record `SET`. The lookup then hit a record missing from its tag's index, and
+# `invalidate(tag="session")` raised too, so nothing could remove it.
+
+_FOREIGN_TAG = [
+    pytest.param(lambda r, k: r.set(k, b"x"), id="string"),
+    pytest.param(lambda r, k: r.hset(k, "f", "v"), id="hash"),
+    pytest.param(lambda r, k: r.rpush(k, "x"), id="list"),
+]
+
+
+@pytest.mark.parametrize("plant", _FOREIGN_TAG)
+def test_put_with_a_foreign_tag_key_writes_nothing(plant: Callable[[Any, str], object]) -> None:
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    plant(r, "tag:session")
+    with pytest.raises(ValueError, match="tag:session"):
+        cache.put(PROMPT, "answer", model="m", tags=("ok", "session"))
+    assert not cache.lookup(PROMPT, model="m").hit
+    assert len(cache.storage) == 0
+    assert not r.exists("tag:ok")  # refused before any write, not halfway
+
+
+@pytest.mark.parametrize("plant", _FOREIGN_TAG)
+def test_invalidate_leaves_a_foreign_tag_key_alone(plant: Callable[[Any, str], object]) -> None:
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    cache.put(PROMPT, "answer", model="m", tags=("geo",))
+    plant(r, "tag:session")
+    assert cache.invalidate(tag="session") == 0
+    assert r.exists("tag:session")
+    assert cache.lookup(PROMPT, model="m").hit
+
+
+def test_a_stale_tag_whose_key_became_foreign_does_not_break_a_re_put() -> None:
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    cache.put(PROMPT, "v1", model="m", tags=("old",))
+    r.delete("tag:old")
+    r.set("tag:old", b"someone else's")
+    cache.put(PROMPT, "v2", model="m", tags=("new",))
+    assert cache.lookup(PROMPT, model="m").payload == "v2"
+    assert r.get("tag:old") == b"someone else's"
+    assert cache.invalidate(tag="new") == 1
+
+
+def test_own_and_fresh_tag_sets_are_unaffected() -> None:
+    # Control: an absent tag key and this cache's own SET both still work.
+    r = fakeredis.FakeRedis()
+    cache = _cache(r)
+    cache.put(PROMPT, "a", model="m", tags=("t",))
+    cache.put("another prompt", "b", model="m", tags=("t",))
+    assert cache.invalidate(tag="t") == 2
+    assert not r.exists("tag:t")
