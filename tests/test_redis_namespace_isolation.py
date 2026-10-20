@@ -169,7 +169,6 @@ def test_a_record_blob_written_for_another_key_is_not_this_keys_record() -> None
     "field_value",
     [
         pytest.param(("vector", ["1.0"]), id="vector-str"),
-        pytest.param(("vector", [True]), id="vector-bool"),
         pytest.param(("tags", "geo"), id="tags-str"),
         pytest.param(("tags", [1]), id="tags-int"),
         pytest.param(("expires_at", "soon"), id="expires-str"),
@@ -230,3 +229,22 @@ def test_a_client_error_other_than_wrongtype_still_propagates() -> None:
     r.set("cache:k", b"x")
     with pytest.raises(RuntimeError, match="NOAUTH"):
         cache.lookup(PROMPT, model="m")
+
+
+def test_a_bool_vector_put_wrote_is_still_a_record() -> None:
+    # #337: `_validate_embedding` admits a bool component (it is an `int`), so
+    # `put` writes one; #335's reader refused it and the Redis cache missed on
+    # every lookup while the in-memory one hit.
+    import hashlib
+
+    from cost_optimizer.semantic_cache import InMemoryStorage
+
+    class BinaryEmbedder:
+        def embed(self, text: str) -> list[float]:
+            return [bool(b & 1) for b in hashlib.sha256(text.encode()).digest()]
+
+    for storage in (InMemoryStorage(), RedisStorage(client=fakeredis.FakeRedis())):
+        cache = SemanticCache(embedder=BinaryEmbedder(), storage=storage)
+        cache.put(PROMPT, "cached", model="m")
+        assert cache.lookup(PROMPT, model="m").payload == "cached", type(storage).__name__
+        assert len(storage) == 1
