@@ -3195,3 +3195,12 @@ cache's prefix, but only in the default client mode. When the Redis client is
 set to decode responses as text, another app's binary value crashed every
 lookup. A key whose *name* wasn't valid text crashed it in any mode. Both are
 now skipped too, so the cache keeps working however the client is configured.
+
+## 2026-10-21 — A model id that isn't text is refused instead of half-saved in Redis (#343)
+
+The model name was the only part of a cache entry that wasn't checked when it
+was saved. Since #335, the Redis backend ignores any stored entry whose model
+isn't text. So saving with a model of `4` or `None` put an entry in Redis that
+was never served, never counted, couldn't be cleared by tag and never expired.
+The in-memory cache served the same entry normally. Saving and looking up both
+reject a model that isn't text with a clear error, before anything is written.
