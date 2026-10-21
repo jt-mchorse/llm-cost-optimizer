@@ -43,7 +43,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from cost_optimizer.io_utils import atomic_write_text
-from cost_optimizer.shapes import is_item_sequence
+from cost_optimizer.shapes import is_finite, is_item_sequence
 
 
 @dataclass(frozen=True)
@@ -212,7 +212,9 @@ class EntropySignal:
         if (
             isinstance(self.threshold, bool)
             or not isinstance(self.threshold, (int, float))
-            or not math.isfinite(self.threshold)
+            # `is_finite`, not `math.isfinite`: an int above ~1.8e308 (a JSON
+            # `1` + 400 zeros) made the bare call raise a raw OverflowError (#344).
+            or not is_finite(self.threshold)
             or self.threshold < 0.0
         ):
             raise ValueError(
@@ -266,7 +268,9 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
         # still parses. (#140)
         try:
             floats = [float(v) for v in direct]
-        except (TypeError, ValueError):
+        # OverflowError too: `float()` of an int above ~1.8e308 raises it, and it
+        # is not a ValueError, so it escaped `measure()` and `route()` (#344).
+        except (TypeError, ValueError, OverflowError):
             return None
         # A non-finite (NaN/±Inf) logprob — a numerically unstable or malformed
         # SDK distribution — slips `_shannon_entropy_nats`'s `total <= 0` guard
@@ -318,7 +322,8 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
                 # would crash float() and abort route(); abstain instead.
                 try:
                     floats = [float(lp) for lp in values]
-                except (TypeError, ValueError):
+                # OverflowError: a huge int logprob, as on the direct path (#344).
+                except (TypeError, ValueError, OverflowError):
                     return None
                 # Same finiteness abstain as the direct path above (#95): a
                 # present-but-non-finite logprob would read entropy 0.0 and
@@ -436,7 +441,9 @@ class JudgeConfidenceSignal:
         if (
             isinstance(self.threshold, bool)
             or not isinstance(self.threshold, (int, float))
-            or not math.isfinite(self.threshold)
+            # `is_finite`, not `math.isfinite`: an int above ~1.8e308 (a JSON
+            # `1` + 400 zeros) made the bare call raise a raw OverflowError (#344).
+            or not is_finite(self.threshold)
             or not (0.0 <= self.threshold <= 1.0)
         ):
             raise ValueError(
@@ -474,7 +481,8 @@ class JudgeConfidenceSignal:
         # string ("0.9") still parses and measures; a genuine finite 0.0 still trips.
         try:
             score = float(raw)
-        except (TypeError, ValueError):
+        # OverflowError: `float()` of an int score above ~1.8e308 (#344).
+        except (TypeError, ValueError, OverflowError):
             return SignalReading(value=None, trip=False)
         if not math.isfinite(score):
             return SignalReading(value=None, trip=False)

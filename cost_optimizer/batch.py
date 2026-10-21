@@ -41,7 +41,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from cost_optimizer.pricing import _coerce_token_count
-from cost_optimizer.shapes import is_block_sequence, is_decoded_json_value
+from cost_optimizer.shapes import is_block_sequence, is_decoded_json_value, is_finite
 
 # Anthropic's public batch API charges 50% of standard input/output
 # rates on both axes; the same factor applies across the current Claude
@@ -571,6 +571,11 @@ def _is_malformed_count_part(part: Any) -> bool:
     """
     if isinstance(part, bool) or not isinstance(part, (int, float)):
         return True
+    if isinstance(part, int):
+        # An int is exact and sums exactly. Asking `math.isfinite` of one raised
+        # a raw OverflowError above ~1.8e308, out of `submit()`/`poll()` (#344),
+        # and treating it as malformed would drop the other four parts.
+        return False
     if not math.isfinite(part):
         return True  # int(NaN) -> raw ValueError; int(inf) -> OverflowError
     return part != int(part)  # non-integral float would truncate silently
@@ -893,7 +898,9 @@ class BatchCostQuote:
             if (
                 isinstance(value, bool)
                 or not isinstance(value, (int, float))
-                or not math.isfinite(value)
+                # `is_finite`, not `math.isfinite`: an int above ~1.8e308 (a JSON
+                # `1` + 400 zeros) made the bare call raise a raw OverflowError (#344).
+                or not is_finite(value)
                 or value < 0.0
             ):
                 raise ValueError(f"{name} must be a finite number >= 0.0; got {value!r}")

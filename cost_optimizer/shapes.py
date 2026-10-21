@@ -38,6 +38,7 @@ questions is worse than two honest rules.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from typing import Any, TypeGuard
 
@@ -145,3 +146,29 @@ def is_block_sequence(value: Any) -> TypeGuard[Sequence[Any]]:
     what left the first half of this open (``#215``).
     """
     return is_item_sequence(value)
+
+
+def is_finite(value: float) -> bool:
+    """``math.isfinite`` that answers ``False`` for an int too large for a float.
+
+    ``math.isfinite`` converts its argument to a ``float`` first, and an ``int``
+    above ~1.8e308 has no ``float``: it raises ``OverflowError`` rather than
+    answering. A JSON decoder produces exactly that int — ``json.loads`` of
+    ``1`` followed by 400 zeros is an ``int``, while ``1e400`` is ``inf`` — so
+    every ``isinstance`` → ``math.isfinite`` guard in this package leaked a raw
+    ``OverflowError`` instead of its field-named ``ValueError`` (``#344``).
+    ``OverflowError`` is not a ``ValueError`` subclass, so it also slips past
+    every downstream ``except ValueError`` (the hazard ``#166`` wrote down).
+
+    Such an int is not a finite *float*, which is what every caller goes on to
+    compute with, so it is answered the way ``inf`` is. An int that does fit
+    (``10**308``) converts and is judged on its value as before.
+
+    Takes only what ``math.isfinite`` takes: the type and ``bool`` checks stay
+    at each call site, because they differ (``_validate_embedding`` admits a
+    ``bool`` component; the config guards refuse one).
+    """
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False

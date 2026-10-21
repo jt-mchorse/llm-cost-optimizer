@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any, Protocol, cast
 
 from cost_optimizer.io_utils import atomic_write_text
+from cost_optimizer.shapes import is_finite
 
 # ----------------------------------------------------------------------
 # Embedder Protocol + dep-free reference
@@ -741,6 +742,18 @@ def cosine(a: list[float], b: list[float]) -> float:
     """
     if len(a) != len(b):
         raise ValueError(f"vector length mismatch: {len(a)} vs {len(b)}")
+    # Floats first (#344): an `int` component multiplies exactly, so `sum(x*x)`
+    # never overflowed to `inf` the way the paragraph above relies on -- it grew
+    # into an int `math.sqrt` cannot convert, and a raw OverflowError escaped
+    # `lookup` for any int component above ~1.3e154 that `put` had stored. As
+    # floats they overflow to `inf` and take the 0.0 fallback, like a float
+    # vector of the same magnitude. An int no float can hold (a record `put` did
+    # not write) is the same unusable similarity.
+    try:
+        a = [float(x) for x in a]
+        b = [float(x) for x in b]
+    except OverflowError:
+        return 0.0
     dot = sum(x * y for x, y in zip(a, b, strict=True))
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(x * x for x in b))
@@ -786,7 +799,9 @@ def _validate_embedding(vector: list[float], *, where: str) -> None:
     def _corrupt(v: object) -> bool:
         if not isinstance(v, (int, float)):
             return True  # present-but-non-numeric (str/None/list/...) off the BYO seam
-        return not math.isfinite(v)  # NaN / +/-Inf
+        # NaN / +/-Inf, and an int too large for a float: `math.isfinite` raised
+        # a raw OverflowError on one out of `put`/`lookup` (#344).
+        return not is_finite(v)
 
     bad = next((i for i, v in enumerate(vector) if _corrupt(v)), None)
     if bad is not None:
@@ -1253,7 +1268,9 @@ class SemanticCache:
         if default_ttl_s is not None and (
             isinstance(default_ttl_s, bool)
             or not isinstance(default_ttl_s, (int, float))
-            or not math.isfinite(default_ttl_s)
+            # `is_finite`, not `math.isfinite`: an int above ~1.8e308 (a JSON
+            # `1` + 400 zeros) made the bare call raise a raw OverflowError (#344).
+            or not is_finite(default_ttl_s)
             or default_ttl_s <= 0
         ):
             raise ValueError(
@@ -1408,7 +1425,9 @@ class SemanticCache:
         if ttl_s is not None and (
             isinstance(ttl_s, bool)
             or not isinstance(ttl_s, (int, float))
-            or not math.isfinite(ttl_s)
+            # `is_finite`, not `math.isfinite`: an int above ~1.8e308 (a JSON
+            # `1` + 400 zeros) made the bare call raise a raw OverflowError (#344).
+            or not is_finite(ttl_s)
             or ttl_s <= 0
         ):
             raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s!r}")
