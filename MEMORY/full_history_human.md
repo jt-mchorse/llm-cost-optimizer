@@ -3204,3 +3204,14 @@ isn't text. So saving with a model of `4` or `None` put an entry in Redis that
 was never served, never counted, couldn't be cleared by tag and never expired.
 The in-memory cache served the same entry normally. Saving and looking up both
 reject a model that isn't text with a clear error, before anything is written.
+
+## 2026-10-21 — A number too big for a float gets a clear error instead of a crash (#344)
+
+A config file can contain a whole number too big to fit in a float (`1`
+followed by 400 zeros). When one reached a setting such as a cache TTL, a
+price, or a router threshold, the library crashed with a raw `OverflowError`
+instead of its usual message naming the setting. Those checks now share one
+helper and give the normal clear error. The same number in a batch's request
+counts, a logprob, or a judge score no longer crashes routing or polling, and
+an embedder returning very large whole numbers now gets a cache miss instead
+of crashing the lookup.
