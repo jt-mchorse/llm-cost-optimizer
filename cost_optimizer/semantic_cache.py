@@ -1168,6 +1168,23 @@ def _checked_tags(tags: Iterable[str]) -> frozenset[str]:
     return frozenset(materialised)
 
 
+def _checked_model(model: object) -> str:
+    """`model` held to the standard of `put`'s other inputs (#343).
+
+    `model` was the only field of a stored record that `put` never checked, and
+    `_is_record_blob` (#335) rejects a blob whose `model` is not a `str`. So a
+    `put(..., model=4)` -- or `None`, `1.5`, `True` -- was a record
+    `InMemoryStorage` served while `RedisStorage` wrote it, then skipped it on
+    every read: a miss, `len()` 0, `invalidate` 0, and a key with no TTL left
+    behind. The writer must not emit what the reader rejects (#337), so the
+    refusal happens here, before either backend is touched. `lookup` calls it
+    too, so both seams reject the same values on every backend.
+    """
+    if not isinstance(model, str):
+        raise ValueError(f"model must be a str; got {model!r} ({type(model).__name__})")
+    return model
+
+
 def _check_tag_encodes(tag: str) -> None:
     """A tag must be storable by every backend, so it must encode as UTF-8 (#287).
 
@@ -1315,6 +1332,8 @@ class SemanticCache:
         # Drop expired entries opportunistically so cold lookups don't
         # silently match against stale data. RedisStorage no-ops this since
         # Redis itself evicts expired keys.
+        # Refused before the purge so a rejected call has no side effect (#343).
+        model = _checked_model(model)
         self.stats.expired_purged += self.storage.purge_expired(self.now_fn())
 
         vector = self.embedder.embed(self._scoped_prompt(prompt, model))
@@ -1394,6 +1413,9 @@ class SemanticCache:
         ):
             raise ValueError(f"ttl_s must be a finite positive number; got {ttl_s!r}")
         tag_set = _checked_tags(tags)
+        # The one record field nothing checked; `RedisStorage`'s reader rejects a
+        # non-`str` model, so storing one orphaned the record there (#343).
+        model = _checked_model(model)
         ttl = ttl_s if ttl_s is not None else self.default_ttl_s
         expires_at = (self.now_fn() + ttl) if ttl is not None else None
         # Third input to this function, same seam, same standard as the two

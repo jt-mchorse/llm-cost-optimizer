@@ -3602,3 +3602,21 @@ context_for_next_session:
   - "THIRD_HUNT_HIT_ON_MY_OWN_335_ROUND_2_HUNTS_AIMED_AT_TODAYS_MERGES_PAY"
 followups: []
 ---
+
+---
+session: 2026-10-21T07:23Z
+issue: 343
+branch: session/2026-10-21-0723-issue-343
+focus: MODEL_WAS_THE_ONE_RECORD_FIELD_PUT_NEVER_CHECKED_AND_335S_READER_REJECTS_A_NON_STR_MODEL
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 28
+  suite: "1911 passed (3.14); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 35cd5f9 fakeredis: model=4/None/1.5/True -> memory hit True len 1, redis hit False len 0, invalidate 0, orphan cache:* key with no TTL. After: ValueError at put and lookup on both backends, no keys written; str control unchanged. Revert 20 of 28 red; the 8 green are the str-model controls."
+context_for_next_session:
+  - "FOURTH_HUNT_HIT_ON_MY_OWN_335_A_READER_SHAPE_CHECK_NEEDS_A_MATCHING_WRITER_GUARD_PER_FIELD_model_was_the_last_unchecked_one"
+  - "LOOKUP_CHECKS_MODEL_BEFORE_PURGE_EXPIRED_SO_A_REFUSED_CALL_HAS_NO_SIDE_EFFECT"
+followups: []
+---
