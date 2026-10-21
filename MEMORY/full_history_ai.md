@@ -3620,3 +3620,21 @@ context_for_next_session:
   - "LOOKUP_CHECKS_MODEL_BEFORE_PURGE_EXPIRED_SO_A_REFUSED_CALL_HAS_NO_SIDE_EFFECT"
 followups: []
 ---
+
+---
+session: 2026-10-21T07:23Z
+issue: 344
+branch: session/2026-10-21-0723-issue-344
+focus: AN_INT_ABOVE_FLOAT_RANGE_MADE_MATH_ISFINITE_AND_FLOAT_RAISE_OVERFLOWERROR_PAST_EVERY_FIELD_NAMED_GUARD
+phase: shipped
+delta:
+  files_changed: 6
+  tests_added: 32
+  suite: "1915 passed (3.11); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 35cd5f9, 10**400: OverflowError from all 7 listed guards plus 4 unlisted sites (batch poll request_counts, direct + nested logprob float(), judge score float()); embedder [10**200, 1] crashed lookup in cosine's math.sqrt of an exact-int sum. After: field-named ValueError at the guards, abstain at the router, exact sum for counts, 0.0 similarity for cosine (parity with the float twin). Revert (shapes.py kept) 21 of 32 red; green are 9 controls + premise + is_finite unit."
+context_for_next_session:
+  - "SHAPES_IS_FINITE_is_the_shared_helper_new_finiteness_guards_should_use_it_not_math_isfinite"
+  - "A_VALIDATOR_THAT_ADMITS_AN_INT_IS_NOT_A_GUARANTEE_FOR_DOWNSTREAM_FLOAT_MATH_int_arithmetic_never_overflows_to_inf_it_raises_at_the_next_float_conversion"
+followups: []
+---

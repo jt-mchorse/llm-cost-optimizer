@@ -20,9 +20,10 @@ an invented price.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Any
+
+from cost_optimizer.shapes import is_finite
 
 
 def _coerce_token_count(value: Any) -> int:
@@ -115,7 +116,9 @@ class ModelPricing:
             if (
                 isinstance(value, bool)
                 or not isinstance(value, (int, float))
-                or not math.isfinite(value)
+                # `is_finite`, not `math.isfinite`: an int above ~1.8e308 (a JSON
+                # `1` + 400 zeros) made the bare call raise a raw OverflowError (#344).
+                or not is_finite(value)
                 or value < 0.0
             ):
                 raise ValueError(f"{name} must be a finite number >= 0.0; got {value!r}")
