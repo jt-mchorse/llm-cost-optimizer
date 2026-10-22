@@ -3638,3 +3638,22 @@ context_for_next_session:
   - "A_VALIDATOR_THAT_ADMITS_AN_INT_IS_NOT_A_GUARANTEE_FOR_DOWNSTREAM_FLOAT_MATH_int_arithmetic_never_overflows_to_inf_it_raises_at_the_next_float_conversion"
 followups: []
 ---
+
+---
+session: 2026-10-22T07:16Z
+issue: 345
+branch: session/2026-10-22-0716-issue-345
+focus: ONE_TEXT_BLOCKS_HELPER_FOR_BOTH_SIGNALS_THE_JUDGE_NOW_TAKES_273S_UNTYPED_FALLBACK
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 11
+  suite: "1954 passed (3.14); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 9771c24, untyped {text, logprobs} block: entropy 1.386 / judge value=None trip=False; typed: judge 0.1 trip=True. After: untyped judge 0.1 trip=True, entropy unchanged. Revert 3 of 11 red; green are 4 controls (typed, thinking-first, no-text abstain, mixed typed/untyped) + 4 parity rows."
+context_for_next_session:
+  - "ROUTER_TEXT_BLOCKS_IS_THE_ONE_ANSWER_TO_WHICH_BLOCK_IS_TEXT_any_typed_block_means_only_type_text_counts_none_typed_means_all"
+  - "A_PRIOR_UNSHIPPED_WORKTREE_AT_THE_SAME_PATH_HELD_THIS_EXACT_FIX_UNCOMMITTED_saved_as_a_patch_and_reverified_on_current_main"
+followups:
+  - "per_signal_errors does not count a judge abstention -- separate contract question, not filed"
+---
