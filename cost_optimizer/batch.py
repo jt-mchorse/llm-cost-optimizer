@@ -199,6 +199,16 @@ class BatchBackend(Protocol):
 #: documented regex verbatim.
 _CUSTOM_ID_RE = re.compile(r"[a-zA-Z0-9_-]{1,64}")
 
+#: The Message Batches API's whole-batch limits: "A Message Batch is limited to
+#: either 100,000 Message requests or 256 MB in size, whichever is reached
+#: first" (platform.claude.com/docs/en/build-with-claude/batch-processing,
+#: checked 2026-10-22; over the size limit is a 413 ``request_too_large``).
+#: Either one fails the *whole* batch, so both are submit input errors (#351).
+#: "MB" is read as MiB, the larger reading, so the guard never refuses a batch
+#: the API would take; the band between the readings is left to the API.
+_MAX_BATCH_REQUESTS = 100_000
+_MAX_BATCH_BYTES = 256 * 1024 * 1024
+
 
 def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str) -> None:
     """The argument contract `BatchBackend.submit` owns, for *every* backend.
@@ -212,10 +222,18 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     fix explicitly rests on ``custom_id``s being "already enforced at
     ``submit``". One definition, called by both, so the next rule cannot land
     in one place only — and the fourth, the API's ``custom_id`` pattern, landed
-    here for that reason (#329).
+    here for that reason (#329), as did the API's request-count and body-size
+    limits (#351).
     """
     if not requests:
         raise ValueError("submit requires at least one request")
+    # Checked before anything walks the requests, so an oversized batch is
+    # refused in O(1) rather than after a per-row pass (#351).
+    if len(requests) > _MAX_BATCH_REQUESTS:
+        raise ValueError(
+            f"requests must hold at most {_MAX_BATCH_REQUESTS:,} entries "
+            f"(the Message Batches API rejects the whole batch otherwise); got {len(requests):,}"
+        )
     if not idempotency_key or not idempotency_key.strip():
         raise ValueError("idempotency_key must be a non-empty string")
     custom_ids = [r.custom_id for r in requests]
@@ -228,6 +246,35 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     if len(set(custom_ids)) != len(custom_ids):
         dups = sorted(c for c in set(custom_ids) if custom_ids.count(c) > 1)
         raise ValueError(f"duplicate custom_ids within one batch: {dups}")
+    body_bytes = _request_body_lower_bound(requests)
+    if body_bytes > _MAX_BATCH_BYTES:
+        raise ValueError(
+            f"requests must serialize to at most {_MAX_BATCH_BYTES:,} bytes (256 MiB; the "
+            f"Message Batches API rejects the whole batch with a 413 otherwise); got at least "
+            f"{body_bytes:,}"
+        )
+
+
+def _request_body_lower_bound(requests: Sequence[BatchRequest]) -> int:
+    """A lower bound on the bytes ``AnthropicBatchBackend.submit`` sends (#351).
+
+    The exact count depends on the SDK's JSON settings (separators, whether
+    non-ASCII is escaped, extra envelope fields), which this package does not
+    own. Compact separators with raw UTF-8 is the smallest encoding of the same
+    payload, so a batch over the limit on this count is over it on the wire:
+    the guard can only ever refuse a batch the API would also refuse. Lone
+    surrogates take ``surrogatepass``'s 3 bytes, under the 6 of their ``\\u``
+    escape, so they keep the bound and do not raise here. Stops summing once
+    over the limit; the caller only needs to know that much.
+    """
+    # `{"requests":[` + `]}`, plus one comma between each pair of entries.
+    total = len('{"requests":[]}') + len(requests) - 1
+    for r in requests:
+        entry = json.dumps(_to_sdk_request(r), separators=(",", ":"), ensure_ascii=False)
+        total += len(entry.encode("utf-8", "surrogatepass"))
+        if total > _MAX_BATCH_BYTES:
+            break
+    return total
 
 
 def _is_not_found_error(exc: BaseException) -> bool:

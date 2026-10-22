@@ -17,8 +17,11 @@ with a `.messages.batches` surface. No `anthropic` import anywhere.
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
+from cost_optimizer import batch as batch_mod
 from cost_optimizer.batch import (
     AnthropicBatchBackend,
     BatchRequest,
@@ -296,3 +299,87 @@ def test_poll_loses_the_idempotency_key_on_the_stateless_backend() -> None:
     a = ant.submit([_req()], idempotency_key="KEY-1")
     assert a.idempotency_key == "KEY-1"
     assert ant.poll(a.job_id).idempotency_key == ""
+
+
+# The Message Batches API caps a batch at 100,000 requests or 256 MB, whichever
+# comes first; either one fails the whole batch. Before #351 neither backend
+# checked: in-memory ran 100,001 requests, production sent them.
+
+
+def _n_reqs(n: int) -> list[BatchRequest]:
+    return [_req(f"r{i}", "hi") for i in range(n)]
+
+
+def test_batch_limits_are_the_documented_values() -> None:
+    """Pinned so a typo in either constant is a red test, not a silent drift."""
+    assert batch_mod._MAX_BATCH_REQUESTS == 100_000
+    assert batch_mod._MAX_BATCH_BYTES == 256 * 1024 * 1024
+
+
+def test_submit_accepts_exactly_the_request_limit(backend) -> None:
+    """Control: the count guard must not refuse the API's own maximum."""
+    assert backend.submit(_n_reqs(100_000), idempotency_key="k").n_requests == 100_000
+
+
+def test_submit_refuses_one_request_over_the_limit(backend) -> None:
+    with pytest.raises(
+        ValueError, match=r"requests must hold at most 100,000 entries.*got 100,001"
+    ):
+        backend.submit(_n_reqs(100_001), idempotency_key="k")
+
+
+def test_over_limit_request_count_refused_before_any_network_call() -> None:
+    client = _FakeClient()
+    with pytest.raises(ValueError, match="at most 100,000 entries"):
+        AnthropicBatchBackend(client).submit(_n_reqs(100_001), idempotency_key="k")
+    assert client.messages.batches.created_payloads == []
+
+
+# The size limit is exercised with the constant lowered: a real 256 MiB body
+# would need ~1 GB of copies in a CI process. The bound itself is checked
+# against the payload the backend actually builds. `raising=False` so that,
+# against code with no size guard, these fail on behaviour (accepts an
+# over-size body) rather than on a missing attribute; the constant's existence
+# is pinned above.
+
+
+def _body_bytes(reqs: list[BatchRequest]) -> int:
+    """The compact UTF-8 body for `reqs`, built independently of the guard."""
+    payload = {"requests": [batch_mod._to_sdk_request(r) for r in reqs]}
+    return len(json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode())
+
+
+_SIZED = [_req("a", "x" * 500), _req("b", "é中" * 100), _req("c", "y")]
+
+
+def test_size_bound_equals_the_compact_body_and_never_exceeds_the_default_one() -> None:
+    """The guard's count is the smallest encoding; the SDK's can only be larger."""
+    bound = batch_mod._request_body_lower_bound(_SIZED)
+    assert bound == _body_bytes(_SIZED)
+    default = {"requests": [batch_mod._to_sdk_request(r) for r in _SIZED]}
+    assert bound <= len(json.dumps(default).encode())
+
+
+def test_submit_accepts_a_body_exactly_at_the_size_limit(backend, monkeypatch) -> None:
+    """Control: at the limit is allowed; the guard refuses only *over* it."""
+    monkeypatch.setattr(batch_mod, "_MAX_BATCH_BYTES", _body_bytes(_SIZED), raising=False)
+    assert backend.submit(_SIZED, idempotency_key="k").n_requests == 3
+
+
+def test_submit_refuses_a_body_one_byte_over_the_size_limit(backend, monkeypatch) -> None:
+    monkeypatch.setattr(batch_mod, "_MAX_BATCH_BYTES", _body_bytes(_SIZED) - 1, raising=False)
+    with pytest.raises(ValueError, match=r"requests must serialize to at most .* bytes"):
+        backend.submit(_SIZED, idempotency_key="k")
+
+
+def test_over_size_body_refused_before_any_network_call(monkeypatch) -> None:
+    monkeypatch.setattr(batch_mod, "_MAX_BATCH_BYTES", 1_000, raising=False)
+    client = _FakeClient()
+    with pytest.raises(ValueError, match="413"):
+        AnthropicBatchBackend(client).submit([_req("big", "z" * 2_000)], idempotency_key="k")
+    assert client.messages.batches.created_payloads == []
+
+
+def test_size_bound_survives_a_lone_surrogate(backend) -> None:
+    """Control: `user` is not validated, so the bound must not raise on it."""
+    assert backend.submit([_req("s", "a\ud800b")], idempotency_key="k").n_requests == 1
