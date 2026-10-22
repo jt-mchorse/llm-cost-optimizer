@@ -53,7 +53,16 @@ def _coerce_token_count(value: Any) -> int:
         n = int(value or 0)
     except (TypeError, ValueError, OverflowError):
         return 0
-    return n if n >= 0 else 0
+    if n < 0:
+        return 0
+    # An int already too large for a float (e.g. ``json.loads("1" + "0" * 400)``)
+    # passes ``int()`` unchanged and then crashes in ``_dollars_saved`` /
+    # ``compare_realtime_vs_batch`` float arithmetic.  ``is_finite`` answers
+    # ``False`` for such values (see ``shapes.py``), so we abstain here rather
+    # than letting the successful response be destroyed downstream. (#350)
+    if not is_finite(n):
+        return 0
+    return n
 
 
 @dataclass(frozen=True)
