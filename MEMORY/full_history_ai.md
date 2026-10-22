@@ -3678,3 +3678,21 @@ context_for_next_session:
   - "MONKEYPATCH_RAISING_FALSE_MAKES_A_LOWERED_LIMIT_TEST_RED_ON_BEHAVIOUR_NOT_ON_A_MISSING_ATTRIBUTE"
 followups: []
 ---
+
+---
+session: 2026-10-22T07:35Z
+issue: 350
+branch: session/2026-10-22-0735-issue-350
+focus: COERCE_TOKEN_COUNT_CAUGHT_INT_OF_INF_BUT_PASSED_AN_INT_ALREADY_ABOVE_FLOAT_RANGE_TO_POST_PAID_CALL_FLOAT_MATH
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 26
+  suite: "1969 passed (3.14 and 3.11); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 9771c24: cache_read/cache_creation_input_tokens = 10**400, its str form, 10**309 -> OverflowError from PromptCacheWrapper.create after the paid call; batch input_tokens=10**400 -> row error=None then OverflowError in compare_realtime_vs_batch; prompt_tokens=10**308 -> realtime_usd=inf savings_usd=nan savings_pct=nan silently. After: coerce abstains to 0 (response returned, savings 0.0); compare raises field-named ValueError for an above-range hand-built row and for overflowing totals. Revert 16 of 26 red; the 10 green are controls (coerce shapes, inf/10**300 in the wrapper, normal pricing)."
+context_for_next_session:
+  - "PR_347_LISTED_ITS_SITES_AND_TOKEN_COERCION_WAS_NOT_ONE_the_unlisted_surface_lens_again"
+  - "AN_INT_THAT_FITS_A_FLOAT_STILL_OVERFLOWS_THE_MULTIPLY_10e308_times_3_is_inf_so_a_finiteness_check_on_the_input_is_not_one_on_the_product"
+followups: []
+---
