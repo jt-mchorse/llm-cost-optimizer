@@ -3283,12 +3283,6 @@ duration_min: 10   # computed: plan comment 2026-10-14T07:26:04Z -> PR, approx
 issue: 306
 branch: session/2026-10-14-0726-issue-306
 focus: README_SEMANTIC_CACHE_EXAMPLE_PUT_THE_SDK_MESSAGE_OBJECT_WHICH_D015_REJECTS_SO_THE_DOCUMENTED_MISS_PATH_RAISED_VALUEERROR
----
-
----
-session: 2026-10-14T08:35Z
-issue: 308
-focus: REDIS_STORAGE_HINT_SAID_PIP_INSTALL_COST_OPTIMIZER_REDIS_WHICH_404S_ON_PYPI_AND_IS_UNCLAIMED
 phase: shipped
 delta:
   files_changed: 2
@@ -3304,6 +3298,13 @@ followups: []
 ---
 
 ---
+session: 2026-10-14T08:35Z
+issue: 308
+focus: REDIS_STORAGE_HINT_SAID_PIP_INSTALL_COST_OPTIMIZER_REDIS_WHICH_404S_ON_PYPI_AND_IS_UNCLAIMED
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 3
   suite: "full suite green (rc 0); ruff check + format clean"
 decisions_made: []
 measured: "pypi.org/pypi/cost-optimizer/json -> 404. Revert probe: 1 of 3 new arms red, 2 controls green."
@@ -3411,13 +3412,6 @@ session: 2026-10-16T08:10Z
 issue: 321
 branch: session/2026-10-16-0740-issue-321
 focus: 184_COVERED_A_SIGNAL_THAT_RAISES_A_SIGNAL_THAT_RETURNS_A_NON_READING_CRASHED_ROUTE_AFTER_THE_PAID_CHEAP_CALL_AND_LEFT_MEASURED_GT_TOTAL_ROUTES
----
-
----
-session: 2026-10-16T09:30Z
-issue: 323
-branch: session/2026-10-16-0816-issue-323
-focus: REDISSTORAGE_PUT_SET_THEN_COMPUTED_AN_UNBOUNDED_TTL_A_HUGE_TTL_RAISED_AFTER_THE_SET_LEAVING_A_NEVER_EXPIRING_UNINDEXED_RECORD
 phase: shipped
 delta:
   files_changed: 2
@@ -3432,6 +3426,14 @@ followups: []
 ---
 
 ---
+session: 2026-10-16T09:30Z
+issue: 323
+branch: session/2026-10-16-0816-issue-323
+focus: REDISSTORAGE_PUT_SET_THEN_COMPUTED_AN_UNBOUNDED_TTL_A_HUGE_TTL_RAISED_AFTER_THE_SET_LEAVING_A_NEVER_EXPIRING_UNINDEXED_RECORD
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 10
   suite: "1766 passed; ruff, format, mypy clean"
 decisions_made: []
 measured: "fakeredis ttl 1e16/sys.maxsize/1e306: put raised after SET, pttl -1, hit, invalidate(tag) 0, still hit. After: pttl 2**62, hit, invalidate 1, miss; memory backend agrees. Revert 9 of 10 red."
@@ -3446,13 +3448,6 @@ session: 2026-10-16T12:40Z
 issue: 325
 branch: session/2026-10-16-0854-issue-325
 focus: COMPARE_REALTIME_VS_BATCH_READ_THE_MODEL_FROM_THE_QUOTE_ON_ONE_PATH_AND_THE_KEY_ON_ANOTHER_SWAPPED_KEYS_MISPRICED_SILENTLY
----
-
----
-session: 2026-10-16T13:00Z
-issue: 327
-branch: session/2026-10-16-0859-issue-327
-focus: COSINE_V_V_ROUNDED_TO_0_9999999999999999_FOR_NON_NORMALISED_VECTORS_SO_EXACT_REPEATS_MISSED_AT_SIMILARITY_THRESHOLD_1_0
 phase: shipped
 delta:
   files_changed: 2
@@ -3467,6 +3462,14 @@ followups: []
 ---
 
 ---
+session: 2026-10-16T13:00Z
+issue: 327
+branch: session/2026-10-16-0859-issue-327
+focus: COSINE_V_V_ROUNDED_TO_0_9999999999999999_FOR_NON_NORMALISED_VECTORS_SO_EXACT_REPEATS_MISSED_AT_SIMILARITY_THRESHOLD_1_0
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 6
   suite: "1782 passed; ruff, format, mypy clean; new file green on 3.11"
 decisions_made: []
 measured: "non-normalised 384-d embedder, threshold 1.0: 60/200 exact repeats missed on main, 0 after. Revert 3 of 6 red."
