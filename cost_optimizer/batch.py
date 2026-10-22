@@ -50,6 +50,14 @@ from cost_optimizer.shapes import is_block_sequence, is_decoded_json_value, is_f
 # this constant is the documented value as of 2026-05.
 BATCH_DISCOUNT_FACTOR = 0.5
 
+# Hard limit documented by the Message Batches API.
+# https://docs.anthropic.com/en/api/creating-message-batches
+# ("A Message Batch is limited to either 100,000 Message requests or 256 MB
+# in size, whichever is reached first.")
+# Enforced in _validate_submit_args (shared by both backends) so the guard
+# cannot diverge between InMemoryBatchBackend and AnthropicBatchBackend (#351).
+BATCH_MAX_REQUESTS = 100_000
+
 
 # ----------------------------------------------------------------------
 # Public types
@@ -218,6 +226,18 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
         raise ValueError("submit requires at least one request")
     if not idempotency_key or not idempotency_key.strip():
         raise ValueError("idempotency_key must be a non-empty string")
+    # The Message Batches API rejects a whole batch above this count with a
+    # whole-batch 413 request_too_large before any request is processed — the
+    # same class of error as a duplicate custom_id or a bad pattern, which are
+    # already checked here. Checking in _validate_submit_args (shared by both
+    # backends) removes the CI-passes / production-fails split #198 and #329
+    # were written to eliminate. (#351)
+    if len(requests) > BATCH_MAX_REQUESTS:
+        raise ValueError(
+            f"submit received {len(requests):,} requests; "
+            f"the Message Batches API limit is {BATCH_MAX_REQUESTS:,} per batch "
+            "(https://docs.anthropic.com/en/api/creating-message-batches)"
+        )
     custom_ids = [r.custom_id for r in requests]
     for i, cid in enumerate(custom_ids):
         if not isinstance(cid, str) or _CUSTOM_ID_RE.fullmatch(cid) is None:
