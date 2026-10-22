@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import json
 import math
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -286,21 +286,17 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
     # nest: a tuple at ANY of them abstained the signal. Widening only the
     # outermost would leave the other two, which is the shape #215 was.
     if is_item_sequence(content) and content:
-        # The first TEXT block, as `measure`'s comment and `_extract_text` both
-        # say (#273). This read `content[0]` whatever it was, so a response that
-        # leads with a `thinking` (or `tool_use`, `redacted_thinking`, ...) block
-        # abstained to value=None/trip=False on every call -- extended thinking
-        # silently disabled escalation, and the reading looks like a confident
-        # cheap response. A list whose blocks carry no `type` at all (an older
-        # fake or adapter) keeps the old first-block behaviour.
-        typed = [b for b in content if _read_field(b, "type") is not None]
-        if typed:
-            text_blocks = [b for b in typed if _read_field(b, "type") == "text"]
-            if not text_blocks:
-                return None
-            first = text_blocks[0]
-        else:
-            first = content[0]
+        # The first TEXT block, as `measure`'s comment says (#273). This read
+        # `content[0]` whatever it was, so a response that leads with a
+        # `thinking` (or `tool_use`, `redacted_thinking`, ...) block abstained to
+        # value=None/trip=False on every call -- extended thinking silently
+        # disabled escalation, and the reading looks like a confident cheap
+        # response. Which block counts as text is `_text_blocks`'s call, shared
+        # with `_extract_text` (#345).
+        text_blocks = _text_blocks(content)
+        if not text_blocks:
+            return None
+        first = text_blocks[0]
         logprobs = _read_field(first, "logprobs")
         if is_item_sequence(logprobs) and logprobs:
             top = logprobs[0]
@@ -332,6 +328,24 @@ def _extract_first_token_logprobs(response: Any) -> list[float] | None:
                     return None
                 return floats
     return None
+
+
+def _text_blocks(content: Sequence[Any]) -> list[Any]:
+    """The blocks of `content` that carry the assistant text, in order.
+
+    The one answer to "which block is the text" for both signals (#345). When
+    any block carries a `type`, only `type == "text"` blocks count, so a leading
+    `thinking`/`tool_use` block is skipped (#273). When no block carries a
+    `type` at all (an older fake or adapter), every block counts -- #273's
+    first-block fallback. That fallback lived only in the logprob extractor, so
+    `_extract_text` read an untyped block as no text and `JudgeConfidenceSignal`
+    abstained (value=None, trip=False) on the same response `EntropySignal`
+    measured -- an abstention indistinguishable from a confident cheap answer.
+    """
+    typed = [b for b in content if _read_field(b, "type") is not None]
+    if typed:
+        return [b for b in typed if _read_field(b, "type") == "text"]
+    return list(content)
 
 
 def _read_field(obj: Any, name: str, default: Any = None) -> Any:
@@ -510,10 +524,11 @@ def _extract_text(response: Any) -> str:
         # abstaining — the empty-text guard in `measure` (value=None, trip=False)
         # is the intended outcome, same "abstain, don't crash on malformed SDK
         # shapes" contract the logprob extractor already honors (#94/#106).
+        # Which blocks are text is `_text_blocks`'s call, the same one the
+        # logprob extractor makes (#345): an untyped block is text here too.
         parts = [
             t
-            for b in content
-            if _read_field(b, "type", "") == "text"
+            for b in _text_blocks(content)
             for t in (_read_field(b, "text", ""),)
             if isinstance(t, str)
         ]
