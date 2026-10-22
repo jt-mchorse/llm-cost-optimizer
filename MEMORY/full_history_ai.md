@@ -3660,3 +3660,21 @@ context_for_next_session:
 followups:
   - "per_signal_errors does not count a judge abstention -- separate contract question, not filed"
 ---
+
+---
+session: 2026-10-22T07:35Z
+issue: 351
+branch: session/2026-10-22-0735-issue-351
+focus: THE_BATCHES_API_WHOLE_BATCH_LIMITS_100000_REQUESTS_OR_256MB_WERE_NEVER_CHECKED_BY_THE_SHARED_SUBMIT_VALIDATOR
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 14
+  suite: "1957 passed (3.14); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 9771c24, 100,001 requests: in-memory returned pending n_requests=100001, fake batches.create got 100001. After: field-named ValueError on both backends, create never called; 100,000 still accepted. Size guard is a LOWER BOUND (compact raw-UTF-8 JSON) against 256 MiB, so it can only refuse what the API would also refuse. Revert 8 of 14 red; the 6 green are at-limit accept controls (count + size) and the lone-surrogate control, each on both backends."
+context_for_next_session:
+  - "A_SIZE_GUARD_ON_A_PAYLOAD_WHOSE_ENCODING_WE_DO_NOT_OWN_MUST_BE_A_LOWER_BOUND_or_it_refuses_batches_the_API_accepts"
+  - "MONKEYPATCH_RAISING_FALSE_MAKES_A_LOWERED_LIMIT_TEST_RED_ON_BEHAVIOUR_NOT_ON_A_MISSING_ATTRIBUTE"
+followups: []
+---
