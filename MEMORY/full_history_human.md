@@ -3215,3 +3215,13 @@ helper and give the normal clear error. The same number in a batch's request
 counts, a logprob, or a judge score no longer crashes routing or polling, and
 an embedder returning very large whole numbers now gets a cache miss instead
 of crashing the lookup.
+
+## 2026-10-22 — The judge signal reads the same text block the entropy signal does (#345)
+
+Since #273, the entropy signal treated content blocks with no `type` field
+(older fakes and adapters) as text, but the judge signal still required
+`type: "text"`. For the same response the entropy signal took a measurement
+while the judge quietly abstained, which looks the same as a confident cheap
+answer, so the judge never escalated those responses. One helper now decides
+which blocks are text, and both signals use it. When any block is typed, only
+`text` blocks count; when none are, every block counts.
