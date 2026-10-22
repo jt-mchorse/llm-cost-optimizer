@@ -1033,11 +1033,28 @@ def compare_realtime_vs_batch(
         quote = prices.get(model)
         if quote is None:
             raise KeyError(f"prices missing entry for model={model!r}")
+        # A count too large for a float made the multiply below raise a raw
+        # OverflowError (#350). `_from_sdk_result_row` no longer produces one,
+        # but a hand-built row still can, and `BatchResultRow` admits any int.
+        for name in ("prompt_tokens", "completion_tokens"):
+            if not is_finite(getattr(row, name)):
+                raise ValueError(
+                    f"rows[custom_id={row.custom_id!r}].{name} is too large to price as a float"
+                )
         prompt_usd = row.prompt_tokens * quote.input_per_mtok / 1_000_000
         completion_usd = row.completion_tokens * quote.output_per_mtok / 1_000_000
         realtime_total += prompt_usd + completion_usd
         batch_total += (prompt_usd + completion_usd) * discount
         counted_rows += 1
+    # A count a float CAN hold still overflows the multiply (`10**308 * 3.0` is
+    # inf), and so can the sum. That published `realtime_usd=inf` beside
+    # `savings_usd=nan, savings_pct=nan`, silently (#350): the garbage-on-the-
+    # dashboard outcome `BatchCostQuote.__post_init__` refuses for a rate.
+    if not (math.isfinite(realtime_total) and math.isfinite(batch_total)):
+        raise ValueError(
+            "realtime/batch totals overflow a float; a row's token count is "
+            f"too large to price (realtime_total={realtime_total!r})"
+        )
 
     # Round the two published totals first, then derive savings_usd and
     # savings_pct from those rounded values. Rounding savings independently

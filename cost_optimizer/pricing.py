@@ -48,12 +48,18 @@ def _coerce_token_count(value: Any) -> int:
     Lives here in the shared token-domain module so the cache wrapper (#114)
     and the batch-result parser (#136) share one implementation rather than
     diverging.
+
+    An int too large for a float abstains too (#350). ``int()`` takes one
+    without complaint (``json.loads`` of ``1`` and 400 zeros, its string form,
+    ``10**309``), and the caller's float math then raised ``OverflowError`` —
+    after the paid call, so the response was lost. Only ``inf`` was caught,
+    because only ``int(inf)`` raises here.
     """
     try:
         n = int(value or 0)
     except (TypeError, ValueError, OverflowError):
         return 0
-    return n if n >= 0 else 0
+    return n if n >= 0 and is_finite(n) else 0
 
 
 @dataclass(frozen=True)

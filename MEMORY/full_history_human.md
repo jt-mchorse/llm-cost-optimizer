@@ -3235,3 +3235,15 @@ rejection back from the API. Both backends now refuse it up front with a clear
 error, before any network call. The size check never refuses a batch the API
 would accept: it measures the smallest possible encoding of the request, so a
 batch only just over the limit may still be left for the API to reject.
+
+## 2026-10-22 — A huge token count in a response no longer loses the response (#350)
+
+Token counts in a response are only used for savings accounting. A malformed
+one is supposed to count as zero rather than crash, because the API call has
+already been paid for. A whole number too big for a float (`1` followed by 400
+zeros) slipped through that rule. It crashed the prompt-cache wrapper after
+the call, so the answer was lost, and it crashed the batch cost comparison
+too. Such a count now counts as zero, and the response comes back normally.
+The batch cost comparison also used to report infinite cost and a "not a
+number" saving, without any error, when a count was large but still fit in a
+float. It now refuses with a clear error instead.
