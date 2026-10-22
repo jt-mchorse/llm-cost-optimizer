@@ -3225,3 +3225,13 @@ while the judge quietly abstained, which looks the same as a confident cheap
 answer, so the judge never escalated those responses. One helper now decides
 which blocks are text, and both signals use it. When any block is typed, only
 `text` blocks count; when none are, every block counts.
+
+## 2026-10-22 — A batch over the API's size limits is refused before it is sent (#351)
+
+The Message Batches API refuses any batch with more than 100,000 requests or
+more than 256 MB of data. Neither backend checked this. The test backend ran
+such a batch normally, and the production backend sent it and only got the
+rejection back from the API. Both backends now refuse it up front with a clear
+error, before any network call. The size check never refuses a batch the API
+would accept: it measures the smallest possible encoding of the request, so a
+batch only just over the limit may still be left for the API to reject.
