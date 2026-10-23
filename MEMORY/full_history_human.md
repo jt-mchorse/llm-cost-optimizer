@@ -3272,3 +3272,14 @@ question, the signal now reports that it could not measure, and the judge is
 not called. Your adapter can attach the question to the response it returns,
 and the README now says so. Letting the signal see the original request
 directly would change the signal interface, so that is left as a decision.
+
+## 2026-10-23 — The Redis cache no longer accepts an entry it could never find again (#358)
+
+The Redis backend only reads back entries whose name has no colon after the
+cache's prefix. That rule keeps a cache named `cache` from serving the entries
+of a separate cache named `cache:eu`. Saving an entry straight through the
+storage layer under a name like `tenant:42` used to work, but the entry could
+then never be found or counted, while the in-memory backend served it
+normally. Saving such an entry to Redis is now refused with a clear error,
+before anything is written. Normal cache use is unaffected, because the cache
+itself only ever names entries with hexadecimal hashes.

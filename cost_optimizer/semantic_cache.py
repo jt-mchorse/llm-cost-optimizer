@@ -451,6 +451,21 @@ class RedisStorage:
         import json
         from binascii import b2a_base64
 
+        # A key `_own_record_keys` would skip is refused before anything is
+        # written (#358). That scan keeps a match only when the remainder after
+        # `key_prefix:` has no `:` -- the rule that stops `cache` serving
+        # `cache:eu`'s records (D-024) -- so `key="tenant:42"` used to be `SET`
+        # and then never found: `find_nearest` missed it, `len` did not count
+        # it, and an untagged one had no index to reach it by, while
+        # `InMemoryStorage` served it. `SemanticCache` writes hex keys only, so
+        # this is reachable from the Storage API alone.
+        if ":" in record.key:
+            raise ValueError(
+                f"record key {record.key!r} contains ':'; RedisStorage reads back only "
+                f"keys with no ':' after {self.key_prefix + ':'!r} (a ':' marks a nested "
+                "namespace), so this record would be written and never found"
+            )
+
         # Every tag key this put will `SADD` to must be a SET or absent, checked
         # BEFORE anything is written (#339). Another app's string under
         # `tag:<name>` used to raise `WRONGTYPE` from the `sadd` below, after the
