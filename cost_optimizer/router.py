@@ -424,6 +424,10 @@ class JudgeConfidenceSignal:
     rubric=...)` and reads `.score`. Any object that satisfies that
     contract works — including the deterministic stub used in tests.
 
+    The prompt is read off the response's `prompt` field. A response without
+    one (an SDK `Message` has none) abstains rather than grading against an
+    empty question (#356).
+
     The cross-repo wiring to `llm-eval-harness` is intentional: the
     same `Judge.score` API the regression runner uses (#3 in
     eval-harness) is the signal the router uses to decide when a cheap
@@ -470,7 +474,18 @@ class JudgeConfidenceSignal:
         prompt = _read_field(response, "prompt")
         if not text:
             return SignalReading(value=None, trip=False)
-        verdict = self.judge.score(prompt or "", text, rubric=self.rubric)
+        # No prompt to grade against means "couldn't measure", the same contract
+        # as the empty-text guard above (#356). `route()` hands signals only the
+        # cheap *response*, and a real SDK `Message` has no `prompt` field, so the
+        # old `prompt or ""` called the judge with an empty question. It still
+        # returned a score, and that score routed: a wrong measurement, which is
+        # worse than an abstain. Missing, None, non-str and blank all abstain, and
+        # the judge is not called (it is a paid model call). Passing the request
+        # itself into `measure` would change the `EscalationSignal` Protocol, so
+        # that is left for a decision.
+        if not isinstance(prompt, str) or not prompt.strip():
+            return SignalReading(value=None, trip=False)
+        verdict = self.judge.score(prompt, text, rubric=self.rubric)
         # A judge that returns a verdict without a usable `.score` (missing,
         # None, or non-finite) means "couldn't measure" — not "scored zero".
         # The old `float(getattr(...) or 0.0)` collapsed a missing score to

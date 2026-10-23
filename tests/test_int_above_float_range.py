@@ -190,11 +190,17 @@ class _Judge:
         return types.SimpleNamespace(score=self._score)
 
 
+def _judged() -> dict[str, Any]:
+    # The judge abstains without a prompt to grade against (#356).
+    return {**_text(), "prompt": "q"}
+
+
 def test_a_huge_int_judge_score_abstains() -> None:
-    reading = JudgeConfidenceSignal(judge=_Judge(BIG), rubric="r").measure(_text())
+    # A prompt, so the abstain is the overflow guard's and not the no-prompt one (#356).
+    reading = JudgeConfidenceSignal(judge=_Judge(BIG), rubric="r").measure(_judged())
     assert (reading.value, reading.trip) == (None, False)
 
 
 def test_control_an_int_judge_score_still_measures() -> None:
-    reading = JudgeConfidenceSignal(judge=_Judge(0), rubric="r").measure(_text())
+    reading = JudgeConfidenceSignal(judge=_Judge(0), rubric="r").measure(_judged())
     assert (reading.value, reading.trip) == (0.0, True)
