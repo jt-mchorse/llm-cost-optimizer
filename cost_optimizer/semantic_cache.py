@@ -196,6 +196,10 @@ class Storage(Protocol):
         miss (#133). ``model=None`` (the default) scans every record, so
         direct callers and pre-#133 code keep their behavior.
 
+        A record whose vector length differs from ``vector``'s is skipped the
+        same way (#357): it is not comparable, so it can never be a hit, and it
+        must not make the search raise for the records that are.
+
         **Ties are part of this contract** (#188). When two records score the
         same cosine, an implementation must return the one with the greater
         ``record.key`` — not whichever it happened to scan first. Iteration
@@ -267,6 +271,13 @@ class InMemoryStorage:
             # must never be *considered*, so it can't outscore and mask a
             # valid same-model candidate.
             if model is not None and r.model != model:
+                continue
+            # A vector of another dimension is not comparable, so it is skipped
+            # like a cross-model record rather than handed to `cosine`, which
+            # raises on it (#357). One such record -- left behind when a
+            # persistent store outlives an embedder swap -- made every lookup for
+            # its model raise, an exact hit included. It can never be a hit.
+            if len(r.vector) != len(vector):
                 continue
             sim = cosine(vector, list(r.vector))
             # Ties break on `record.key`, not on scan position (#188). A bare
@@ -610,6 +621,10 @@ class RedisStorage:
             # Redis's TTL is garbage collection, not the source of truth.
             if record.expires_at is not None and record.expires_at <= self.now_fn():
                 continue
+            # Dimension mismatch is not comparable: skip, as InMemoryStorage
+            # does (#357) -- this is the backend an embedder swap reaches.
+            if len(record.vector) != len(vector):
+                continue
             sim = cosine(vector, list(record.vector))
             # Same content tiebreak as InMemoryStorage (#188) — see the long
             # note there. This half is why the fix is not cosmetic: `SCAN`
@@ -803,6 +818,14 @@ def _validate_embedding(vector: list[float], *, where: str) -> None:
         # a raw OverflowError on one out of `put`/`lookup` (#344).
         return not is_finite(v)
 
+    # An empty vector has no direction: it scored 0.0 against everything, and
+    # once stored it was a record of another dimension for every real query
+    # (#357). Refuse it at the seam like any other corrupt vector.
+    if len(vector) == 0:
+        raise ValueError(
+            f"embedding from {where} is empty. The embedder returned a corrupt vector -- "
+            "a zero-length embedding has no similarity to anything. Fix the embedder."
+        )
     bad = next((i for i, v in enumerate(vector) if _corrupt(v)), None)
     if bad is not None:
         val = vector[bad]
