@@ -3247,3 +3247,16 @@ too. Such a count now counts as zero, and the response comes back normally.
 The batch cost comparison also used to report infinite cost and a "not a
 number" saving, without any error, when a count was large but still fit in a
 float. It now refuses with a clear error instead.
+
+## 2026-10-23 — A cached entry from an old embedder no longer breaks every lookup (#357)
+
+When you switch to an embedder that produces vectors of a different length
+while keeping the same store (for example a Redis cache that survives a
+deploy), the old entries stay behind. The lookup compared every entry for the
+model against the new vector, and comparing two vectors of different lengths
+raises an error. So a single old entry made every lookup for that model crash,
+including one that should have been an exact hit. Both backends now skip an
+entry whose vector length doesn't match, the same way they skip entries
+saved under another model. The lookup now returns a hit or a miss instead of
+crashing. An embedder that returns an empty vector is now refused with a clear
+error.

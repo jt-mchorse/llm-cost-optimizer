@@ -3696,3 +3696,21 @@ context_for_next_session:
   - "AN_INT_THAT_FITS_A_FLOAT_STILL_OVERFLOWS_THE_MULTIPLY_10e308_times_3_is_inf_so_a_finiteness_check_on_the_input_is_not_one_on_the_product"
 followups: []
 ---
+
+---
+session: 2026-10-23T07:24Z
+issue: 357
+branch: session/2026-10-23-0745-issue-357
+focus: ONE_STORED_VECTOR_OF_ANOTHER_DIMENSION_MADE_EVERY_LOOKUP_FOR_ITS_MODEL_RAISE_COSINE_LENGTH_MISMATCH_ON_BOTH_BACKENDS
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 14
+  suite: "2008 passed (3.11, CI-shaped venv); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 6b46bc8: 4-dim put then 8-dim put of 'hello' -> lookup('hello') and lookup('anything else') both raised ValueError vector length mismatch: 8 vs 4 on InMemoryStorage and RedisStorage(fakeredis); empty [] embedding accepted by put. After: 'hello' hits 'hi', 'anything else' misses, old 4-dim reader still hits 'Paris'; [] refused at put and lookup. Revert 11 of 14 red; the 3 green are controls (same-dimension store x2 backends, cosine still raises). Partial revert of the Redis skip alone -> exactly the 4 [redis] swap cases red."
+context_for_next_session:
+  - "A_RECORD_THE_READER_CANNOT_COMPARE_IS_A_SKIP_NOT_A_RAISE_same_shape_as_the_cross_model_filter_and_the_335_foreign_key"
+  - "STALE_DIMENSION_RECORDS_ARE_NOT_EVICTED_they_live_until_TTL_or_invalidation_by_choice"
+followups: []
+---
