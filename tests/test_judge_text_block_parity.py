@@ -44,7 +44,8 @@ def _block(text: str, **extra: Any) -> dict[str, Any]:
 
 
 def test_untyped_block_is_judged_the_way_entropy_measures_it() -> None:
-    response = {"content": [{"text": "hi", "logprobs": LOGPROBS}]}
+    # `prompt` because the judge abstains without one to grade against (#356).
+    response = {"content": [{"text": "hi", "logprobs": LOGPROBS}], "prompt": "q"}
     entropy = EntropySignal().measure(response)
     judged = _judge().measure(response)
     assert entropy.value == pytest.approx(1.386, abs=1e-3)
@@ -60,7 +61,9 @@ def test_untyped_object_blocks_too() -> None:
 
 
 def test_typed_block_is_judged() -> None:
-    judged = _judge().measure({"content": [{"type": "text", "text": "hi", "logprobs": LOGPROBS}]})
+    judged = _judge().measure(
+        {"content": [{"type": "text", "text": "hi", "logprobs": LOGPROBS}], "prompt": "q"}
+    )
     assert (judged.value, judged.trip) == (pytest.approx(0.1), True)
 
 
@@ -70,7 +73,8 @@ def test_thinking_then_text_reads_only_the_text() -> None:
 
 
 def test_no_text_block_still_abstains() -> None:
-    judged = _judge().measure({"content": [{"type": "thinking", "thinking": "x"}]})
+    # With a prompt, so it is the missing text that abstains (#356).
+    judged = _judge().measure({"content": [{"type": "thinking", "thinking": "x"}], "prompt": "q"})
     assert (judged.value, judged.trip) == (None, False)
 
 

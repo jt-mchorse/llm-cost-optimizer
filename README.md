@@ -197,6 +197,13 @@ decision = router.route({"prompt": "..."})
 print(decision.model_id, decision.triggered_signal, decision.signal_values)
 ```
 
+`JudgeConfidenceSignal` grades the answer against the `prompt` it reads
+off the cheap response. `route()` passes signals only that response, and
+an SDK `Message` has no `prompt` field, so your adapter has to return a
+response that carries one (a `dict` or object with `prompt` alongside
+`content`). Without it the judge abstains (`signal_values["judge"]` is
+`None`) instead of grading against an empty question (#356).
+
 Signals are evaluated in the order configured; the first signal that
 trips wins, but **every** signal is measured so the resulting
 `RouterDecision.signal_values` is a complete telemetry record for the
