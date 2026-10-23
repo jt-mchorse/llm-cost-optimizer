@@ -3714,3 +3714,22 @@ context_for_next_session:
   - "STALE_DIMENSION_RECORDS_ARE_NOT_EVICTED_they_live_until_TTL_or_invalidation_by_choice"
 followups: []
 ---
+
+---
+session: 2026-10-23T07:24Z
+issue: 356
+branch: session/2026-10-23-0745-issue-356
+focus: JUDGE_SIGNAL_GRADED_AGAINST_PROMPT_EMPTY_STRING_WHEN_THE_SDK_RESPONSE_HAS_NO_PROMPT_FIELD_NOW_ABSTAINS
+phase: shipped
+delta:
+  files_changed: 5
+  tests_added: 15
+  suite: "2009 passed (3.11); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 6b46bc8, Message-shaped response (content=[text Paris], no prompt): judge.score(prompt='', 'Paris') -> value=0.9 trip=False, routing on it. After: value=None trip=False, judge never called; missing/None/empty/blank/non-str all abstain. Revert 11 of 15 red; the 4 green are prompt-carrying controls (object + mapping scored, verbatim pass-through, route escalates). 4 existing tests fed the judge prompt-less fixtures (found by logging empty-prompt judge calls on the unfixed code): 3 went red, 1 (#344 huge-int abstain) would have gone vacuously green via the new guard; all now carry prompt."
+context_for_next_session:
+  - "BEFORE_ADDING_AN_EARLY_ABSTAIN_LOG_WHICH_EXISTING_TESTS_REACH_THE_LATER_BRANCH_WITHOUT_THE_NEW_PRECONDITION_an_abstain_test_can_go_vacuously_green"
+  - "THE_JUDGE_NOW_ONLY_MEASURES_IF_THE_ADAPTER_ATTACHES_PROMPT_threading_the_request_into_measure_is_a_Protocol_change_left_for_JT"
+followups:
+  - "EscalationSignal.measure(response) cannot see the request -- Protocol decision, not filed"
+---

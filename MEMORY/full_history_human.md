@@ -3260,3 +3260,15 @@ entry whose vector length doesn't match, the same way they skip entries
 saved under another model. The lookup now returns a hit or a miss instead of
 crashing. An embedder that returns an empty vector is now refused with a clear
 error.
+
+## 2026-10-23 — The judge signal no longer grades an answer against an empty question (#356)
+
+The judge signal decides whether the cheap model's answer is good enough by
+grading it against the question. It looked for the question on the cheap
+model's response. A real SDK response does not carry the question, so the
+judge was asked to grade "Paris" against an empty question, gave it a score
+anyway, and that score decided the routing. When the response carries no
+question, the signal now reports that it could not measure, and the judge is
+not called. Your adapter can attach the question to the response it returns,
+and the README now says so. Letting the signal see the original request
+directly would change the signal interface, so that is left as a decision.
