@@ -3733,3 +3733,21 @@ context_for_next_session:
 followups:
   - "EscalationSignal.measure(response) cannot see the request -- Protocol decision, not filed"
 ---
+
+---
+session: 2026-10-23T07:47Z
+issue: 358
+branch: session/2026-10-23-0750-issue-358
+focus: REDISSTORAGE_PUT_WROTE_A_STORAGE_LEVEL_KEY_WITH_A_COLON_THAT_OWN_RECORD_KEYS_SKIPS_SO_IT_WAS_NEVER_FOUND_WHILE_INMEMORY_SERVED_IT
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 29
+  suite: "2037 passed (3.11, CI-shaped venv, CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main 0cf0a80 (fakeredis): put(CacheRecord(key='tenant:42', tags={'t'})) -> InMemoryStorage find_nearest (record, 1.0) len 1; RedisStorage find_nearest None len 0 with cache:tenant:42 and tag:t written. After: RedisStorage.put raises ValueError naming key, prefix and rule before any write; zero keys. Revert 22 of 29 red; the 7 green are controls (six colon-free Storage-level keys agree across backends, SemanticCache hex keys round-trip + invalidate)."
+context_for_next_session:
+  - "THE_READ_SIDE_KEY_FILTER_IS_D_024s_NESTED_NAMESPACE_RULE_SO_THE_WRITE_SIDE_REFUSES_RATHER_THAN_THE_FILTER_LOOSENING_read_path_stricter_than_write_path_lens"
+  - "INMEMORYSTORAGE_STILL_ACCEPTS_A_COLON_KEY_by_choice_no_namespace_to_collide_with"
+followups: []
+---
