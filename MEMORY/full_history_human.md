@@ -3283,3 +3283,16 @@ then never be found or counted, while the in-memory backend served it
 normally. Saving such an entry to Redis is now refused with a clear error,
 before anything is written. Normal cache use is unaffected, because the cache
 itself only ever names entries with hexadecimal hashes.
+
+## 2026-10-26 — The batch idempotency key is now checked the same way on both backends (#363)
+
+The production batch backend sends your idempotency key as an HTTP header,
+but submit only checked that the key was not blank. A key with a line break,
+a NUL or a leading space was accepted by the in-memory backend. In production
+it failed as a "connection error", which the SDK retries as though the network
+had failed. Other control characters and non-ASCII text went over the wire as
+raw bytes that the server may read differently. A number as the key crashed
+with an unrelated error. Both backends now refuse with a clear error, before
+anything is sent, any key that is not plain visible ASCII text. Spaces between
+characters are still allowed. The Batches API does not document a format for
+the key, so the rule follows the HTTP header grammar.
