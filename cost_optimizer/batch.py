@@ -209,6 +209,19 @@ _CUSTOM_ID_RE = re.compile(r"[a-zA-Z0-9_-]{1,64}")
 _MAX_BATCH_REQUESTS = 100_000
 _MAX_BATCH_BYTES = 256 * 1024 * 1024
 
+#: What ``idempotency_key`` may hold: visible ASCII (``VCHAR``, ``\x21-\x7e``)
+#: with spaces allowed only *between* visible characters — RFC 9110's
+#: ``field-content`` minus ``HTAB`` and ``obs-text`` (#363). The key travels as
+#: the ``Idempotency-Key`` header on ``AnthropicBatchBackend``, and the Batches
+#: API documents no format for it, so the bound is the header grammar. The
+#: transport (h11) refuses NUL, CR, LF, VT, FF and leading or trailing
+#: whitespace with a ``LocalProtocolError`` the SDK reports as a *retryable*
+#: ``APIConnectionError``; it sends other C0 controls and DEL verbatim, and
+#: non-ASCII as raw UTF-8, which RFC 9110 calls opaque ``obs-text`` with no
+#: defined charset — so the server may store a different key than the caller
+#: wrote. Neither is a key worth accepting on one backend and not the other.
+_IDEMPOTENCY_KEY_RE = re.compile(r"[\x21-\x7e]+(?: +[\x21-\x7e]+)*")
+
 
 def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str) -> None:
     """The argument contract `BatchBackend.submit` owns, for *every* backend.
@@ -223,7 +236,7 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     ``submit``". One definition, called by both, so the next rule cannot land
     in one place only — and the fourth, the API's ``custom_id`` pattern, landed
     here for that reason (#329), as did the API's request-count and body-size
-    limits (#351).
+    limits (#351), and the header grammar of ``idempotency_key`` (#363).
     """
     if not requests:
         raise ValueError("submit requires at least one request")
@@ -234,8 +247,22 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
             f"requests must hold at most {_MAX_BATCH_REQUESTS:,} entries "
             f"(the Message Batches API rejects the whole batch otherwise); got {len(requests):,}"
         )
+    # Type first: a non-str used to reach `.strip()` and raise a raw
+    # `AttributeError` (int) or pass in-memory and fail in the SDK (bytes) (#363).
+    if not isinstance(idempotency_key, str):
+        raise ValueError(
+            f"idempotency_key must be a non-empty string; got {type(idempotency_key).__name__}"
+        )
     if not idempotency_key or not idempotency_key.strip():
         raise ValueError("idempotency_key must be a non-empty string")
+    # It is sent as an HTTP header value, so the header grammar is the contract
+    # on *every* backend; see `_IDEMPOTENCY_KEY_RE` (#363).
+    if _IDEMPOTENCY_KEY_RE.fullmatch(idempotency_key) is None:
+        raise ValueError(
+            "idempotency_key must be visible ASCII (\\x21-\\x7e) with spaces only "
+            "between visible characters (it is sent as the Idempotency-Key HTTP header); "
+            f"got {idempotency_key!r}"
+        )
     custom_ids = [r.custom_id for r in requests]
     for i, cid in enumerate(custom_ids):
         if not isinstance(cid, str) or _CUSTOM_ID_RE.fullmatch(cid) is None:

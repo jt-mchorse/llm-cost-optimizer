@@ -3751,3 +3751,22 @@ context_for_next_session:
   - "INMEMORYSTORAGE_STILL_ACCEPTS_A_COLON_KEY_by_choice_no_namespace_to_collide_with"
 followups: []
 ---
+
+---
+session: 2026-10-26T07:22Z
+issue: 363
+branch: session/2026-10-26-0722-issue-363
+focus: IDEMPOTENCY_KEY_IS_AN_HTTP_HEADER_VALUE_SHARED_SUBMIT_VALIDATOR_NOW_TYPE_CHECKS_IT_AND_REFUSES_ANYTHING_OUTSIDE_VISIBLE_ASCII_WITH_INNER_SPACES
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 98
+  suite: "2123 passed 27 skipped (3.11 CI's exact pytest --cov command, and 3.12; CI-shaped venvs without anthropic); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main bdbab2d, real SDK (anthropic 2.3.0, h11 0.16.0) against a local socket server: 'a\\nb','a\\rb','a\\x00b','a\\x0bb','a\\x0cb',' lead','trail ','\\tlead' accepted in-memory, APIConnectionError(LocalProtocolError) on Anthropic with nothing on the wire; '\\x01','\\x1f','\\x7f' and non-ASCII sent verbatim (cafe-acute as raw UTF-8); 42 AttributeError on both; b'bytes' accepted in-memory, AttributeError on Anthropic. After: field-named ValueError on both before any network call. Revert 86 of 98 red; the 12 green are 6 accepted keys x (fake forward + real-SDK wire byte-identical) controls."
+context_for_next_session:
+  - "THE_BATCHES_API_DOCUMENTS_NO_IDEMPOTENCY_KEY_HEADER_so_the_bound_is_RFC_9110_field_content_minus_HTAB_and_obs_text_and_a_search_test_pins_it_inside_h11s_grammar"
+  - "THE_27_REAL_SDK_WIRE_TESTS_SKIP_IN_CI_anthropic_is_not_in_the_test_job_install_D_002_fake_client_arms_are_the_CI_coverage"
+followups:
+  - "fork PR #355 also edits _validate_submit_args -- whichever lands second rebases"
+---
