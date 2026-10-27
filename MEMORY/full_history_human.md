@@ -3307,3 +3307,15 @@ now reads the set's raw entries and skips any it could not have written,
 which is how the record scan has handled such keys since #341. The larger
 question in #339 is still open for a decision: should the cache delete, or
 add to, a tag set that another app created under the shared `tag:` names?
+
+## 2026-10-27 — Batch request text that cannot be sent is now refused on both backends (#365)
+
+A lone surrogate is half of an emoji-style character pair, and it shows up in
+JSON-decoded text or in bytes decoded leniently. If one appeared in a batch
+request's prompt, system prompt or model name, the in-memory backend accepted
+the request. The production backend crashed with a raw encoding error before
+sending anything. The parity test even pinned that acceptance as correct,
+because it only ever used a fake client. Both backends now refuse such text
+with a clear error that names the row, the field and the position. They do
+this before anything is sent. Ordinary non-ASCII text such as accents, CJK and
+emoji is unaffected.

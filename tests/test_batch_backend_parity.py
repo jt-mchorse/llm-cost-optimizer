@@ -380,6 +380,12 @@ def test_over_size_body_refused_before_any_network_call(monkeypatch) -> None:
     assert client.messages.batches.created_payloads == []
 
 
-def test_size_bound_survives_a_lone_surrogate(backend) -> None:
-    """Control: `user` is not validated, so the bound must not raise on it."""
-    assert backend.submit([_req("s", "a\ud800b")], idempotency_key="k").n_requests == 1
+def test_a_lone_surrogate_is_refused_before_the_size_bound(backend) -> None:
+    """Both backends refuse it with a field-named `ValueError` (#365).
+
+    This used to assert both *accepted* it, which held only because the
+    Anthropic arm is a fake client: the real SDK raised `UnicodeEncodeError`.
+    See tests/test_batch_request_text_encodable.py for the full grid.
+    """
+    with pytest.raises(ValueError, match=r"requests\[0\]\.user must be UTF-8-encodable"):
+        backend.submit([_req("s", "a\ud800b")], idempotency_key="k")
