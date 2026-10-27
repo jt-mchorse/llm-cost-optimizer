@@ -346,3 +346,39 @@ def test_a_decoding_client_still_loads_this_caches_own_records() -> None:
     cache.put("another prompt", "Paris", model="m")
     assert len(cache.storage) == 2
     assert cache.lookup(PROMPT, model="m").payload == "Madrid"
+
+
+# --- #339: a non-UTF-8 member in a tag SET ------------------------------------
+#
+# Measured on `main` e22c19f: #341 made the record SCAN skip a non-UTF-8 key
+# name, but `invalidate_by_tag` still decoded every `SMEMBERS` member. With
+# another app's `b"\xff\xfe"` in `tag:geo`, a `decode_responses=True` client
+# raised `UnicodeDecodeError` inside `smembers`, before anything was deleted,
+# and the tagged record stayed served; a bytes client raised partway through.
+# `InMemoryStorage` does `put ok -> invalidate 2 -> miss`.
+
+
+@pytest.mark.parametrize("decode", [False, True], ids=["bytes-client", "decoding-client"])
+@pytest.mark.parametrize(
+    "foreign",
+    [
+        pytest.param((b"\xff\xfe",), id="non-utf8-member"),
+        pytest.param((b"\xff\xfe", b"post:1", b"\x80"), id="mixed-foreign-members"),
+        # Control: a valid UTF-8 foreign member was already skipped as stale.
+        pytest.param((b"post:1",), id="utf8-member-control"),
+        # Control: a SET holding only this cache's members.
+        pytest.param((), id="own-members-control"),
+    ],
+)
+def test_invalidate_skips_an_undecodable_tag_member_in_both_client_modes(
+    decode: bool, foreign: tuple[bytes, ...]
+) -> None:
+    r = fakeredis.FakeRedis(decode_responses=decode)
+    cache = _cache(r)
+    cache.put(PROMPT, "Madrid", model="m", tags=("geo",))
+    cache.put("another prompt", "Paris", model="m", tags=("geo",))
+    if foreign:
+        r.sadd("tag:geo", *foreign)
+    assert cache.invalidate(tag="geo") == 2
+    assert not cache.lookup(PROMPT, model="m").hit
+    assert len(cache.storage) == 0
