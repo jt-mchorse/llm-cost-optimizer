@@ -359,6 +359,36 @@ def _is_not_found_error(exc: BaseException) -> bool:
     return type(exc).__name__ == "NotFoundError"
 
 
+def _validate_job_id(job_id: str) -> None:
+    """The ``job_id`` contract `BatchBackend.poll` and ``results`` own, for every backend.
+
+    An id that names no job is ``JobNotFound`` on both backends (#198). These
+    are the ids that cannot name a job at all: the SDK refuses an empty one and
+    a ``.``/``..`` path segment with its own ``ValueError`` before any request,
+    and cannot encode a lone surrogate (``UnicodeEncodeError``), while the
+    in-memory backend called all of them ``JobNotFound`` — so an
+    ``except JobNotFound`` passed in CI and let the SDK's error through in
+    production. A non-``str`` was a raw ``TypeError`` in-memory when unhashable
+    and was sent as its ``str()`` by the SDK (#366). Each is an input error,
+    refused the same way ``submit``'s are.
+    """
+    if not isinstance(job_id, str):
+        raise ValueError(f"job_id must be a non-empty string; got {type(job_id).__name__}")
+    if not job_id:
+        raise ValueError("job_id must be a non-empty string")
+    # The id is a URL path segment on `AnthropicBatchBackend`; the SDK refuses
+    # these two outright rather than letting the path resolve upward.
+    if job_id in (".", ".."):
+        raise ValueError(f"job_id must not be a '.' or '..' path segment; got {job_id!r}")
+    try:
+        job_id.encode("utf-8")
+    except UnicodeEncodeError as e:
+        raise ValueError(
+            f"job_id must be UTF-8-encodable text; got lone surrogate "
+            f"{job_id[e.start]!r} at index {e.start}"
+        ) from None
+
+
 def _canonical_payload_hash(requests: Sequence[BatchRequest]) -> str:
     """Stable SHA-256 hash of the canonical batch payload.
 
@@ -450,12 +480,14 @@ class InMemoryBatchBackend:
         return meta
 
     def poll(self, job_id: str) -> BatchJobMeta:
+        _validate_job_id(job_id)
         try:
             return self._jobs[job_id].meta
         except KeyError as e:
             raise JobNotFound(f"unknown job_id={job_id!r}") from e
 
     def results(self, job_id: str) -> list[BatchResultRow]:
+        _validate_job_id(job_id)
         try:
             stored = self._jobs[job_id]
         except KeyError as e:
@@ -566,7 +598,9 @@ class AnthropicBatchBackend:
         # documented unknown-job signal, but only the in-memory backend could
         # ever raise it — so `except JobNotFound` passed its tests and let the
         # raw SDK error through in production (#198). `results` inherits this
-        # translation because it polls first.
+        # translation because it polls first, and the `job_id` rule (#366)
+        # the same way.
+        _validate_job_id(job_id)
         try:
             resp = self._batches.retrieve(job_id)
         except Exception as e:
