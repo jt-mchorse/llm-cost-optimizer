@@ -3789,3 +3789,23 @@ context_for_next_session:
 followups:
   - "#339 A/B: foreign SET under default tag: namespace -- JT decision"
 ---
+
+---
+session: 2026-10-27T07:17Z
+issue: 365
+branch: session/2026-10-27-0717-issue-365
+focus: SUBMIT_VALIDATOR_REFUSES_USER_SYSTEM_MODEL_TEXT_WITH_NO_UTF8_ENCODING_A_LONE_SURROGATE_WAS_OK_IN_MEMORY_AND_A_RAW_UNICODEENCODEERROR_FROM_THE_REAL_SDK
+phase: shipped
+delta:
+  files_changed: 4
+  tests_added: 115
+  suite: "2214 passed 51 skipped (3.11 and 3.12, CI-shaped venvs without anthropic, CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main e22c19f, real SDK (anthropic 2.3.0) against a local socket server: user 'a\\ud800b', system 's\\udc80', model 'm\\ud83d' -> InMem ok, Anthropic UnicodeEncodeError, wire 0. After: ValueError 'requests[0].<field> must be UTF-8-encodable text ... at index N' on both, wire 0. Revert 93 red (91 new + 2 flipped parity cases), 24 green = encodable-text controls (21 fake forward-verbatim + 3 real-SDK wire)."
+context_for_next_session:
+  - "THE_PARITY_TEST_THAT_PINNED_ACCEPTANCE_RAN_ONLY_A_FAKE_CLIENT_a_fake_cannot_see_what_the_real_SDK_refuses_while_encoding_the_body"
+  - "A_LITERAL_SURROGATE_PAIR_ESCAPE_IS_REWRITTEN_INTO_THE_EMOJI_BY_TOOLING_build_it_with_chr(0xD83D)+chr(0xDE00)"
+  - "NON_STR_user_system_model_ARE_STILL_UNVALIDATED_by_choice_the_SDK_accepts_content_block_lists_for_content"
+followups:
+  - "#366 (job_id parity) shipped as a separate PR #369; both edit the README parity table so whichever lands second rebases"
+---
