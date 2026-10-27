@@ -236,7 +236,8 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     ``submit``". One definition, called by both, so the next rule cannot land
     in one place only — and the fourth, the API's ``custom_id`` pattern, landed
     here for that reason (#329), as did the API's request-count and body-size
-    limits (#351), and the header grammar of ``idempotency_key`` (#363).
+    limits (#351), the header grammar of ``idempotency_key`` (#363), and the
+    UTF-8-encodability of the request text (#365).
     """
     if not requests:
         raise ValueError("submit requires at least one request")
@@ -273,6 +274,22 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     if len(set(custom_ids)) != len(custom_ids):
         dups = sorted(c for c in set(custom_ids) if custom_ids.count(c) > 1)
         raise ValueError(f"duplicate custom_ids within one batch: {dups}")
+    # The request body is JSON sent as UTF-8, and a lone surrogate (from
+    # `json.loads('"\\ud800"')` or surrogateescape-decoded bytes) has no UTF-8
+    # encoding: the SDK raised a raw `UnicodeEncodeError` with nothing sent,
+    # while the in-memory backend accepted it (#365). Non-`str` values are left
+    # to the backends; this rule is only about text that cannot be sent.
+    for i, r in enumerate(requests):
+        for name in ("user", "system", "model"):
+            text = getattr(r, name)
+            if not isinstance(text, str):
+                continue
+            bad = _first_unencodable(text)
+            if bad is not None:
+                raise ValueError(
+                    f"requests[{i}].{name} must be UTF-8-encodable text (the request body is "
+                    f"sent as UTF-8); got lone surrogate {text[bad]!r} at index {bad}"
+                )
     body_bytes = _request_body_lower_bound(requests)
     if body_bytes > _MAX_BATCH_BYTES:
         raise ValueError(
@@ -282,6 +299,19 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
         )
 
 
+def _first_unencodable(text: str) -> int | None:
+    """Index of the first character UTF-8 cannot encode (a lone surrogate), else None.
+
+    The index rather than the text goes in the error: ``user`` can be a whole
+    document (#365).
+    """
+    try:
+        text.encode("utf-8")
+    except UnicodeEncodeError as e:
+        return e.start
+    return None
+
+
 def _request_body_lower_bound(requests: Sequence[BatchRequest]) -> int:
     """A lower bound on the bytes ``AnthropicBatchBackend.submit`` sends (#351).
 
@@ -289,16 +319,16 @@ def _request_body_lower_bound(requests: Sequence[BatchRequest]) -> int:
     non-ASCII is escaped, extra envelope fields), which this package does not
     own. Compact separators with raw UTF-8 is the smallest encoding of the same
     payload, so a batch over the limit on this count is over it on the wire:
-    the guard can only ever refuse a batch the API would also refuse. Lone
-    surrogates take ``surrogatepass``'s 3 bytes, under the 6 of their ``\\u``
-    escape, so they keep the bound and do not raise here. Stops summing once
-    over the limit; the caller only needs to know that much.
+    the guard can only ever refuse a batch the API would also refuse. Text with
+    no UTF-8 encoding is refused by `_validate_submit_args` before this runs
+    (#365). Stops summing once over the limit; the caller only needs to know
+    that much.
     """
     # `{"requests":[` + `]}`, plus one comma between each pair of entries.
     total = len('{"requests":[]}') + len(requests) - 1
     for r in requests:
         entry = json.dumps(_to_sdk_request(r), separators=(",", ":"), ensure_ascii=False)
-        total += len(entry.encode("utf-8", "surrogatepass"))
+        total += len(entry.encode("utf-8"))
         if total > _MAX_BATCH_BYTES:
             break
     return total
