@@ -3319,3 +3319,13 @@ because it only ever used a fake client. Both backends now refuse such text
 with a clear error that names the row, the field and the position. They do
 this before anything is sent. Ordinary non-ASCII text such as accents, CJK and
 emoji is unaffected.
+
+## 2026-10-27 — Polling a batch with an impossible job id now fails the same way on both backends (#366)
+
+Some job ids can never name a batch: an empty id, no id at all, `.` or `..`,
+an id with a broken character, or a list. The in-memory backend reported most
+of these as "job not found". The production SDK rejected them with its own
+unrelated error, or sent a nonsense request. So code that handled "job not
+found" passed its tests and failed in production. Both backends now reject
+these ids with a clear error that names `job_id`, before anything is looked up
+or sent. An id that merely does not exist is still reported as "job not found".
