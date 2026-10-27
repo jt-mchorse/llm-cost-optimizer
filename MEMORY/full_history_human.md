@@ -3296,3 +3296,14 @@ with an unrelated error. Both backends now refuse with a clear error, before
 anything is sent, any key that is not plain visible ASCII text. Spaces between
 characters are still allowed. The Batches API does not document a format for
 the key, so the rule follows the HTTP header grammar.
+
+## 2026-10-27 — Invalidating a tag no longer fails on another app's binary entry (#339)
+
+On a shared Redis, another app can add its own entries to one of the cache's
+tag sets. If one of those entries was not valid UTF-8 text, invalidating the
+tag crashed. With a client that decodes responses, the crash happened before
+anything was removed, so the tagged answer kept being served. Invalidation
+now reads the set's raw entries and skips any it could not have written,
+which is how the record scan has handled such keys since #341. The larger
+question in #339 is still open for a decision: should the cache delete, or
+add to, a tag set that another app created under the shared `tag:` names?

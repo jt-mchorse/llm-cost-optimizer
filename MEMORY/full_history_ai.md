@@ -3770,3 +3770,22 @@ context_for_next_session:
 followups:
   - "fork PR #355 also edits _validate_submit_args -- whichever lands second rebases"
 ---
+
+---
+session: 2026-10-27T07:18Z
+issue: 339
+branch: session/2026-10-27-0718-issue-339
+focus: INVALIDATE_BY_TAG_DECODED_EVERY_SMEMBERS_MEMBER_SO_A_FOREIGN_NON_UTF8_MEMBER_IN_A_SHARED_TAG_SET_RAISED_AND_ON_A_DECODING_CLIENT_THE_RECORD_STAYED_SERVED
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 8
+  suite: "2131 passed 27 skipped (3.12, CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main e22c19f (fakeredis 2.40.0): A/B re-reproduced as filed (invalidate 0 and foreign tag:python SET gone; put adds aba08215b0695845 to {post:1,post:2}). Own record + r.sadd('tag:python', b'\\xff\\xfe'): decode_responses=True -> UnicodeDecodeError inside smembers, then hit=True len 1; bytes client -> UnicodeDecodeError mid-loop. After: both modes invalidate 2, miss, len 0; same on real redis-server :6391. Revert 4 of 8 red; 4 green are controls (utf8 foreign member, own-only SET, x2 modes). Partial revert (skip kept, NEVER_DECODE dropped): 2 decoding-client arms red."
+context_for_next_session:
+  - "SMEMBERS_IS_READ_VIA_execute_command_NEVER_DECODE_redis_py_smembers_takes_no_options_fakeredis_and_real_redis_both_honour_it"
+  - "PARTS_A_B_STILL_OPEN_FOR_JT_options_1_3_in_the_issue_body_the_end_of_invalidate_DEL_is_unchanged_on_purpose"
+followups:
+  - "#339 A/B: foreign SET under default tag: namespace -- JT decision"
+---

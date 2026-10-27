@@ -695,10 +695,25 @@ class RedisStorage:
         # it alone rather than raise `WRONGTYPE` from `smembers`.
         if self._tag_key_type(tag) != "set":
             return 0
-        members = cast("set[bytes]", self.client.smembers(self._tag_key(tag))) or set()
+        # `NEVER_DECODE`, as the record SCAN does since #341: a
+        # `decode_responses=True` client decodes the whole reply inside
+        # `smembers`, so one non-UTF-8 member another app added to a shared
+        # `tag:<name>` SET raised before any of this cache's members were
+        # invalidated, and the tagged record kept being served (#339).
+        members = (
+            cast(
+                "set[bytes]",
+                self.client.execute_command("SMEMBERS", self._tag_key(tag), NEVER_DECODE=True),
+            )
+            or set()
+        )
         count = 0
         for member in members:
-            key = member.decode("utf-8") if isinstance(member, bytes) else member
+            try:
+                key = member.decode("utf-8") if isinstance(member, bytes) else member
+            except UnicodeDecodeError:
+                # Not a key this cache wrote: `put` adds `str` keys only.
+                continue
             record = self._load(self._record_key(key))
             # `record is None`: deleted or TTL-expired out from under this index.
             # `tag not in record.tags`: the key was reused by a later `put` whose
