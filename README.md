@@ -295,6 +295,7 @@ verdicts side by side. Five cells diverged. Where they stand now:
 | `submit`: `idempotency_key` not a `str`, or not visible ASCII with inner spaces | `ValueError` | `ValueError` (before the network call) |
 | `submit`: `user` / `system` / `model` with no UTF-8 encoding (a lone surrogate) | `ValueError` | `ValueError` (before the network call) |
 | `poll` / `results`: unknown `job_id` | `JobNotFound` | `JobNotFound` |
+| `poll` / `results`: `job_id` not a `str`, empty, `.`/`..`, or with no UTF-8 encoding | `ValueError` | `ValueError` (before the network call) |
 | `poll`: any non-404 SDK failure | n/a | propagates unchanged |
 | `submit`: same key, different payload | `IdempotencyConflict` | not detected (#199) |
 | `poll`: `.idempotency_key` | the caller's key | `''` (#199) |
@@ -313,6 +314,10 @@ the wire as raw bytes; both backends now refuse anything outside visible
 ASCII with spaces between characters (#363). A lone surrogate in the
 request text has no UTF-8 encoding, so the real SDK raised a raw
 `UnicodeEncodeError` with nothing sent; both backends now refuse it (#365).
+A `job_id` that cannot name any job (empty, a `.`/`..` path segment,
+not a `str`, or with a lone surrogate) used to be `JobNotFound` in-memory
+and the SDK's own client-side error in production; it is now a
+`ValueError` on both, and an unknown id is still `JobNotFound` (#366).
 
 ## Savings dashboard (#5)
 

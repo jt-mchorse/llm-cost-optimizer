@@ -3809,3 +3809,22 @@ context_for_next_session:
 followups:
   - "#366 (job_id parity) shipped as a separate PR #369; both edit the README parity table so whichever lands second rebases"
 ---
+
+---
+session: 2026-10-27T07:28Z
+issue: 366
+branch: session/2026-10-27-0728-issue-366
+focus: POLL_RESULTS_REFUSE_A_JOB_ID_THAT_CANNOT_NAME_A_JOB_NON_STR_EMPTY_DOT_SEGMENT_OR_LONE_SURROGATE_ON_BOTH_BACKENDS
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 118
+  suite: "2214 passed 54 skipped (3.11 and 3.12, CI-shaped venvs without anthropic, CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "main e22c19f, real SDK (anthropic 2.3.0) against a local socket server, poll and results alike: '' / None -> InMem JobNotFound, Anthropic SDK ValueError 'Expected a non-empty value for message_batch_id'; '.' / '..' -> InMem JobNotFound, SDK ValueError dot-segment; ['x'] -> InMem TypeError unhashable, Anthropic sent GET /v1/messages/batches/%5B'x'%5D; 'a\\udc80b' (not in the issue) -> InMem JobNotFound, Anthropic UnicodeEncodeError. All nothing on the wire except ['x']. After: ValueError naming job_id on both, wire empty; unknown-but-sendable ids ('a/b','../x',' ','a?b','cafe-acute') still JobNotFound on both. Revert 72 red, 46 green = controls (36 unknown-id JobNotFound, 9 wire one-path-segment, 1 known-id poll)."
+context_for_next_session:
+  - "THE_SDK_PERCENT_ENCODES_SLASH_QUESTION_HASH_SPACE_INTO_ONE_SEGMENT_so_only_bare_dot_and_dotdot_are_path_hazards"
+  - "_from_sdk_batch_STILL_RETURNS_job_id_EMPTY_FOR_A_RESPONSE_WITH_NO_id_deferred_it_is_a_malformed_response_contract_not_an_input_error"
+followups:
+  - "PR #368 (#365) edits the same README parity table and paragraph; whichever lands second rebases"
+---
