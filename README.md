@@ -293,12 +293,13 @@ verdicts side by side. Five cells diverged. Where they stand now:
 | `submit`: duplicate `custom_id`s | `ValueError` | `ValueError` (before the network call) |
 | `submit`: `custom_id` outside the API's `[a-zA-Z0-9_-]{1,64}` | `ValueError` | `ValueError` (before the network call) |
 | `submit`: `idempotency_key` not a `str`, or not visible ASCII with inner spaces | `ValueError` | `ValueError` (before the network call) |
+| `submit`: `user` / `system` / `model` with no UTF-8 encoding (a lone surrogate) | `ValueError` | `ValueError` (before the network call) |
 | `poll` / `results`: unknown `job_id` | `JobNotFound` | `JobNotFound` |
 | `poll`: any non-404 SDK failure | n/a | propagates unchanged |
 | `submit`: same key, different payload | `IdempotencyConflict` | not detected (#199) |
 | `poll`: `.idempotency_key` | the caller's key | `''` (#199) |
 
-The first five rows are enforced by one shared validator and one
+All rows but the last two are enforced by one shared validator and one
 duck-typed 404 classifier, so they cannot drift apart again; the last
 two are pinned as current behaviour in
 `tests/test_batch_backend_parity.py`. Duplicate `custom_id`s matter
@@ -309,7 +310,9 @@ refused locally on both backends (#329). The key travels as the `Idempotency-Key
 header, so a CR, LF, NUL or edge space used to fail in production as a
 retryable `APIConnectionError`, and other controls or non-ASCII went on
 the wire as raw bytes; both backends now refuse anything outside visible
-ASCII with spaces between characters (#363).
+ASCII with spaces between characters (#363). A lone surrogate in the
+request text has no UTF-8 encoding, so the real SDK raised a raw
+`UnicodeEncodeError` with nothing sent; both backends now refuse it (#365).
 
 ## Savings dashboard (#5)
 
