@@ -3329,3 +3329,15 @@ unrelated error, or sent a nonsense request. So code that handled "job not
 found" passed its tests and failed in production. Both backends now reject
 these ids with a clear error that names `job_id`, before anything is looked up
 or sent. An id that merely does not exist is still reported as "job not found".
+
+## 2026-10-28 — Broken characters inside content blocks are now refused on both backends (#370)
+
+The last fix refused a broken character (a lone surrogate) in the request
+text only when that text was a plain string. Requests can also carry content
+blocks, which are lists of small dictionaries, and a broken character inside
+one still crashed with a raw encoding error. It crashed on both backends, not
+only the production one, because the batch-size check encodes the request
+first. `submit` now checks every string the request would send, including
+dictionary keys. The error names the exact place, for example
+`requests[0].user[0]['text']`, and the position of the character. Valid
+blocks are passed through unchanged. PR #371.

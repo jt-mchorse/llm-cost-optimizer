@@ -277,19 +277,22 @@ def _validate_submit_args(requests: Sequence[BatchRequest], idempotency_key: str
     # The request body is JSON sent as UTF-8, and a lone surrogate (from
     # `json.loads('"\\ud800"')` or surrogateescape-decoded bytes) has no UTF-8
     # encoding: the SDK raised a raw `UnicodeEncodeError` with nothing sent,
-    # while the in-memory backend accepted it (#365). Non-`str` values are left
-    # to the backends; this rule is only about text that cannot be sent.
+    # while the in-memory backend accepted it (#365). The SDK also takes
+    # content-block lists (`[{"type": "text", "text": ...}]`), and #365's
+    # str-only check skipped them, so a surrogate one level down still raised
+    # the raw error — on both backends, via the body-size bound below (#370).
+    # So every string the JSON body would carry is checked, keys included.
     for i, r in enumerate(requests):
         for name in ("user", "system", "model"):
-            text = getattr(r, name)
-            if not isinstance(text, str):
+            found = _first_unencodable_leaf(getattr(r, name), f"requests[{i}].{name}")
+            if found is None:
                 continue
-            bad = _first_unencodable(text)
-            if bad is not None:
-                raise ValueError(
-                    f"requests[{i}].{name} must be UTF-8-encodable text (the request body is "
-                    f"sent as UTF-8); got lone surrogate {text[bad]!r} at index {bad}"
-                )
+            path, text, bad, is_key = found
+            what = f"a dict key in {path}" if is_key else path
+            raise ValueError(
+                f"{what} must be UTF-8-encodable text (the request body is "
+                f"sent as UTF-8); got lone surrogate {text[bad]!r} at index {bad}"
+            )
     body_bytes = _request_body_lower_bound(requests)
     if body_bytes > _MAX_BATCH_BYTES:
         raise ValueError(
@@ -309,6 +312,50 @@ def _first_unencodable(text: str) -> int | None:
         text.encode("utf-8")
     except UnicodeEncodeError as e:
         return e.start
+    return None
+
+
+def _first_unencodable_leaf(value: Any, path: str) -> tuple[str, str, int, bool] | None:
+    """The first string ``json.dumps(value)`` would emit with no UTF-8 encoding (#370).
+
+    Walks what the JSON encoder walks — ``dict`` keys and values, ``list`` and
+    ``tuple`` items, subclasses included — in the order it emits them, and
+    returns ``(path, text, index, is_key)``, else None. Iterative and linear in
+    the size of ``value``, so deep nesting is neither a ``RecursionError`` nor
+    quadratic here. Each container is walked once: a container seen again held
+    no bad string the first time, so skipping it cannot change the answer, and
+    a cycle terminates (``json.dumps`` then refuses it with its own
+    ``ValueError``). Anything else is not text and is left to the backends, as
+    #365 left non-``str`` fields.
+    """
+    # Paths are built only for the hit: each entry keeps (parent link, segment).
+    Link = tuple[Any, str] | None
+    seen: set[int] = set()
+    stack: list[tuple[bool, Any, Link]] = [(False, value, None)]  # (is_key, node, link)
+    while stack:
+        is_key, node, link = stack.pop()
+        if isinstance(node, str):
+            bad = _first_unencodable(node)
+            if bad is not None:
+                segments: list[str] = []
+                while link is not None:
+                    link, segment = link
+                    segments.append(segment)
+                return path + "".join(reversed(segments)), node, bad, is_key
+            continue
+        if is_key or not isinstance(node, (dict, list, tuple)) or id(node) in seen:
+            continue
+        seen.add(id(node))
+        children: list[tuple[bool, Any, Link]] = []
+        if isinstance(node, dict):
+            for k, v in node.items():
+                # The encoder emits each key before its value.
+                children.append((True, k, link))
+                children.append((False, v, (link, f"[{k!r}]")))
+        else:
+            children = [(False, v, (link, f"[{j}]")) for j, v in enumerate(node)]
+        # Reversed onto a LIFO stack, so items are visited in emission order.
+        stack.extend(reversed(children))
     return None
 
 
