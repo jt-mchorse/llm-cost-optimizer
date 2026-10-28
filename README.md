@@ -293,7 +293,7 @@ verdicts side by side. Five cells diverged. Where they stand now:
 | `submit`: duplicate `custom_id`s | `ValueError` | `ValueError` (before the network call) |
 | `submit`: `custom_id` outside the API's `[a-zA-Z0-9_-]{1,64}` | `ValueError` | `ValueError` (before the network call) |
 | `submit`: `idempotency_key` not a `str`, or not visible ASCII with inner spaces | `ValueError` | `ValueError` (before the network call) |
-| `submit`: `user` / `system` / `model` with no UTF-8 encoding (a lone surrogate) | `ValueError` | `ValueError` (before the network call) |
+| `submit`: `user` / `system` / `model` with no UTF-8 encoding (a lone surrogate), as a string or anywhere inside content blocks | `ValueError` | `ValueError` (before the network call) |
 | `poll` / `results`: unknown `job_id` | `JobNotFound` | `JobNotFound` |
 | `poll` / `results`: `job_id` not a `str`, empty, `.`/`..`, or with no UTF-8 encoding | `ValueError` | `ValueError` (before the network call) |
 | `poll`: any non-404 SDK failure | n/a | propagates unchanged |
@@ -314,6 +314,9 @@ the wire as raw bytes; both backends now refuse anything outside visible
 ASCII with spaces between characters (#363). A lone surrogate in the
 request text has no UTF-8 encoding, so the real SDK raised a raw
 `UnicodeEncodeError` with nothing sent; both backends now refuse it (#365).
+The same holds inside content blocks: every string the JSON body would
+carry, dict keys included, is checked, and the error names its path, e.g.
+`requests[0].user[0]['text']` (#370).
 A `job_id` that cannot name any job (empty, a `.`/`..` path segment,
 not a `str`, or with a lone surrogate) used to be `JobNotFound` in-memory
 and the SDK's own client-side error in production; it is now a
