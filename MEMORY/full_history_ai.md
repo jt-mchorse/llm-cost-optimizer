@@ -3828,3 +3828,22 @@ context_for_next_session:
 followups:
   - "PR #368 (#365) edits the same README parity table and paragraph; whichever lands second rebases"
 ---
+
+---
+session: 2026-10-28T07:16Z
+issue: 370
+branch: session/2026-10-28-0716-issue-370
+focus: SUBMIT_REFUSES_A_LONE_SURROGATE_ANYWHERE_IN_THE_JSON_BODY_CONTENT_BLOCKS_AND_DICT_KEYS_NOT_ONLY_TOP_LEVEL_STR_FIELDS
+phase: shipped
+delta:
+  files_changed: 3
+  tests_added: 49
+  suite: "2412 passed 20 skipped (venv with the anthropic extra, so the wire arms ran); ruff check + format + mypy clean"
+decisions_made: []
+measured: "origin/main a03c6a0, InMemoryBatchBackend.submit: user=[text block with chr(0xD800)], system=[same], a surrogate dict key, a tuple of blocks -> raw UnicodeEncodeError on BOTH backends (the #351 body-size bound json-encodes first, so the issue's Anthropic-only framing was stale). After: named ValueError with a path (requests[0].user[0]['text']), cycle still json's Circular reference, 5000-deep walked iteratively. Revert probe: 35 red / 14 green (12 encodable-forwarding controls, the wire control, #365's top-level message); 5 of the red call the new helper directly and are AttributeError on main. PR #371."
+context_for_next_session:
+  - "A_SEEN_SET_AND_AN_ON_PATH_SET_FIND_THE_SAME_FIRST_BAD_LEAF_a_container_clean_on_first_visit_is_clean_on_every_visit_so_the_simpler_one_shipped"
+  - "THE_10_27_FIX_AGENT_POSTED_A_PLAN_ON_370_AND_NEVER_OPENED_A_PR_check_for_a_PR_before_assuming_a_planned_issue_is_in_flight"
+  - "NOT_DONE_non_JSON_leaves_set_bytes_objects_are_still_left_to_the_SDK"
+followups: []
+---
