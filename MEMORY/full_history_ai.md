@@ -3847,3 +3847,22 @@ context_for_next_session:
   - "NOT_DONE_non_JSON_leaves_set_bytes_objects_are_still_left_to_the_SDK"
 followups: []
 ---
+
+---
+session: 2026-10-29T07:27Z
+issue: 373
+branch: session/2026-10-29-0727-issue-373
+focus: MESSAGES_PREFIX_MARKS_THE_LAST_ROLE_USER_MESSAGE_NOT_MESSAGES_MINUS_1_SO_A_TRAILING_MID_CONVERSATION_SYSTEM_MESSAGE_NEVER_TAKES_THE_MARKER
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 13
+  suite: "2367 passed 86 skipped (3.12 venv with [dev,dashboard], no anthropic, CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "origin/main 7aa5404, fake client, claude-opus-5-5, [user q1, assistant, user q2] + trailer: clear_at system -> marker on the system message (documented 400), effort-only content [] -> zero messages breakpoints, plain-text system -> marker on the system message. After: marker on user q2 in all three, trailers sent unchanged, exactly one messages breakpoint. Revert probe 11 red / 2 green = controls (plain user-last, budget-already-full so neither version marks). PR #374."
+context_for_next_session:
+  - "THE_BREAKPOINT_BUDGET_DIFFS_COUNTS_OVER_THE_WHOLE_LIST_so_moving_the_target_index_needed_no_budget_change"
+  - "A_CALLER_MARKER_TEST_WITH_AN_EFFORT_ONLY_TRAILER_IS_GREEN_ON_MAIN_because_content_[]_takes_no_marker_use_a_clear_at_trailer_to_make_it_bite"
+  - "SIBLING_SWEEP_mark_system_and_mark_tools_index_role_less_lists_count_breakpoints_and_last_caller_1h_position_walk_every_message_by_design_nothing_else_in_cost_optimizer_picks_a_last_message"
+followups: []
+---

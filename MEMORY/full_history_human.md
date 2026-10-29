@@ -3341,3 +3341,14 @@ first. `submit` now checks every string the request would send, including
 dictionary keys. The error names the exact place, for example
 `requests[0].user[0]['text']`, and the position of the character. Valid
 blocks are passed through unchanged. PR #371.
+
+## 2026-10-29 — The messages cache marker now goes on the last user turn (#373)
+
+With message caching on, the wrapper marked whatever message came last.
+Newer Claude models let a caller add a system message after the last user
+turn, and the marker then landed on it. A turn-scoped system message
+(`clear_at`) cannot carry a cache marker, and the docs say the API rejects
+such a request. An effort-only system message has no text to mark, so the
+conversation silently went uncached. The marker now goes on the last user
+message, as the function's own description always said, and any system
+messages after it are sent unchanged. PR #374.
