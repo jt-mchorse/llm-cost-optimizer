@@ -510,11 +510,24 @@ def _mark_messages_prefix(messages: list[Any], *, ttl: str | None = None) -> lis
 
     The convention is that the most recent prefix turn carries the
     cache_control marker; everything before it inherits cacheability.
+
+    **The last ``role == "user"`` message, not ``messages[-1]`` (#373).** This
+    marked whatever came last. A mid-conversation operator message
+    (``{"role": "system", ...}``, appended after the last user turn) then took
+    the marker: on a ``clear_at: "next_user_message"`` message that is a 400,
+    because a turn-scoped message is not cache-eligible and the breakpoint
+    belongs on the preceding user turn; on an effort-only message
+    (``content: []``) there was no block to mark, so the request went out with
+    no messages breakpoint at all. Trailing non-user entries are left as sent.
+    A list with no user message is returned unmarked.
     """
     if not messages:
         return messages
     new = [dict(m) for m in messages]
-    target = new[-1]
+    index = next((i for i in range(len(new) - 1, -1, -1) if new[i].get("role") == "user"), None)
+    if index is None:
+        return new
+    target = new[index]
     content = target.get("content")
     if isinstance(content, str):
         target["content"] = [
@@ -526,7 +539,7 @@ def _mark_messages_prefix(messages: list[Any], *, ttl: str | None = None) -> lis
         new_content = [dict(b) for b in content]
         new_content[-1] = _with_cache_control(new_content[-1], ttl)
         target["content"] = new_content
-    new[-1] = target
+    new[index] = target
     return new
 
 
