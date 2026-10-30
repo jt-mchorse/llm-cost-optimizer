@@ -14,6 +14,7 @@ at the package level, not file-private).
 from __future__ import annotations
 
 import contextlib
+import errno
 import os
 import secrets
 import stat
@@ -95,8 +96,13 @@ def atomic_write_text(path: str | Path, text: str) -> None:
 
     A symlinked destination is written THROUGH, as ``Path.write_text`` does:
     the link stays a link and the file it names gets the new contents (#279).
+
+    A read-only existing destination is refused with ``PermissionError``, as
+    ``Path.write_text`` refuses it, instead of being renamed over (#377). See
+    ``_refuse_unwritable_target``.
     """
     target = _resolve_symlinked_target(Path(path))
+    _refuse_unwritable_target(target)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp_path: Path | None = None
     try:
@@ -139,6 +145,39 @@ def _resolve_symlinked_target(target: Path) -> Path:
     if not target.is_symlink():
         return target
     return Path(os.path.realpath(target))
+
+
+def _refuse_unwritable_target(target: Path) -> None:
+    """Raise ``PermissionError`` if *target* exists and cannot be written (#377).
+
+    ``os.replace`` swaps the directory ENTRY, so only the directory's write
+    bit is checked and the target's own is never consulted: a ``chmod 444``
+    output was silently rewritten, contents replaced and mode still 0444.
+    ``Path.write_text``, the call this helper replaced, opens the file for
+    writing and fails with ``EACCES``. Raising the same error here, before the
+    temp file exists, keeps that contract and leaves nothing behind. The
+    ``except OSError`` write seams in ``bench_savings`` and ``tune_threshold``
+    then turn it into a clean ``::error::`` line and exit 2, as their comments
+    already say they do for an unwritable ``--out``, and the library writers
+    (``dump_stats_json`` / ``dump_aggregate_json``) raise the ``OSError`` an
+    embedding application gets from ``Path.write_text``. It also matches
+    ``capture_demo``'s stable-artifact copy, where ``shutil.copy2`` already
+    refuses an existing-but-unwritable target with exit 2 (#180). Sibling of
+    prompt-regression-suite#316.
+
+    ``os.access`` asks the kernel the same question the open would, so root
+    (which ``Path.write_text`` lets through) still writes. The ``os.stat``
+    first keeps a missing target -- the create case -- out of the check, and
+    lets a link loop raise its own ``ELOOP`` rather than a misleading
+    ``EACCES``. Like ``Path.write_text``, this is a check at open time, not a
+    lock: a ``chmod`` racing the write is not covered.
+    """
+    try:
+        os.stat(target)
+    except FileNotFoundError:
+        return
+    if not os.access(target, os.W_OK):
+        raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), str(target))
 
 
 # File mode (#243, portfolio-ops#81). This helper used to create its temp file
