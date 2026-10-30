@@ -3885,3 +3885,22 @@ context_for_next_session:
   - "A_5M_TRAILING_CALLER_MARKER_IS_GREEN_ON_THE_ORDER_ARM_ON_MAIN_only_the_pre_374_equality_arm_bites_it"
 followups: []
 ---
+
+---
+session: 2026-10-30T07:35Z
+issue: 377
+branch: session/2026-10-30-0735-issue-377
+focus: ATOMIC_WRITE_TEXT_RENAMED_OVER_A_READ_ONLY_0444_TARGET_NOW_EACCES_LIKE_PATH_WRITE_TEXT_SO_THE_OUT_SEAMS_EXIT_2
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 9
+  suite: "2539 collected, 2453 passed 86 skipped, rc 0 (3.11 venv with [dev,dashboard], CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "origin/main 096a929 (macOS uid 502): atomic_write_text on a 0444 file -> no error, contents replaced, mode still 0444; Path.write_text -> PermissionError(13). After: both EACCES, file unchanged, no .tmp left; bench_savings --out and tune_threshold --out on a read-only .json -> ::error:: + exit 2, file untouched. Revert probe (io_utils.py, pycache cleared): 5 red / 4 green = 2 write_text parity arms + 2 writable/missing controls. PR #379."
+context_for_next_session:
+  - "_refuse_unwritable_target_RUNS_AFTER_THE_SYMLINK_RESOLVE_BEFORE_THE_TEMP_os_stat_then_os_access_W_OK_root_still_writes_port_of_prompt_regression_suite_318"
+  - "ATOMIC_WRITE_TEXT_IS_THE_ONLY_RENAME_BASED_WRITER_no_atomic_write_bytes_no_many_no_check_writable_capture_demo_copy2_already_refused_read_only_with_exit_2_180"
+  - "READ_ONLY_TESTS_SKIP_AS_ROOT_github_ubuntu_runners_are_non_root_runner_so_CI_runs_them"
+followups: []
+---
