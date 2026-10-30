@@ -498,10 +498,35 @@ def _mark_system(system: Any, *, ttl: str | None = None) -> Any:
 
 
 def _mark_tools(tools: list[Any], *, ttl: str | None = None) -> list[Any]:
+    """Cache the tool definitions up to and including the last non-deferred tool.
+
+    **The last tool without ``defer_loading: true``, not ``tools[-1]`` (#378).**
+    This marked whatever came last. The tool-search layout puts the search tool
+    first and the deferred tools after it, so the marker landed on a deferred
+    tool. The API rejects that with a 400 ("A tool with ``defer_loading: true``
+    can't also carry ``cache_control``"), and deferred tools are left out of the
+    prompt prefix anyway, so a breakpoint there would cache nothing. Deferred
+    tools are left as sent. A list where every tool is deferred is returned
+    unmarked: the API refuses that list on its own, as #374 handles a messages
+    list with no user turn.
+
+    A toolset entry (``mcp_toolset``, ``computer_toolset_*``) counts as
+    non-deferred, as before. The docs put ``cache_control`` on the entry itself
+    and say the API applies it to the last expanded tool. A toolset defers its
+    members through ``default_config``/``configs``, and the docs do not say what
+    an entry whose members are all deferred does with a marker, so that case
+    is unchanged.
+    """
     if not tools:
         return tools
     new = [dict(t) for t in tools]
-    new[-1] = _with_cache_control(new[-1], ttl)
+    index = next(
+        (i for i in range(len(new) - 1, -1, -1) if new[i].get("defer_loading") is not True),
+        None,
+    )
+    if index is None:
+        return new
+    new[index] = _with_cache_control(new[index], ttl)
     return new
 
 

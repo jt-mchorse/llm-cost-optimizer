@@ -3376,3 +3376,15 @@ threshold-sweep scripts already documented an unwritable `--out` as an
 is writable before it starts, so a read-only output ends with that error and
 the file is left as it was. New files and writable files behave as before.
 PR #379.
+
+## 2026-10-30 — The tools cache marker skips deferred tools (#378)
+
+With tool caching on, the wrapper always put its cache marker on the last
+tool in the list. In the tool-search layout the search tool comes first and
+the `defer_loading` tools come after it, so the marker landed on a deferred
+tool. The docs say the API rejects that with a 400, and a deferred tool is
+not part of the cached prefix anyway. The marker now goes on the last tool
+that is not deferred, and deferred tools are sent unchanged. If every tool is
+deferred, nothing is marked. MCP toolset entries are treated as before,
+because the docs put the marker on the entry itself and do not cover the
+all-deferred case. PR #380.
