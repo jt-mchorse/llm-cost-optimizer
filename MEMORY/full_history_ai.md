@@ -3904,3 +3904,22 @@ context_for_next_session:
   - "READ_ONLY_TESTS_SKIP_AS_ROOT_github_ubuntu_runners_are_non_root_runner_so_CI_runs_them"
 followups: []
 ---
+
+---
+session: 2026-10-30T07:41Z
+issue: 378
+branch: session/2026-10-30-0741-issue-378
+focus: TOOLS_MARKER_GOES_ON_THE_LAST_NON_DEFERRED_TOOL_NOT_TOOLS_MINUS_1_SO_THE_TOOL_SEARCH_LAYOUT_NEVER_PUTS_CACHE_CONTROL_ON_A_DEFER_LOADING_TOOL
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 19
+  suite: "2463 passed 86 skipped (3.12 venv with [dev,dashboard], no anthropic, CI's exact pytest --cov command); ruff check + format + mypy clean"
+decisions_made: []
+measured: "origin/main 096a929, claude-opus-5-5, tool-search quick-start tools [tool_search_tool_regex, get_weather defer, search_files defer], cache_segments=(tools,) and (system,tools,messages_prefix) -> {'type': 'ephemeral'} on search_files (deferred; documented 400). After: marker on tool_search_tool_regex, deferred tools sent as written, all-deferred list unmarked. Revert probe 8 red / 11 green = controls (8 no-deferred byte-identical vs pre-378 oracle, mcp_toolset as-before, explicit defer_loading false last, input not mutated). PR #380."
+context_for_next_session:
+  - "TOOLSET_ENTRIES_COUNT_AS_NON_DEFERRED_docs_put_cache_control_on_the_mcp_toolset_entry_and_say_nothing_about_an_all_deferred_default_config_so_unchanged"
+  - "THE_374_SIBLING_SWEEP_SAID_MARK_TOOLS_IS_FINE_BECAUSE_TOOLS_HAVE_NO_ROLE_eligibility_was_defer_loading_not_role"
+  - "NOT_DONE_a_caller_marker_on_an_earlier_non_deferred_tool_still_gets_a_second_wrapper_marker_on_the_last_one_pre_existing_for_every_segment"
+followups: []
+---
