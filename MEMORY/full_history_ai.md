@@ -3866,3 +3866,22 @@ context_for_next_session:
   - "SIBLING_SWEEP_mark_system_and_mark_tools_index_role_less_lists_count_breakpoints_and_last_caller_1h_position_walk_every_message_by_design_nothing_else_in_cost_optimizer_picks_a_last_message"
 followups: []
 ---
+
+---
+session: 2026-10-30T07:22Z
+issue: 375
+branch: session/2026-10-29-0810-issue-375
+focus: MESSAGES_PREFIX_LEFT_UNMARKED_WHEN_A_CALLER_MARKED_A_MESSAGE_AFTER_THE_LAST_USER_TURN_SO_THE_283_TTL_ORDER_HOLDS_AFTER_374
+phase: shipped
+delta:
+  files_changed: 2
+  tests_added: 77
+  suite: "2444 passed 86 skipped (3.12 venv with [dev,dashboard], no anthropic); ruff check + format + mypy clean"
+decisions_made: []
+measured: "origin/main 86905ed, claude-opus-5-5, cache_segments=(messages_prefix,), [user q1, assistant ok, user q2, system <caller 1h>] -> wrapper 5m on user q2 rendered ahead of the caller's 1h. After: messages sent as written, the caller's 1h is the only breakpoint, equal to the pre-#374 output in all 24 last-message cases. Revert probe 27 red / 50 green = controls (40 order cases with no/5m/target/earlier markers, 8 pre-374-equality cases with the marker on the target itself, 2 named controls). PR #376."
+context_for_next_session:
+  - "RESUMED_FROM_THE_10_29_AGENT_the_uncommitted_draft_matched_its_posted_plan_and_was_kept_after_re_repro"
+  - "TTL_FOR_STILL_TREATS_MESSAGES_AS_ONE_POSITION_safe_now_because_nothing_the_wrapper_adds_renders_before_a_later_caller_marker_inside_messages"
+  - "A_5M_TRAILING_CALLER_MARKER_IS_GREEN_ON_THE_ORDER_ARM_ON_MAIN_only_the_pre_374_equality_arm_bites_it"
+followups: []
+---
