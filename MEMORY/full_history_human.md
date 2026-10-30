@@ -3363,3 +3363,16 @@ marker placed ahead of it. Anthropic requires 1-hour entries to come before
 without caching anything new. The wrapper now adds no messages marker when a
 later message already has one, because that marker already caches the whole
 prefix. The request goes out exactly as it did before #374. PR #376.
+
+## 2026-10-30 — A read-only output file is no longer silently overwritten (#377)
+
+Every artifact write goes through a helper that writes a temporary file and
+renames it over the target, so an interrupted write cannot leave a
+half-written file. A rename only needs permission on the directory, though,
+so a file made read-only with `chmod 444` was rewritten anyway, and its mode
+stayed read-only. A plain file write refuses in that case, and the bench and
+threshold-sweep scripts already documented an unwritable `--out` as an
+`::error::` line with exit 2. The helper now checks that an existing target
+is writable before it starts, so a read-only output ends with that error and
+the file is left as it was. New files and writable files behave as before.
+PR #379.
