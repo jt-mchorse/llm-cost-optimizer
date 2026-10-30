@@ -520,12 +520,24 @@ def _mark_messages_prefix(messages: list[Any], *, ttl: str | None = None) -> lis
     (``content: []``) there was no block to mark, so the request went out with
     no messages breakpoint at all. Trailing non-user entries are left as sent.
     A list with no user message is returned unmarked.
+
+    **Unmarked when the caller marked a trailing entry (#375).** Once the target
+    could be followed by other messages, a caller's marker on a trailing system
+    message or assistant prefill rendered *after* ours. ``ttl_for`` treats all
+    of ``messages`` as one position, so a caller's 1h there sat behind our 5m
+    default, which breaks the #283 rule that a 1-hour entry comes before any
+    5-minute one. That later breakpoint already caches everything ours would
+    (#293's argument), so the list is returned as sent. This matches the
+    pre-#373 output, where the target was ``messages[-1]`` and its marker was
+    kept.
     """
     if not messages:
         return messages
     new = [dict(m) for m in messages]
     index = next((i for i in range(len(new) - 1, -1, -1) if new[i].get("role") == "user"), None)
     if index is None:
+        return new
+    if any(_marked_blocks(m.get("content")) for m in new[index + 1 :]):
         return new
     target = new[index]
     content = target.get("content")

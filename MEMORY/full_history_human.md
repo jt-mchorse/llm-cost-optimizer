@@ -3352,3 +3352,14 @@ such a request. An effort-only system message has no text to mark, so the
 conversation silently went uncached. The marker now goes on the last user
 message, as the function's own description always said, and any system
 messages after it are sent unchanged. PR #374.
+
+## 2026-10-30 — The messages marker steps aside when the caller already marked a later message (#375)
+
+After #374 moved the messages cache marker to the last user turn, a caller
+who had put their own 1-hour cache marker on a message after that turn (a
+trailing system message or an assistant prefill) got the wrapper's 5-minute
+marker placed ahead of it. Anthropic requires 1-hour entries to come before
+5-minute ones. The extra marker also used up one of the four breakpoint slots
+without caching anything new. The wrapper now adds no messages marker when a
+later message already has one, because that marker already caches the whole
+prefix. The request goes out exactly as it did before #374. PR #376.
